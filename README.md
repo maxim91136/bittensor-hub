@@ -1,2 +1,2 @@
 # bittensor-labs
-Bittensor Dashboard
+Bittensor-Labs Dashboard
