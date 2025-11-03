@@ -3,43 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Live dashboard for Bittensor network showing subnets, validators and TAO price">
+    <meta name="description" content="Live dashboard for Bittensor network showing network statistics and TAO price">
     <meta name="theme-color" content="#ff6b35">
+    <meta name="author" content="Bittensor Hub">
     
-    <title>Bittensor Hub - the Open-Source Dashboard</title>
+    <title>The Bittensor Hub</title>
     
     <!-- Preload critical assets -->
     <link rel="preload" href="style.css" as="style">
     <link rel="preload" href="script.js" as="script">
-    
     <link rel="stylesheet" href="style.css">
     
     <!-- Defer non-critical scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
 </head>
 <body>
-    <header>
-        <h1><span aria-hidden="true">🧠</span> Bittensor Hub</h1>
-        <p>Live Open-Source Dashboard: Subnets, Validators & TAO Pulse</p>
-        <button id="refreshBtn" aria-label="Refresh data">
-            🔄 Refresh Data <span class="cooldown">(5m cache)</span>
+    <header class="site-header">
+        <div class="header-content">
+            <h1>
+                <span aria-hidden="true">🧠</span> 
+                The Bittensor Hub
+            </h1>
+            <p class="tagline">Network Dashboard</p>
+        </div>
+        <button id="refreshBtn" class="refresh-button" aria-label="Refresh dashboard data">
+            <span aria-hidden="true">🔄</span> 
+            Refresh
+            <span class="cooldown">(5m cache)</span>
         </button>
     </header>
 
-    <main>
-        <section id="price" aria-label="TAO Price Information">
-            <h2>TAO Price (USD)</h2>
-            <p id="taoPrice" aria-live="polite">Loading...</p>
-        </section>
+    <main class="dashboard">
+        <div class="construction-banner" role="alert">
+            <p>🚧 Page under construction, more features coming soon...</p>
+        </div>
 
-        <section id="validators" aria-label="Network Statistics">
-            <h2>Network Overview</h2>
-            <canvas id="validatorsChart" width="400" height="300"></canvas>
-        </section>
+        <div class="dashboard-grid">
+            <section class="dashboard-card" id="price" aria-labelledby="price-heading">
+                <h2 id="price-heading">TAO Price (USD)</h2>
+                <p id="taoPrice" class="price-display" aria-live="polite">Loading...</p>
+            </section>
+
+            <section class="dashboard-card" id="network" aria-labelledby="network-heading">
+                <h2 id="network-heading">Network Overview</h2>
+                <div class="chart-container">
+                    <canvas id="validatorsChart" width="400" height="300"></canvas>
+                </div>
+            </section>
+        </div>
     </main>
 
-    <footer>
-        <p>Open-Source | <a href="https://github.com/maxim91136/bittensor-hub" rel="noopener">GitHub Repo</a> | Data from Opentensor RPC</p>
+    <footer class="site-footer">
+        <p>
+            <span>Open-Source</span> | 
+            <a href="https://github.com/maxim91136/bittensor-hub" 
+               rel="noopener noreferrer" 
+               target="_blank">
+               GitHub Repo
+            </a> | 
+            <span>Data: CoinGecko & Bittensor RPC</span>
+        </p>
     </footer>
 
     <!-- Load main script at the end -->

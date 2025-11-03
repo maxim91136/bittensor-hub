@@ -1,106 +1,67 @@
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Min.
+const TAOSTATS_API = 'https://api.taostats.io/v1';
 
-// Make safeParseJSON synchronous since it doesn't need to be async
-function safeParseJSON(str) {
-    try { return JSON.parse(str); } catch { return null; }
-}
-
-// Add error type to catch block
-async function getCachedOrFetch(key, fetchFn) {
-    try {
-        const cachedRaw = localStorage.getItem(key);
-        if (cachedRaw) {
-            const cached = safeParseJSON(cachedRaw);
-            if (cached?.timestamp && (Date.now() - cached.timestamp < CACHE_DURATION)) {
-                return cached.data;
-            }
-        }
-    } catch (error) {
-        console.warn('Cache read failed:', error);
-    }
-
-    const data = await fetchFn();
-    try {
-        localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
-    } catch (error) {
-        console.warn('Cache write failed:', error);
-    }
-    return data;
-}
-
-// Use optional chaining and nullish coalescing
 async function fetchTaoPrice() {
-    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bittensor&vs_currencies=usd');
-    if (!res.ok) throw new Error(`CoinGecko error: ${res.status}`);
-    const json = await res.json();
-    const price = json?.bittensor?.usd ?? null;
-    if (price == null) throw new Error('TAO price not found');
-    return Number(price);
-}
+    try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bittensor&vs_currencies=usd', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
 
-// Memoize chart instance to prevent memory leaks
-let chartInstance = null;
+        console.log('CoinGecko Response:', response.status);
 
-async function fetchValidators() {
-    const res = await fetch('https://api.opentensor.ai/subnets/1/validators');
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    const json = await res.json();
-    return {
-        hotkeys: json.map(v => v.hotkey),
-        stakes: json.map(v => v.stake)
-    };
+        if (!response.ok) {
+            throw new Error(`CoinGecko API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Price data:', data);
+
+        // CoinGecko returns: { bittensor: { usd: price } }
+        if (!data.bittensor?.usd) {
+            throw new Error('Invalid price format');
+        }
+
+        return data.bittensor.usd;
+    } catch (error) {
+        console.error('CoinGecko fetch failed:', error);
+        return null;
+    }
 }
 
 async function loadDashboard() {
-    try {
-        const [price, validators] = await Promise.all([
-            getCachedOrFetch('taoPrice', fetchTaoPrice),
-            getCachedOrFetch('validators', fetchValidators)
-        ]);
+    const priceEl = document.getElementById('taoPrice');
+    if (priceEl) {
+        priceEl.textContent = 'Loading...';
 
-        const priceEl = safeGetEl('taoPrice');
-        if (priceEl) priceEl.textContent = `$${Number(price).toFixed(2)}`;
-
-        const canvas = safeGetEl('validatorsChart');
-        if (canvas && window.Chart) {
-            // Destroy previous chart instance
-            if (chartInstance) chartInstance.destroy();
-
-            const labels = validators.hotkeys.slice(0,5).map(h => `${h?.slice(0,8)}...`);
-            const data = validators.stakes.slice(0,5).map(Number);
-
-            chartInstance = new Chart(canvas.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{ 
-                        label: 'Stake',
-                        data,
-                        backgroundColor: '#ff6b35'
-                    }]
-                },
-                options: { 
-                    responsive: true,
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
+        const price = await fetchTaoPrice();
+        if (price) {
+            priceEl.textContent = `$${Number(price).toFixed(2)}`;
+        } else {
+            priceEl.textContent = 'Price unavailable';
         }
-    } catch (error) {
-        console.error('Dashboard loading error:', error);
     }
 }
 
-// Use immediate function for initialization
-(() => {
-    document.addEventListener('DOMContentLoaded', () => {
-        const refreshBtn = safeGetEl('refreshBtn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                localStorage.removeItem('taoPrice');
-                localStorage.removeItem('validators');
-                loadDashboard();
-            });
-        }
-        loadDashboard();
-    });
-})();
+async function fetchDashboardData() {
+    try {
+        // Get price from CoinGecko (working)
+        const price = await fetchTaoPrice();
+
+        // Placeholder for subnet data
+        // TODO: Implement reliable subnet data source
+        const networkData = {
+            totalStake: "Data unavailable",
+            activeValidators: "Data unavailable",
+            currentBlock: "Data unavailable"
+        };
+
+        return { price, networkData };
+    } catch (error) {
+        console.error('Dashboard data fetch failed:', error);
+        return { price: null, networkData: null };
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadDashboard);
