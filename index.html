@@ -1,35 +1,53 @@
 <!DOCTYPE html>
-    <html lang="en">
-     <head>
-         <meta charset="UTF-8">
-         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-         <title>Bittensor Hub - Open-Source Dashboard</title>
-         <link rel="stylesheet" href="style.css">
-         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-     </head>
-     <body>
-         <header>
-             <h1>🧠 Bittensor Hub</h1>
-             <p>Live Open-Source Dashboard: Subnets, Validators & TAO Pulse</p>
-             <button id="refreshBtn">Zap Now (5-Min. Cool-Down)</button>
-         </header>
-         <main>
-             <section id="price">
-                 <h2>TAO Price (USD)</h2>
-                 <p id="taoPrice">$--</p>
-             </section>
-             <section id="subnets">
-                 <h2>Top Subnets</h2>
-                 <canvas id="subnetsChart" width="400" height="200"></canvas>
-             </section>
-             <section id="validators">
-                 <h2>Top Validators</h2>
-                 <canvas id="validatorsChart" width="400" height="200"></canvas>
-             </section>
-         </main>
-         <footer>
-             <p>Open-Source | <a href="https://github.com/maxim91136/BITTENSOR-HUB">GitHub Repo</a> | Data from Opentensor RPC</p>
-         </footer>
-         <script src="script.js"></script>
-     </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Live dashboard for Bittensor network showing subnets, validators and TAO price">
+    <meta name="theme-color" content="#ff6b35">
+    
+    <title>Bittensor Hub - the Open-Source Dashboard</title>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="script.js" as="script">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Defer non-critical scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1><span aria-hidden="true">🧠</span> Bittensor Hub</h1>
+        <p>Live Open-Source Dashboard: Subnets, Validators & TAO Pulse</p>
+        <button id="refreshBtn" aria-label="Refresh data">
+            Zap Now <span class="cooldown">(5-Min. Cool-Down)</span>
+        </button>
+    </header>
+
+    <main>
+        <section id="price" aria-label="TAO Price Information">
+            <h2>TAO Price (USD)</h2>
+            <p id="taoPrice" aria-live="polite">$--</p>
+        </section>
+
+        <section id="subnets" aria-label="Top Subnets Chart">
+            <h2>Top Subnets</h2>
+            <canvas id="subnetsChart" width="400" height="200" role="img"></canvas>
+        </section>
+
+        <section id="validators" aria-label="Top Validators Chart">
+            <h2>Top Validators</h2>
+            <canvas id="validatorsChart" width="400" height="200" role="img"></canvas>
+        </section>
+    </main>
+
+    <footer>
+        <p>Open-Source | <a href="https://github.com/maxim91136/bittensor-hub" rel="noopener">GitHub Repo</a> | Data from Opentensor RPC</p>
+    </footer>
+
+    <!-- Load main script at the end -->
+    <script src="script.js" defer></script>
+</body>
 </html>

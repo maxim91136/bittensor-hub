@@ -1,100 +1,106 @@
-// filepath: script.js
 const CACHE_DURATION = 5 * 60 * 1000; // 5 Min.
 
-async function safeParseJSON(str) {
+// Make safeParseJSON synchronous since it doesn't need to be async
+function safeParseJSON(str) {
     try { return JSON.parse(str); } catch { return null; }
 }
 
+// Add error type to catch block
 async function getCachedOrFetch(key, fetchFn) {
     try {
         const cachedRaw = localStorage.getItem(key);
         if (cachedRaw) {
             const cached = safeParseJSON(cachedRaw);
-            if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) return cached.data;
+            if (cached?.timestamp && (Date.now() - cached.timestamp < CACHE_DURATION)) {
+                return cached.data;
+            }
         }
-    } catch (e) {
-        console.warn('Cache read failed', e);
+    } catch (error) {
+        console.warn('Cache read failed:', error);
     }
 
     const data = await fetchFn();
     try {
         localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
-    } catch (e) {
-        console.warn('Cache write failed', e);
+    } catch (error) {
+        console.warn('Cache write failed:', error);
     }
     return data;
 }
 
+// Use optional chaining and nullish coalescing
 async function fetchTaoPrice() {
     const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bittensor&vs_currencies=usd');
     if (!res.ok) throw new Error(`CoinGecko error: ${res.status}`);
     const json = await res.json();
-    const price = json?.bittensor?.usd;
-    if (price == null) throw new Error('Taopreis nicht gefunden');
+    const price = json?.bittensor?.usd ?? null;
+    if (price == null) throw new Error('TAO price not found');
     return Number(price);
 }
 
-async function fetchValidators() {
-    const res = await fetch('https://entrypoint-finney.opentensor.ai:443', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            id: 1, jsonrpc: '2.0', method: 'subtensor.get_top_validators',
-            params: { netuid: 1, topk: 10 }
-        })
-    });
-    if (!res.ok) throw new Error(`Validators API error: ${res.status}`);
-    const json = await res.json();
-    const result = json?.result ?? {};
-    const hotkeys = Array.isArray(result.hotkeys) ? result.hotkeys : [];
-    const stakes = Array.isArray(result.stakes) ? result.stakes.map(s => Number(s) || 0) : [];
-    return { hotkeys, stakes };
-}
+// Memoize chart instance to prevent memory leaks
+let chartInstance = null;
 
-function safeGetEl(id) {
-    const el = document.getElementById(id);
-    if (!el) console.warn(`Element #${id} nicht gefunden`);
-    return el;
+async function fetchValidators() {
+    const res = await fetch('https://api.opentensor.ai/subnets/1/validators');
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    const json = await res.json();
+    return {
+        hotkeys: json.map(v => v.hotkey),
+        stakes: json.map(v => v.stake)
+    };
 }
 
 async function loadDashboard() {
     try {
-        const price = await getCachedOrFetch('taoPrice', fetchTaoPrice);
+        const [price, validators] = await Promise.all([
+            getCachedOrFetch('taoPrice', fetchTaoPrice),
+            getCachedOrFetch('validators', fetchValidators)
+        ]);
+
         const priceEl = safeGetEl('taoPrice');
         if (priceEl) priceEl.textContent = `$${Number(price).toFixed(2)}`;
 
-        const validators = await getCachedOrFetch('validators', fetchValidators);
         const canvas = safeGetEl('validatorsChart');
         if (canvas && window.Chart) {
-            const ctxV = canvas.getContext('2d');
-            const labels = validators.hotkeys.slice(0,5).map(h => (h || '').slice(0,8) + '...');
-            const data = validators.stakes.slice(0,5).map(v => Number(v) || 0);
-            new Chart(ctxV, {
+            // Destroy previous chart instance
+            if (chartInstance) chartInstance.destroy();
+
+            const labels = validators.hotkeys.slice(0,5).map(h => `${h?.slice(0,8)}...`);
+            const data = validators.stakes.slice(0,5).map(Number);
+
+            chartInstance = new Chart(canvas.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels,
-                    datasets: [{ label: 'Stake', data, backgroundColor: '#ff6b35' }]
+                    datasets: [{ 
+                        label: 'Stake',
+                        data,
+                        backgroundColor: '#ff6b35'
+                    }]
                 },
-                options: { scales: { y: { beginAtZero: true } } }
+                options: { 
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
             });
-        } else if (!window.Chart) {
-            console.warn('Chart.js nicht geladen — Diagramm wird nicht gerendert.');
         }
-    } catch (err) {
-        console.error('Fehler beim Laden des Dashboards:', err);
+    } catch (error) {
+        console.error('Dashboard loading error:', error);
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const refreshBtn = document.getElementById('refreshBtn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            localStorage.removeItem('taoPrice');
-            localStorage.removeItem('validators');
-            loadDashboard();
-        });
-    } else {
-        console.warn('#refreshBtn nicht gefunden');
-    }
-    loadDashboard();
-});
+// Use immediate function for initialization
+(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+        const refreshBtn = safeGetEl('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                localStorage.removeItem('taoPrice');
+                localStorage.removeItem('validators');
+                loadDashboard();
+            });
+        }
+        loadDashboard();
+    });
+})();
