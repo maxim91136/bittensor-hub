@@ -32,51 +32,61 @@ export async function onRequest(context) {
   }
 
   try {
-    // Hole nur Block Height - das funktioniert zuverlässig
     const header = await rpcCall('chain_getHeader');
     const blockHeight = header?.number ? parseInt(header.number, 16) : null;
 
-    // Für echte Subnet-Daten: Iteriere durch bekannte Subnet-IDs (0-255)
-    // und hole einzelne Subnet-Infos
+    // Erweitere den Bereich auf 0-512 (oder sogar 1024)
+    const MAX_SUBNET_ID = 1024;
+    
     const subnetChecks = await Promise.allSettled(
-      Array.from({ length: 256 }, (_, i) => 
+      Array.from({ length: MAX_SUBNET_ID }, (_, i) => 
         rpcCall('subnetInfo_getSubnetInfo', [i])
           .then(data => data ? i : null)
           .catch(() => null)
       )
     );
 
-    // Filtere existierende Subnets
     const activeSubnetIds = subnetChecks
       .filter(r => r.status === 'fulfilled' && r.value !== null)
       .map(r => r.value);
 
     const totalSubnets = activeSubnetIds.length;
 
-    // Hole Neuron-Counts für aktive Subnets
-    const neuronCounts = await Promise.allSettled(
-      activeSubnetIds.slice(0, 50).map(id => // Nur erste 50 für Performance
+    // Hole Neuron-Daten für ALLE aktiven Subnets
+    const neuronResults = await Promise.allSettled(
+      activeSubnetIds.map(id => 
         rpcCall('neuronInfo_getNeuronsLite', [id])
-          .then(neurons => neurons?.length || 0)
-          .catch(() => 0)
+          .catch(() => null)
       )
     );
 
-    const totalNeurons = neuronCounts
-      .filter(r => r.status === 'fulfilled')
-      .reduce((sum, r) => sum + (r.value || 0), 0);
+    // Zähle Neurons - SCALE-encoded
+    let totalNeurons = 0;
+    
+    neuronResults.forEach(result => {
+      if (result.status === 'fulfilled' && result.value) {
+        const data = result.value;
+        if (Array.isArray(data) && data.length > 0) {
+          const firstByte = data[0];
+          if (firstByte < 252) {
+            totalNeurons += firstByte;
+          }
+        }
+      }
+    });
 
     return new Response(JSON.stringify({
       blockHeight,
-      validators: 500, // Placeholder - schwer zu berechnen
+      validators: 500, // Placeholder
       subnets: totalSubnets,
-      emission: '7,200', // Placeholder
-      totalNeurons: totalNeurons,
+      emission: '7,200',
+      totalNeurons: totalNeurons || 0,
       _live: true,
       _debug: {
+        checkedRange: `0-${MAX_SUBNET_ID}`,
         activeSubnets: activeSubnetIds.length,
-        checkedNeurons: activeSubnetIds.slice(0, 50).length,
-        sampleSubnetIds: activeSubnetIds.slice(0, 10)
+        highestSubnetId: Math.max(...activeSubnetIds),
+        sampleSubnetIds: activeSubnetIds.slice(0, 20)
       }
     }), {
       status: 200,
