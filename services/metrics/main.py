@@ -31,14 +31,46 @@ def gather_metrics(network: str = "finney") -> Dict[str, Any]:
   for uid in netuids:
     try:
       mg = st.metagraph(uid)
-      total_neurons += int(getattr(mg, "n", 0))
-    except:
+      n = int(getattr(mg, "n", 0))
+      total_neurons += n
+    except Exception as e:
+      print(f"Error getting metagraph for subnet {uid}: {e}")
       pass
+    
     try:
-      hp = st.get_subnet_hyperparams(uid)
-      total_validators += int(getattr(hp, "max_n", 0))
-    except:
+      # Versuche verschiedene Methoden für Hyperparams
+      hp = None
+      try:
+        hp = st.get_subnet_hyperparams(uid)
+      except:
+        try:
+          hp = st.subnet_hyperparameters(uid)
+        except:
+          pass
+      
+      if hp:
+        # Versuche max_n zu extrahieren
+        max_n = 0
+        if hasattr(hp, 'max_n'):
+          max_n = int(hp.max_n)
+        elif hasattr(hp, 'max_allowed_validators'):
+          max_n = int(hp.max_allowed_validators)
+        elif isinstance(hp, dict) and 'max_n' in hp:
+          max_n = int(hp['max_n'])
+        
+        if max_n > 0:
+          total_validators += max_n
+          print(f"Subnet {uid}: max_n={max_n}")
+        else:
+          print(f"Subnet {uid}: max_n not found in hyperparams")
+      else:
+        print(f"Subnet {uid}: hyperparams not available")
+        
+    except Exception as e:
+      print(f"Error getting hyperparams for subnet {uid}: {e}")
       pass
+
+  print(f"Total: subnets={total_subnets}, validators={total_validators}, neurons={total_neurons}")
 
   return {
     "blockHeight": block,
