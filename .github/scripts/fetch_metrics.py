@@ -1,6 +1,7 @@
 import json, os, gc
 from typing import Dict, Any, List
 import bittensor as bt
+from datetime import datetime, timezone
 
 NETWORK = os.getenv("NETWORK", "finney")
 
@@ -12,6 +13,7 @@ def as_bool(v) -> bool:
 
 def gather() -> Dict[str, Any]:
     st = bt.subtensor(network=NETWORK)
+    now = datetime.now(timezone.utc)
     try:
         block = st.get_current_block()
     except Exception:
@@ -76,7 +78,9 @@ def gather() -> Dict[str, Any]:
         "subnets": total_subnets,
         "emission": "7,200",
         "totalNeurons": total_neurons,
-        "_source": "gh-action+bittensor-sdk"
+        "_source": "gh-action+bittensor-sdk",
+        "updatedAt": now.isoformat(),
+        "updatedAtEpoch": int(now.timestamp())
     }
 
 if __name__ == "__main__":
