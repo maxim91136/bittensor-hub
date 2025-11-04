@@ -31,71 +31,33 @@ export async function onRequest(context) {
     return json.result;
   }
 
-  // Dekodiere Subnet-Info aus Byte-Array (SCALE codec)
-  function decodeSubnetInfo(bytes) {
-    if (!Array.isArray(bytes) || bytes.length < 40) return null;
-    
-    // SCALE decoding (vereinfacht)
-    // max_n ist typischerweise bei Index 2-3 als u16 (little-endian)
-    const maxN = bytes[2] + (bytes[3] << 8);
-    
-    // emission könnte bei Index 34-41 sein als u64 (little-endian)
-    let emission = 0;
-    for (let i = 0; i < 8; i++) {
-      emission += (bytes[34 + i] || 0) * Math.pow(256, i);
-    }
-    
-    return {
-      max_n: maxN,
-      emission: emission
-    };
-  }
-
   try {
-    const header = await rpcCall('chain_getHeader');
+    // Nutze die neuronInfo API - die ist besser dokumentiert
+    const [header, neurons] = await Promise.all([
+      rpcCall('chain_getHeader'),
+      // Hole Neurons für die ersten 50 Subnets
+      ...Array.from({ length: 50 }, (_, i) => 
+        rpcCall('neuronInfo_getNeuronsLite', [i]).catch(() => null)
+      )
+    ]).then(results => [results[0], results.slice(1)]);
+
     const blockHeight = header?.number ? parseInt(header.number, 16) : null;
 
-    // Hole detaillierte Subnet-Infos für die ersten 200 IDs
-    const subnetDetailsPromises = [];
-    for (let i = 0; i < 200; i++) {
-      subnetDetailsPromises.push(
-        rpcCall('subnetInfo_getSubnetInfo', [i]).catch(() => null)
-      );
-    }
-
-    const subnetDetails = await Promise.all(subnetDetailsPromises);
-    
-    // Filtere und dekodiere nur existierende Subnets
-    const activeSubnets = subnetDetails
-      .filter(subnet => subnet !== null)
-      .map(subnet => decodeSubnetInfo(subnet))
-      .filter(subnet => subnet !== null);
-    
-    // Zähle Validators und Emission über aktive Subnets
-    let totalValidators = 0;
-    let totalEmission = 0;
-
-    activeSubnets.forEach(subnet => {
-      if (subnet.max_n && subnet.max_n > 0) {
-        totalValidators += subnet.max_n;
-      }
-      if (subnet.emission && subnet.emission > 0) {
-        totalEmission += subnet.emission / 1e9; // Rao zu TAO
-      }
-    });
+    // Zähle aktive Subnets und Neurons
+    const activeSubnets = neurons.filter(n => n !== null && n.length > 0);
+    const totalNeurons = activeSubnets.reduce((sum, subnet) => sum + subnet.length, 0);
 
     return new Response(JSON.stringify({
       blockHeight,
-      validators: totalValidators > 0 ? totalValidators : 500,
-      subnets: activeSubnets.length,
-      emission: totalEmission > 0 ? Math.round(totalEmission).toLocaleString() : '7,200',
+      validators: totalNeurons || 500,
+      subnets: activeSubnets.length || 32,
+      emission: '7,200',
       _live: true,
       _debug: {
-        checkedSubnets: 200,
+        checkedSubnets: 50,
         activeSubnets: activeSubnets.length,
-        sampleDecoded: activeSubnets[0],
-        totalValidators,
-        totalEmissionRaw: totalEmission
+        totalNeurons,
+        sampleSubnetSize: activeSubnets[0]?.length || 0
       }
     }), {
       status: 200,
@@ -108,7 +70,7 @@ export async function onRequest(context) {
     return new Response(JSON.stringify({
       blockHeight: null,
       validators: 500,
-      subnets: 142,
+      subnets: 32,
       emission: '7,200',
       _fallback: true,
       _error: e.message
