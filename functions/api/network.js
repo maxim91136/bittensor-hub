@@ -11,7 +11,6 @@ export async function onRequest(context) {
 
   const RPC_ENDPOINT = 'https://entrypoint-finney.opentensor.ai';
 
-  // Helper: RPC Call
   async function rpcCall(method, params = []) {
     const res = await fetch(RPC_ENDPOINT, {
       method: 'POST',
@@ -32,29 +31,43 @@ export async function onRequest(context) {
     return json.result;
   }
 
+  // Helper: SCALE-decode u64 (little-endian, 8 bytes)
+  function decodeU64(hex) {
+    if (!hex || hex === '0x') return null;
+    const cleaned = hex.replace('0x', '');
+    if (cleaned.length < 16) return null;
+    
+    // Little-endian: bytes rückwärts lesen
+    let result = 0n;
+    for (let i = 0; i < 16; i += 2) {
+      const byte = BigInt(parseInt(cleaned.substr(i, 2), 16));
+      result += byte << BigInt((i / 2) * 8);
+    }
+    return Number(result);
+  }
+
   try {
-    // Parallel alle Daten holen
-    const [header, subnetCountHex, validatorCountHex] = await Promise.all([
+    const [header, subnetCountHex, validatorCountHex, blockEmissionHex] = await Promise.all([
       rpcCall('chain_getHeader'),
       rpcCall('state_call', ['SubtensorModule_get_total_subnets', '0x']).catch(() => null),
-      rpcCall('state_call', ['SubtensorModule_get_subnetwork_n', '0x00000000']).catch(() => null) // Netuid 0
+      rpcCall('state_call', ['SubtensorModule_get_subnetwork_n', '0x00000000']).catch(() => null),
+      // Block Emission (TAO per block, in RAO = 1e9)
+      rpcCall('state_call', ['SubtensorModule_get_block_emission', '0x']).catch(() => null)
     ]);
 
-    // Block Height (Hex → Decimal)
     const blockHeight = header?.number ? parseInt(header.number, 16) : null;
 
-    // Subnet Count (Hex → Decimal)
-    let subnets = 142; // Fallback
+    // Subnet Count
+    let subnets = 142;
     if (subnetCountHex) {
-      // SCALE-encoded u16: erste 2 Bytes
       const hex = subnetCountHex.replace('0x', '');
       if (hex.length >= 4) {
         subnets = parseInt(hex.substring(0, 4), 16);
       }
     }
 
-    // Validator Count (Hex → Decimal)
-    let validators = 500; // Fallback
+    // Validator Count
+    let validators = 500;
     if (validatorCountHex) {
       const hex = validatorCountHex.replace('0x', '');
       if (hex.length >= 4) {
@@ -62,11 +75,25 @@ export async function onRequest(context) {
       }
     }
 
+    // Block Emission (RAO → TAO, dann * 7200 blocks/day)
+    let emission = '7,200'; // Fallback
+    if (blockEmissionHex) {
+      const raoPerBlock = decodeU64(blockEmissionHex);
+      if (raoPerBlock) {
+        const taoPerBlock = raoPerBlock / 1e9; // RAO to TAO
+        const taoPerDay = taoPerBlock * 7200; // 12s Blocktime → 7200 blocks/day
+        emission = taoPerDay.toLocaleString('en-US', { 
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2 
+        });
+      }
+    }
+
     return new Response(JSON.stringify({
       blockHeight,
       validators,
       subnets,
-      emission: '7,200', // Konstant (7200 blocks/day * 1 TAO/block)
+      emission,
       _live: true
     }), {
       status: 200,
@@ -76,7 +103,6 @@ export async function onRequest(context) {
   } catch (e) {
     console.error('RPC error:', e.message);
     
-    // Fallback bei Fehler
     return new Response(JSON.stringify({
       blockHeight: null,
       validators: 500,
