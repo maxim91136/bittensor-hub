@@ -10,6 +10,9 @@ export async function onRequest(context) {
   }
 
   const RPC_ENDPOINT = 'https://entrypoint-finney.opentensor.ai';
+  
+  // Taostats API (ohne Key für öffentliche Endpoints)
+  const TAOSTATS_API = 'https://api.taostats.io';
 
   async function rpcCall(method, params = []) {
     const res = await fetch(RPC_ENDPOINT, {
@@ -32,30 +35,64 @@ export async function onRequest(context) {
   }
 
   try {
+    // Block Height von RPC
     const header = await rpcCall('chain_getHeader');
     const blockHeight = header?.number ? parseInt(header.number, 16) : null;
 
-    // Basierend auf bittensor.subtensor API:
-    // - get_total_subnets() -> gibt Anzahl zurück
-    // - get_subnets() -> gibt Liste der Subnet-IDs zurück
-    // - metagraph(netuid) -> gibt Metagraph mit neurons zurück
-    
-    // Verwende subnetInfo_getSubnetsInfo_v2 -> sollte alle Subnet-Daten enthalten
+    // Versuche Taostats öffentliche API
+    let taostatsData = null;
+    try {
+      const taostatsRes = await fetch(`${TAOSTATS_API}/subnets`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Bittensor-Labs/1.0'
+        }
+      });
+
+      if (taostatsRes.ok) {
+        taostatsData = await taostatsRes.json();
+      }
+    } catch (taostatsError) {
+      console.log('Taostats API unavailable:', taostatsError.message);
+    }
+
+    // Wenn Taostats funktioniert, nutze deren Daten
+    if (taostatsData && Array.isArray(taostatsData)) {
+      const totalSubnets = taostatsData.length;
+      
+      // Summiere Validators und Neurons aus Taostats
+      let totalValidators = 0;
+      let totalNeurons = 0;
+      
+      taostatsData.forEach(subnet => {
+        if (subnet.max_n) totalValidators += subnet.max_n;
+        if (subnet.n) totalNeurons += subnet.n;
+      });
+
+      return new Response(JSON.stringify({
+        blockHeight,
+        validators: totalValidators || 1024,
+        subnets: totalSubnets,
+        emission: '7,200',
+        totalNeurons: totalNeurons || 0,
+        _live: true,
+        _source: 'taostats+rpc'
+      }), {
+        status: 200,
+        headers: { ...cors, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Fallback: RPC-basierte Daten
     const subnetsData = await rpcCall('subnetInfo_getSubnetsInfo_v2', []);
-    
-    // Hole auch Dynamic Info - enthält max_n (validators) pro Subnet
     const dynamicInfoData = await rpcCall('subnetInfo_getAllDynamicInfo', []);
 
-    // Parse die SCALE-encoded Daten
-    // Format: [netuid, subnet_data, netuid, subnet_data, ...]
     let activeSubnetIds = [];
     let totalValidators = 0;
     
     if (Array.isArray(subnetsData) && subnetsData.length > 1) {
-      // Compact encoding: erstes Element ist die Anzahl
       const count = subnetsData[0];
-      
-      // Für jeden Subnet: netuid ist ein u16 (2 bytes)
       for (let i = 1; i < Math.min(subnetsData.length, count * 100); i++) {
         const netuid = subnetsData[i];
         if (typeof netuid === 'number' && netuid < 1024 && !activeSubnetIds.includes(netuid)) {
@@ -64,13 +101,8 @@ export async function onRequest(context) {
       }
     }
 
-    // Parse dynamic info für validators (max_n)
     if (Array.isArray(dynamicInfoData) && dynamicInfoData.length > 1) {
-      const count = dynamicInfoData[0];
-      
-      // Jeder Eintrag: netuid (u16) + dynamic_info struct
-      // max_n ist typischerweise bei Offset 2-3 im struct
-      for (let i = 1; i < Math.min(dynamicInfoData.length, count * 50); i += 40) {
+      for (let i = 1; i < Math.min(dynamicInfoData.length, 5000); i += 40) {
         if (dynamicInfoData[i + 2] !== undefined && dynamicInfoData[i + 3] !== undefined) {
           const maxN = dynamicInfoData[i + 2] | (dynamicInfoData[i + 3] << 8);
           if (maxN > 0 && maxN < 10000) {
@@ -80,7 +112,6 @@ export async function onRequest(context) {
       }
     }
 
-    // Hole Neurons für alle aktiven Subnets
     const neuronPromises = activeSubnetIds.slice(0, 100).map(netuid =>
       rpcCall('neuronInfo_getNeuronsLite', [netuid])
         .then(data => {
@@ -98,28 +129,23 @@ export async function onRequest(context) {
 
     return new Response(JSON.stringify({
       blockHeight,
-      validators: totalValidators || 500,
+      validators: totalValidators || 1024,
       subnets: activeSubnetIds.length || 128,
       emission: '7,200',
       totalNeurons: totalNeurons || 0,
       _live: true,
-      _debug: {
-        subnetsDataLength: subnetsData?.length,
-        dynamicInfoLength: dynamicInfoData?.length,
-        foundSubnetIds: activeSubnetIds.slice(0, 20),
-        totalSubnets: activeSubnetIds.length
-      }
+      _source: 'rpc-only'
     }), {
       status: 200,
       headers: { ...cors, 'Content-Type': 'application/json' }
     });
 
   } catch (e) {
-    console.error('RPC error:', e.message);
+    console.error('API error:', e.message);
     
     return new Response(JSON.stringify({
       blockHeight: null,
-      validators: 500,
+      validators: 1024,
       subnets: 128,
       emission: '7,200',
       totalNeurons: 0,
