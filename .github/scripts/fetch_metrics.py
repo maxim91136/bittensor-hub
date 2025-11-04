@@ -19,8 +19,16 @@ def gather() -> Dict[str, Any]:
     total_validators = 0
     total_neurons = 0
 
+    # Debug: ersten Subnet checken
+    if netuids:
+        try:
+            lite = st.neurons_lite(netuids[0])
+            if lite and len(lite) > 0:
+                print(f"DEBUG subnet {netuids[0]} first neuron keys: {list(lite[0].keys()) if isinstance(lite[0], dict) else type(lite[0])}")
+        except Exception as e:
+            print(f"DEBUG error: {e}")
+
     for uid in netuids:
-        # 1) Erst neurons_lite versuchen (schnell)
         lite = None
         try:
             lite = st.neurons_lite(uid)
@@ -32,19 +40,23 @@ def gather() -> Dict[str, Any]:
 
         if lite:
             total_neurons += len(lite)
-            # Validatoren aus lite extrahieren
+            # Alle möglichen Validator-Felder prüfen
             for n in lite:
                 if isinstance(n, dict):
-                    # validator_permit, is_validator, validatorPermit, etc.
-                    for k in ("validator_permit", "is_validator", "validatorPermit"):
-                        if n.get(k): 
+                    found = False
+                    for k in ("validator_permit", "is_validator", "validatorPermit", "validator", "is_val"):
+                        if k in n and n[k]:
                             total_validators += 1
+                            found = True
                             break
+                    # Debug: erstes Neuron loggen
+                    if uid == netuids[0] and not found:
+                        print(f"DEBUG neuron keys: {list(n.keys())}")
             del lite
             gc.collect()
             continue
 
-        # 2) Fallback: metagraph (langsam)
+        # Fallback: metagraph
         try:
             mg = st.metagraph(uid)
             total_neurons += int(getattr(mg, "n", 0))
