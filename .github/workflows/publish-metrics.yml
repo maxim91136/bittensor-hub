@@ -19,14 +19,19 @@ jobs:
         env:
           NETWORK: finney
         run: python .github/scripts/fetch_metrics.py
-      - name: Push to Cloudflare KV
+      - name: Push to Cloudflare KV (debug)
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
-          curl -fsSL -X PUT \
+          URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/metrics"
+          echo "PUT $URL"
+          HTTP=$(curl -sS -o /tmp/body.json -w "%{http_code}" -X PUT \
             -H "Authorization: Bearer ${CF_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data-binary @metrics.json \
-            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/metrics"
+            --data-binary @metrics.json "$URL")
+          echo "HTTP: $HTTP"
+          echo "Response:"
+          cat /tmp/body.json || true
+          test "$HTTP" -ge 200 -a "$HTTP" -lt 300
