@@ -10,8 +10,6 @@ export async function onRequest(context) {
   }
 
   const RPC_ENDPOINT = 'https://entrypoint-finney.opentensor.ai';
-  
-  // Taostats API (ohne Key für öffentliche Endpoints)
   const TAOSTATS_API = 'https://api.taostats.io';
 
   async function rpcCall(method, params = []) {
@@ -35,12 +33,10 @@ export async function onRequest(context) {
   }
 
   try {
-    // Block Height von RPC
     const header = await rpcCall('chain_getHeader');
     const blockHeight = header?.number ? parseInt(header.number, 16) : null;
 
-    // Versuche Taostats öffentliche API
-    let taostatsData = null;
+    // Versuche Taostats
     try {
       const taostatsRes = await fetch(`${TAOSTATS_API}/subnets`, {
         method: 'GET',
@@ -51,71 +47,69 @@ export async function onRequest(context) {
       });
 
       if (taostatsRes.ok) {
-        taostatsData = await taostatsRes.json();
+        const taostatsData = await taostatsRes.json();
+        
+        if (Array.isArray(taostatsData) && taostatsData.length > 0) {
+          let totalValidators = 0;
+          let totalNeurons = 0;
+          
+          taostatsData.forEach(subnet => {
+            if (subnet.max_n) totalValidators += subnet.max_n;
+            if (subnet.n) totalNeurons += subnet.n;
+          });
+
+          return new Response(JSON.stringify({
+            blockHeight,
+            validators: totalValidators,
+            subnets: taostatsData.length,
+            emission: '7,200',
+            totalNeurons: totalNeurons,
+            _live: true,
+            _source: 'taostats+rpc'
+          }), {
+            status: 200,
+            headers: { ...cors, 'Content-Type': 'application/json' }
+          });
+        }
       }
-    } catch (taostatsError) {
-      console.log('Taostats API unavailable:', taostatsError.message);
+    } catch (e) {
+      console.log('Taostats failed:', e.message);
     }
 
-    // Wenn Taostats funktioniert, nutze deren Daten
-    if (taostatsData && Array.isArray(taostatsData)) {
-      const totalSubnets = taostatsData.length;
-      
-      // Summiere Validators und Neurons aus Taostats
-      let totalValidators = 0;
-      let totalNeurons = 0;
-      
-      taostatsData.forEach(subnet => {
-        if (subnet.max_n) totalValidators += subnet.max_n;
-        if (subnet.n) totalNeurons += subnet.n;
-      });
+    // Fallback: Nutze individuelle Subnet-Abfragen (langsamer aber zuverlässig)
+    // Prüfe 0-200 (sollte alle Subnets abdecken)
+    const subnetPromises = Array.from({ length: 200 }, (_, netuid) =>
+      Promise.all([
+        rpcCall('subnetInfo_getSubnetHyperparams', [netuid]).catch(() => null),
+        rpcCall('subnetInfo_getSubnetInfo', [netuid]).catch(() => null)
+      ]).then(([hyperparams, info]) => ({
+        netuid,
+        exists: info !== null,
+        hyperparams
+      }))
+    );
 
-      return new Response(JSON.stringify({
-        blockHeight,
-        validators: totalValidators || 1024,
-        subnets: totalSubnets,
-        emission: '7,200',
-        totalNeurons: totalNeurons || 0,
-        _live: true,
-        _source: 'taostats+rpc'
-      }), {
-        status: 200,
-        headers: { ...cors, 'Content-Type': 'application/json' }
-      });
-    }
+    const subnetResults = await Promise.all(subnetPromises);
+    const activeSubnets = subnetResults.filter(s => s.exists);
 
-    // Fallback: RPC-basierte Daten
-    const subnetsData = await rpcCall('subnetInfo_getSubnetsInfo_v2', []);
-    const dynamicInfoData = await rpcCall('subnetInfo_getAllDynamicInfo', []);
-
-    let activeSubnetIds = [];
     let totalValidators = 0;
     
-    if (Array.isArray(subnetsData) && subnetsData.length > 1) {
-      const count = subnetsData[0];
-      for (let i = 1; i < Math.min(subnetsData.length, count * 100); i++) {
-        const netuid = subnetsData[i];
-        if (typeof netuid === 'number' && netuid < 1024 && !activeSubnetIds.includes(netuid)) {
-          activeSubnetIds.push(netuid);
+    activeSubnets.forEach(subnet => {
+      if (subnet.hyperparams && Array.isArray(subnet.hyperparams) && subnet.hyperparams.length > 3) {
+        // max_n ist bei Byte-Position 2-3 als u16 little-endian
+        const maxN = subnet.hyperparams[2] | (subnet.hyperparams[3] << 8);
+        if (maxN > 0 && maxN < 1000) { // Sanity check: max 1000 validators pro subnet
+          totalValidators += maxN;
         }
       }
-    }
+    });
 
-    if (Array.isArray(dynamicInfoData) && dynamicInfoData.length > 1) {
-      for (let i = 1; i < Math.min(dynamicInfoData.length, 5000); i += 40) {
-        if (dynamicInfoData[i + 2] !== undefined && dynamicInfoData[i + 3] !== undefined) {
-          const maxN = dynamicInfoData[i + 2] | (dynamicInfoData[i + 3] << 8);
-          if (maxN > 0 && maxN < 10000) {
-            totalValidators += maxN;
-          }
-        }
-      }
-    }
-
-    const neuronPromises = activeSubnetIds.slice(0, 100).map(netuid =>
-      rpcCall('neuronInfo_getNeuronsLite', [netuid])
+    // Hole Neuron-Counts (nur für erste 50 Subnets wegen Performance)
+    const neuronPromises = activeSubnets.slice(0, 50).map(subnet =>
+      rpcCall('neuronInfo_getNeuronsLite', [subnet.netuid])
         .then(data => {
           if (Array.isArray(data) && data.length > 0) {
+            // Compact encoding: wenn < 252, ist es direkt die Anzahl
             const count = data[0];
             return count < 252 ? count : 0;
           }
@@ -130,11 +124,16 @@ export async function onRequest(context) {
     return new Response(JSON.stringify({
       blockHeight,
       validators: totalValidators || 1024,
-      subnets: activeSubnetIds.length || 128,
+      subnets: activeSubnets.length,
       emission: '7,200',
       totalNeurons: totalNeurons || 0,
       _live: true,
-      _source: 'rpc-only'
+      _source: 'rpc-individual',
+      _debug: {
+        checkedSubnets: 200,
+        foundActive: activeSubnets.length,
+        sampleHyperparams: activeSubnets[0]?.hyperparams?.slice(0, 10)
+      }
     }), {
       status: 200,
       headers: { ...cors, 'Content-Type': 'application/json' }
