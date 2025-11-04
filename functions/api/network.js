@@ -31,60 +31,43 @@ export async function onRequest(context) {
     return json.result;
   }
 
-  function hexToInt(hex) {
-    if (!hex || hex === '0x') return 0;
-    const cleaned = hex.replace('0x', '');
-    // Little-endian für kleine Zahlen
-    if (cleaned.length <= 8) {
-      let reversed = '';
-      for (let i = cleaned.length - 2; i >= 0; i -= 2) {
-        reversed += cleaned.substr(i, 2);
-      }
-      return parseInt(reversed || cleaned, 16);
-    }
-    return parseInt(cleaned, 16);
-  }
-
   try {
-    const header = await rpcCall('chain_getHeader');
+    const [header, subnetsInfo, allMetagraphs] = await Promise.all([
+      rpcCall('chain_getHeader'),
+      rpcCall('subnetInfo_getSubnetsInfo'), // Alle Subnet-Infos
+      rpcCall('subnetInfo_getAllMetagraphs'), // Alle Metagraphs mit Neuron-Infos
+    ]);
+
     const blockHeight = header?.number ? parseInt(header.number, 16) : null;
 
-    // Teste alle verfügbaren RPC-Methoden
-    const rpcMethods = await rpcCall('rpc_methods');
-    
-    // Versuche Runtime-API-Aufrufe
-    const runtimeCalls = await Promise.allSettled([
-      rpcCall('state_call', ['SubtensorModuleApi_get_total_networks', '0x']),
-      rpcCall('state_call', ['SubtensorModuleApi_get_total_subnets', '0x']),
-      rpcCall('state_call', ['SubtensorApi_get_total_networks', '0x']),
-      // Alternative: Chain-spezifische Calls
-      rpcCall('subtensor_getTotalNetworks', []),
-      rpcCall('subtensor_getTotalSubnets', []),
-    ]);
+    // Anzahl der Subnets
+    const totalSubnets = Array.isArray(subnetsInfo) ? subnetsInfo.length : 142;
+
+    // Validators über alle Subnets zählen
+    let totalValidators = 0;
+    let totalEmission = 0;
+
+    if (Array.isArray(allMetagraphs)) {
+      allMetagraphs.forEach(metagraph => {
+        if (metagraph?.neurons) {
+          totalValidators += metagraph.neurons.length;
+        }
+        if (metagraph?.emission) {
+          // Emission ist in Rao (1e9 = 1 TAO)
+          totalEmission += parseInt(metagraph.emission) / 1e9;
+        }
+      });
+    }
 
     return new Response(JSON.stringify({
       blockHeight,
-      validators: 500,
-      subnets: 142,
-      emission: '7,200',
+      validators: totalValidators || 500,
+      subnets: totalSubnets,
+      emission: Math.round(totalEmission).toLocaleString(),
       _live: true,
       _debug: {
-        message: 'Testing runtime API calls',
-        availableMethods: rpcMethods?.methods || [],
-        runtimeResults: runtimeCalls.map((result, i) => ({
-          index: i,
-          method: [
-            'state_call(SubtensorModuleApi_get_total_networks)',
-            'state_call(SubtensorModuleApi_get_total_subnets)',
-            'state_call(SubtensorApi_get_total_networks)',
-            'subtensor_getTotalNetworks',
-            'subtensor_getTotalSubnets'
-          ][i],
-          status: result.status,
-          rawValue: result.status === 'fulfilled' ? result.value : null,
-          decoded: result.status === 'fulfilled' && result.value ? hexToInt(result.value) : null,
-          error: result.status === 'rejected' ? result.reason.message : null
-        }))
+        subnetsInfoCount: Array.isArray(subnetsInfo) ? subnetsInfo.length : 0,
+        metagraphsCount: Array.isArray(allMetagraphs) ? allMetagraphs.length : 0,
       }
     }), {
       status: 200,
