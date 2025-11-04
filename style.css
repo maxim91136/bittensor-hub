@@ -207,19 +207,190 @@ canvas{
 }
 .site-footer a:hover{color:#38bdf8;}
 
-/* Responsive */
-@media (max-width:768px){
-  .header-content{padding:10px 14px; justify-content:space-between; position:static;}
-  .brand{ position:static; transform:none; }
-  .brand-row{ justify-content:flex-start; }
-  .site-title{font-size:1.2rem;}
-  .price-pill{font-size:0.85rem; padding:5px 9px;}
-  .dashboard{padding:16px 14px 30px 14px;}
-  .stats-grid{grid-template-columns:repeat(2, 1fr); gap:10px;}
-  .dashboard-grid{grid-template-columns:1fr;}
-  .stat-value{font-size:1.15rem;}
+/* Info Badge neben Label */
+.info-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  margin-left: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 50%;
+  cursor: help;
+  transition: all 0.2s ease;
+  position: relative;
+  user-select: none;
+  font-style: normal;
 }
 
-@media (prefers-reduced-motion:reduce){
-  *{animation-duration:0.01ms!important; transition-duration:0.01ms!important;}
+.info-badge:hover {
+  color: var(--accent);
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.4);
+  transform: scale(1.15);
+}
+
+/* Tooltip on hover */
+.info-badge::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 6px 10px;
+  background: rgba(14, 20, 25, 0.98);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Tooltip arrow */
+.info-badge::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--border-light);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1001;
+}
+
+.info-badge:hover::after,
+.info-badge:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Mobile: Tooltip besser positionieren */
+@media (max-width: 768px) {
+  .info-badge::after {
+    left: auto;
+    right: -10px;
+    transform: translateX(0) translateY(4px);
+    white-space: normal;
+    max-width: 200px;
+  }
+  
+  .info-badge:hover::after {
+    transform: translateX(0) translateY(0);
+  }
+  
+  .info-badge::before {
+    left: auto;
+    right: 6px;
+    transform: translateX(0);
+  }
+  
+  .info-badge:hover::before {
+    transform: translateX(0);
+  }
+}
+
+/* Verschärfte Mobile-Optimierung */
+@media (max-width: 480px) {
+  /* Kompakteres Layout */
+  .dashboard {
+    padding: 12px 10px 24px 10px;
+  }
+  
+  .stats-grid {
+    gap: 8px;
+  }
+  
+  .stat-card {
+    padding: 12px 14px;
+  }
+  
+  /* Kleinere Schriften */
+  .site-title {
+    font-size: 1.1rem;
+  }
+  
+  .brand-mark svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .tagline {
+    font-size: 0.72rem;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+  }
+  
+  .stat-value {
+    font-size: 1.1rem;
+  }
+  
+  /* Kompakterer Header */
+  .header-content {
+    padding: 6px 12px;
+  }
+  
+  .price-pill {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .price-icon svg {
+    width: 11px;
+    height: 11px;
+  }
+  
+  /* Charts kleiner */
+  .chart-container {
+    height: 220px;
+  }
+  
+  .card-header h2 {
+    font-size: 0.9rem;
+  }
+  
+  .card-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+  
+  /* Footer kompakter */
+  .site-footer {
+    padding: 16px 12px 20px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Extra kleine Screens */
+@media (max-width: 360px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-container {
+    height: 200px;
+  }
+  
+  .stat-value {
+    font-size: 1.05rem;
+  }
 }

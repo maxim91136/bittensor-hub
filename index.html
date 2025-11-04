@@ -70,61 +70,76 @@
 
   <main class="dashboard">
     <!-- Quick Stats -->
-    <div class="stats-grid">
-      <div class="stat-card loading">
-        <div class="stat-icon">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 6v6l4 2"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Block Height</div>
-          <div class="stat-value skeleton-text" id="blockHeight">—</div>
-        </div>
-      </div>
-
-      <div class="stat-card loading">
-        <div class="stat-icon">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Active Validators</div>
-          <div class="stat-value skeleton-text" id="validators">—</div>
-        </div>
-      </div>
-
-      <div class="stat-card loading">
-        <div class="stat-icon">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <path d="M3 9h18"/>
-            <path d="M9 21V9"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Total Subnets</div>
-          <div class="stat-value skeleton-text" id="subnets">—</div>
-        </div>
-      </div>
-
-      <div class="stat-card loading">
-        <div class="stat-icon">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Emission Rate</div>
-          <div class="stat-value skeleton-text" id="emission">—</div>
-        </div>
-      </div>
+    <!-- Stats Cards mit Info-Badges -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
     </div>
+    <div class="stat-content">
+      <div class="stat-label">
+        Block Height
+        <span class="info-badge" data-tooltip="Current blockchain height from Taostats">ⓘ</span>
+      </div>
+      <div class="stat-value" id="blockHeight">4.237.851</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">
+        Active Validators
+        <span class="info-badge" data-tooltip="Active validators securing the network">ⓘ</span>
+      </div>
+      <div class="stat-value" id="validators">501</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+        <rect x="3" y="3" width="7" height="7"></rect>
+        <rect x="14" y="3" width="7" height="7"></rect>
+        <rect x="14" y="14" width="7" height="7"></rect>
+        <rect x="3" y="14" width="7" height="7"></rect>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">
+        Total Subnets
+        <span class="info-badge" data-tooltip="Active subnets in the ecosystem">ⓘ</span>
+      </div>
+      <div class="stat-value" id="subnets">142</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+        <line x1="12" y1="1" x2="12" y2="23"></line>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-label">
+        Emission Rate
+        <span class="info-badge" data-tooltip="Daily TAO emission (1 τ per block)">ⓘ</span>
+      </div>
+      <div class="stat-value" id="emission">7,200 τ/day</div>
+    </div>
+  </div>
+</div>
 
     <!-- Charts -->
     <div class="dashboard-grid">
