@@ -5,27 +5,33 @@ export async function onRequest(context) {
     'Access-Control-Allow-Headers': '*',
   };
 
-  // Handle preflight
   if (context.request.method === 'OPTIONS') {
     return new Response(null, { headers: cors });
   }
 
   try {
-    const res = await fetch('https://bittensor.api.subscan.io/api/scan/metadata', {
+    // Korrekter Subscan Endpoint (ohne /scan prefix)
+    const res = await fetch('https://bittensor.api.subscan.io/api/v2/scan/metadata', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}), // ← Korrektur: JSON.stringify statt '{}'
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-API-Key': '' // Subscan braucht keinen Key für Metadata
+      },
+      body: JSON.stringify({})
     });
 
     if (!res.ok) {
-      throw new Error(`Subscan responded with ${res.status}`);
+      const text = await res.text();
+      console.error('Subscan error:', res.status, text);
+      throw new Error(`Subscan ${res.status}`);
     }
 
-    const data = await res.json();
+    const json = await res.json();
+    const data = json.data || {};
 
     return new Response(JSON.stringify({
-      blockHeight: data.data?.blockNum || null,
-      validators: data.data?.count_validator || 500,
+      blockHeight: data.blockNum || data.block_num || null,
+      validators: data.count_validator || 500,
       subnets: 142,
       emission: '7,200'
     }), {
@@ -33,8 +39,16 @@ export async function onRequest(context) {
       headers: { ...cors, 'Content-Type': 'application/json' }
     });
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
+    console.error('Network API error:', e);
+    // Fallback mit statischen Daten
+    return new Response(JSON.stringify({
+      blockHeight: null,
+      validators: 500,
+      subnets: 142,
+      emission: '7,200',
+      _fallback: true
+    }), {
+      status: 200, // ← Trotzdem 200, damit Frontend nicht crasht
       headers: { ...cors, 'Content-Type': 'application/json' }
     });
   }
