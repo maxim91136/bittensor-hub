@@ -4,6 +4,12 @@ import bittensor as bt
 
 NETWORK = os.getenv("NETWORK", "finney")
 
+def as_bool(v) -> bool:
+    if hasattr(v, "item"):
+        try: return bool(v.item())
+        except: pass
+    return bool(v)
+
 def gather() -> Dict[str, Any]:
     st = bt.subtensor(network=NETWORK)
     try:
@@ -19,15 +25,6 @@ def gather() -> Dict[str, Any]:
     total_validators = 0
     total_neurons = 0
 
-    # Debug: ersten Subnet checken
-    if netuids:
-        try:
-            lite = st.neurons_lite(netuids[0])
-            if lite and len(lite) > 0:
-                print(f"DEBUG subnet {netuids[0]} first neuron keys: {list(lite[0].keys()) if isinstance(lite[0], dict) else type(lite[0])}")
-        except Exception as e:
-            print(f"DEBUG error: {e}")
-
     for uid in netuids:
         lite = None
         try:
@@ -38,37 +35,39 @@ def gather() -> Dict[str, Any]:
             except:
                 lite = None
 
+        counted_from_lite = False
         if lite:
             total_neurons += len(lite)
-            # Alle möglichen Validator-Felder prüfen
-            for n in lite:
-                if isinstance(n, dict):
-                    found = False
-                    for k in ("validator_permit", "is_validator", "validatorPermit", "validator", "is_val"):
-                        if k in n and n[k]:
-                            total_validators += 1
-                            found = True
-                            break
-                    # Debug: erstes Neuron loggen
-                    if uid == netuids[0] and not found:
-                        print(f"DEBUG neuron keys: {list(n.keys())}")
-            del lite
-            gc.collect()
-            continue
+            # Prüfe Felder am ersten Element
+            n0 = lite[0]
+            cand_attrs = ("validator_permit", "is_validator", "validatorPermit", "validator", "is_val")
+            attr = next((a for a in cand_attrs if hasattr(n0, a)), None)
 
-        # Fallback: metagraph
-        try:
-            mg = st.metagraph(uid)
-            total_neurons += int(getattr(mg, "n", 0))
-            vp = getattr(mg, "validator_permit", None)
-            if vp is not None:
-                arr = vp.tolist() if hasattr(vp, "tolist") else list(vp)
-                total_validators += sum(1 for x in arr if x)
-        except Exception as e:
-            print(f"Subnet {uid} error: {e}")
-        finally:
-            try: del mg
-            except: pass
+            if attr:
+                # Schnellpfad: direkt aus lite zählen
+                try:
+                    total_validators += sum(1 for n in lite if hasattr(n, attr) and as_bool(getattr(n, attr)))
+                    counted_from_lite = True
+                except Exception:
+                    counted_from_lite = False
+
+        if not counted_from_lite:
+            # Fallback: nur Validatoren via metagraph zählen
+            try:
+                mg = st.metagraph(uid)
+                vp = getattr(mg, "validator_permit", None)
+                if vp is not None:
+                    arr = vp.tolist() if hasattr(vp, "tolist") else list(vp)
+                    total_validators += sum(1 for x in arr if as_bool(x))
+            except Exception:
+                pass
+            finally:
+                try: del mg
+                except: pass
+                gc.collect()
+
+        if lite:
+            del lite
             gc.collect()
 
     return {
