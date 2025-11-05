@@ -6,8 +6,7 @@ const PRICE_CACHE_TTL = 300000;
 const PRICE_CACHE_TTL_MAX = 3600000;
 
 // ===== State Management =====
-let validatorsChart = null;
-let priceChart = null;
+let priceChart = null;           // removed: validatorsChart
 let lastPrice = null;
 let currentPriceRange = '7';
 let isLoadingPrice = false;
@@ -86,17 +85,6 @@ async function fetchNetworkData() {
     return await response.json();
   } catch (error) {
     console.error('❌ Error fetching network data:', error);
-    return null;
-  }
-}
-
-async function fetchHistoryData() {
-  try {
-    const response = await fetch(`${API_BASE}/history`, { cache: 'no-store' });
-    if (!response.ok) throw new Error('History response failed');
-    return await response.json();
-  } catch (error) {
-    console.error('❌ Error fetching history:', error);
     return null;
   }
 }
@@ -187,85 +175,10 @@ function setPriceRangeNote(range) {
 }
 
 // ===== Chart Creation =====
-function createValidatorsChart(historyData) {
-  const canvas = document.getElementById('validatorsChart');
-  if (!canvas || !historyData || !Array.isArray(historyData) || historyData.length === 0) return;
-  const ctx = canvas.getContext('2d');
 
-  const labels = historyData.map(d => {
-    const date = new Date(d.t * 1000);
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  });
-  
-  const validatorsData = historyData.map(d => d.validators);
-  
-  if (validatorsChart) {
-    validatorsChart.destroy();
-  }
-  
-  validatorsChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Active Validators',
-        data: validatorsData,
-        borderColor: '#22c55e',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        borderWidth: 2,
-        tension: 0.4,
-        fill: true,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#22c55e',
-        pointHoverBorderColor: '#fff',
-        pointHoverBorderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          backgroundColor: 'rgba(17, 19, 24, 0.95)',
-          titleColor: '#e8eaed',
-          bodyColor: '#9ca3af',
-          borderColor: 'rgba(255,255,255,0.1)',
-          borderWidth: 1,
-          padding: 12,
-          displayColors: false,
-          callbacks: {
-            label: (context) => `${context.parsed.y} validators`
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: '#9ca3af', maxTicksLimit: 6 }
-        },
-        y: {
-          grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
-          ticks: {
-            color: '#9ca3af',
-            callback: (value) => formatFull(value) // volle Zahlen
-          }
-        }
-      },
-      interaction: {
-        mode: 'nearest',
-        axis: 'x',
-        intersect: false
-      }
-    }
-  });
-  
-  canvas.closest('.dashboard-card').classList.remove('loading');
-}
+// removed: createValidatorsChart (no validator chart)
 
+// Price chart stays unchanged
 function createPriceChart(priceHistory, range = '7') {
   const canvas = document.getElementById('priceChart');
   if (!canvas || !priceHistory || !Array.isArray(priceHistory) || priceHistory.length === 0) {
@@ -384,7 +297,7 @@ function createPriceChart(priceHistory, range = '7') {
   setPriceRangeNote(range);
 }
 
-// ===== Time Range Toggle (vereinfacht mit Lock) =====
+// ===== Time Range Toggle =====
 function setupTimeRangeToggle() {
   const buttons = document.querySelectorAll('.time-btn');
   buttons.forEach(btn => {
@@ -441,20 +354,15 @@ function setupMaxTooltip() {
 async function refreshDashboard() {
   console.log('🔄 Refreshing dashboard data...');
   
-  // Nur Network/History refreshen, Price Chart nur bei manuellem Toggle
-  const [networkData, historyData, taoPrice] = await Promise.all([
+  // Only network + spot price
+  const [networkData, taoPrice] = await Promise.all([
     fetchNetworkData(),
-    fetchHistoryData(),
     fetchTaoPrice()
   ]);
   
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
-  
-  if (historyData && (!validatorsChart || historyData.length > 0)) {
-    createValidatorsChart(historyData);
-  }
-  
+
   console.log('✅ Dashboard updated');
 }
 
@@ -465,18 +373,16 @@ async function initDashboard() {
   setupMaxTooltip();
   setupTimeRangeToggle();
 
-  // Erst Network/History/Price (Spot) laden – robust gegen CoinGecko-Fehler
-  const [networkData, historyData, taoPrice] = await Promise.all([
+  // Initial load without validators/history
+  const [networkData, taoPrice] = await Promise.all([
     fetchNetworkData(),
-    fetchHistoryData(),
     fetchTaoPrice()
   ]);
 
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
-  if (historyData) createValidatorsChart(historyData);
 
-  // Danach Price-History separat, Spinner immer räumen
+  // Load price history
   const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
   const priceHistory = await fetchPriceHistory(currentPriceRange);
   if (priceHistory) {
