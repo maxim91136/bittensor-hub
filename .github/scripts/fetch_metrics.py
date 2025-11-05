@@ -75,19 +75,42 @@ def gather() -> Dict[str, Any]:
             gc.collect()
 
     # Gather subnet data for Top 10
-    subnet_data = []
-    for uid in netuids:
-        try:
-            meta = st.subnet(uid)  # oder st.get_subnet_info(uid), je nach SDK-Version
-            subnet_data.append({
-                "netuid": uid,
-                "name": getattr(meta, "name", f"Subnet {uid}"),
-                "emission": float(getattr(meta, "emission", 0))
-            })
-        except Exception:
-            pass
+    subnet_data: List[Dict[str, Any]] = []
+    st = bt.subtensor()
 
-    # Sort by emission, take Top 10
+    try:
+        get_all = getattr(st, "get_all_subnets_info", None)
+        if callable(get_all):
+            infos = get_all()  # Liste von Subnet-Infos
+            for info in infos:
+                uid = int(getattr(info, "netuid", -1))
+                name = getattr(info, "name", f"Subnet {uid}")
+                em = (
+                    getattr(info, "emission", None)
+                    or getattr(info, "emission_per_block", None)
+                    or getattr(info, "emission_rate", None)
+                    or 0
+                )
+                subnet_data.append({"netuid": uid, "name": name, "emission": float(em)})
+        else:
+            # Fallback: einzeln pro netuid
+            netuids = getattr(st, "get_all_subnet_netuids", lambda: [])() or getattr(st, "netuids", lambda: [])()
+            for uid in netuids:
+                try:
+                    info = getattr(st, "get_subnet_info", lambda _u: None)(uid)
+                    name = getattr(info, "name", f"Subnet {uid}") if info else f"Subnet {uid}"
+                    em = (
+                        getattr(info, "emission", None)
+                        or getattr(info, "emission_per_block", None)
+                        or getattr(info, "emission_rate", None)
+                        or 0
+                    )
+                    subnet_data.append({"netuid": int(uid), "name": name, "emission": float(em)})
+                except Exception:
+                    continue
+    except Exception as e:
+        print("failed to collect subnets:", e)
+
     subnet_data.sort(key=lambda x: x["emission"], reverse=True)
     top_subnets = subnet_data[:10]
 
