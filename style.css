@@ -133,10 +133,18 @@ body{
 /* Stats Grid */
 .stats-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns:repeat(2, 1fr);  /* Immer 2 Spalten */
   gap:12px;
   margin-bottom:20px;
 }
+
+/* Mobile: 1 Spalte */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stat-card{
   background:var(--panel);
   border:1px solid var(--border);
