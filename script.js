@@ -86,10 +86,12 @@ async function fetchTaoPrice() {
 
 async function fetchPriceHistory(days = '7') {
   try {
-    const response = await fetch(
-      `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=${days}`,
-      { cache: 'no-store' }
-    );
+    // CoinGecko erwartet "max" statt einer Zahl
+    const endpoint = days === 'max' 
+      ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=max`
+      : `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=${days}`;
+    
+    const response = await fetch(endpoint, { cache: 'no-store' });
     if (!response.ok) throw new Error('Price history failed');
     const data = await response.json();
     return data.prices; // [[timestamp, price], ...]
@@ -234,14 +236,25 @@ function createPriceChart(priceHistory, range = '7') {
   
   const ctx = canvas.getContext('2d');
   
-  // Format labels based on range
-  const labels = priceHistory.map(p => {
+  // Format labels based on range - mit besserer Logik
+  const labels = priceHistory.map((p, index) => {
     const date = new Date(p[0]);
+    
+    // Bei MAX/1Y: nur jeden X-ten Datenpunkt labeln
     if (range === 'max' || range === '365') {
-      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      const step = Math.ceil(priceHistory.length / 12); // Max 12 Labels
+      if (index % step !== 0 && index !== priceHistory.length - 1) {
+        return ''; // Leeres Label
+      }
+      return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
     } else if (range === '30') {
+      const step = Math.ceil(priceHistory.length / 10); // Max 10 Labels
+      if (index % step !== 0 && index !== priceHistory.length - 1) {
+        return '';
+      }
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     } else {
+      // 7D: alle Labels
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
   });
@@ -265,7 +278,7 @@ function createPriceChart(priceHistory, range = '7') {
         tension: 0.4,
         fill: true,
         pointRadius: 0,
-        pointHoverRadius: 6,
+        pointHoverRadius: 4,
         pointHoverBackgroundColor: '#22c55e',
         pointHoverBorderColor: '#fff',
         pointHoverBorderWidth: 2
@@ -287,6 +300,14 @@ function createPriceChart(priceHistory, range = '7') {
           padding: 12,
           displayColors: false,
           callbacks: {
+            title: (context) => {
+              const date = new Date(priceHistory[context[0].dataIndex][0]);
+              return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+              });
+            },
             label: (context) => `$${context.parsed.y.toFixed(2)}`
           }
         }
@@ -296,6 +317,8 @@ function createPriceChart(priceHistory, range = '7') {
           grid: { display: false },
           ticks: { 
             color: '#9ca3af',
+            maxRotation: 0,
+            autoSkip: true,
             maxTicksLimit: 8
           }
         },
