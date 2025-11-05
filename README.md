@@ -1,2 +1,2 @@
 # bittensor-labs
-Bittensor-Labs Dashboard
+Bittensor-Labs Mini-Dashboard with essential metrics
