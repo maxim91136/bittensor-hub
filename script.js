@@ -1,13 +1,15 @@
 // ===== API Configuration =====
 const API_BASE = '/api';
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
-const REFRESH_INTERVAL = 30000; // 30 Sekunden
+const REFRESH_INTERVAL = 60000; // 60 Sekunden (CoinGecko hat Rate Limits)
 
 // ===== State Management =====
 let validatorsChart = null;
 let priceChart = null;
 let lastPrice = null;
 let currentPriceRange = '7'; // Default: 7 days
+let priceRequestAbortController = null; // Für Request-Abbruch
+let priceRequestTimeout = null; // Debouncing
 
 // ===== Utility Functions =====
 function formatNumber(num) {
@@ -85,19 +87,41 @@ async function fetchTaoPrice() {
 }
 
 async function fetchPriceHistory(days = '7') {
+  // Abort previous request if still running
+  if (priceRequestAbortController) {
+    priceRequestAbortController.abort();
+  }
+  
+  priceRequestAbortController = new AbortController();
+  
   try {
-    // CoinGecko erwartet "max" statt einer Zahl
     const endpoint = days === 'max' 
       ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=max`
       : `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=${days}`;
     
-    const response = await fetch(endpoint, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Price history failed');
+    console.log(`🔄 Fetching price history: ${days} days...`);
+    
+    const response = await fetch(endpoint, { 
+      cache: 'no-store',
+      signal: priceRequestAbortController.signal
+    });
+    
+    if (!response.ok) {
+      throw new Error(`CoinGecko API error: ${response.status}`);
+    }
+    
     const data = await response.json();
-    return data.prices; // [[timestamp, price], ...]
+    console.log(`✅ Received ${data.prices.length} price points`);
+    return data.prices;
   } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log('⏭️  Request aborted (new request started)');
+      return null;
+    }
     console.error('❌ Error fetching price history:', error);
     return null;
+  } finally {
+    priceRequestAbortController = null;
   }
 }
 
@@ -232,29 +256,30 @@ function createValidatorsChart(historyData) {
 
 function createPriceChart(priceHistory, range = '7') {
   const canvas = document.getElementById('priceChart');
-  if (!canvas || !priceHistory || !Array.isArray(priceHistory) || priceHistory.length === 0) return;
+  if (!canvas || !priceHistory || !Array.isArray(priceHistory) || priceHistory.length === 0) {
+    console.warn('⚠️  Cannot create price chart: invalid data');
+    return;
+  }
   
   const ctx = canvas.getContext('2d');
   
-  // Format labels based on range - mit besserer Logik
+  // Format labels based on range
   const labels = priceHistory.map((p, index) => {
     const date = new Date(p[0]);
     
-    // Bei MAX/1Y: nur jeden X-ten Datenpunkt labeln
     if (range === 'max' || range === '365') {
-      const step = Math.ceil(priceHistory.length / 12); // Max 12 Labels
+      const step = Math.ceil(priceHistory.length / 12);
       if (index % step !== 0 && index !== priceHistory.length - 1) {
-        return ''; // Leeres Label
+        return '';
       }
       return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
     } else if (range === '30') {
-      const step = Math.ceil(priceHistory.length / 10); // Max 10 Labels
+      const step = Math.ceil(priceHistory.length / 10);
       if (index % step !== 0 && index !== priceHistory.length - 1) {
         return '';
       }
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     } else {
-      // 7D: alle Labels
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
   });
@@ -341,17 +366,23 @@ function createPriceChart(priceHistory, range = '7') {
     }
   });
   
-  canvas.closest('.dashboard-card').classList.remove('loading');
+  canvas.closest('.dashboard-card')?.classList.remove('loading');
 }
 
-// ===== Time Range Toggle =====
+// ===== Time Range Toggle mit Debouncing =====
 function setupTimeRangeToggle() {
   const buttons = document.querySelectorAll('.time-btn');
   
   buttons.forEach(btn => {
     btn.addEventListener('click', async () => {
+      // Prevent double-clicks
+      if (btn.disabled) return;
+      
       // Update active state
-      buttons.forEach(b => b.classList.remove('active'));
+      buttons.forEach(b => {
+        b.classList.remove('active');
+        b.disabled = true; // Disable während Request läuft
+      });
       btn.classList.add('active');
       
       // Get range
@@ -359,14 +390,38 @@ function setupTimeRangeToggle() {
       currentPriceRange = range;
       
       // Show loading
-      const card = document.querySelector('#priceChart').closest('.dashboard-card');
-      card.classList.add('loading');
-      
-      // Fetch new data
-      const priceHistory = await fetchPriceHistory(range);
-      if (priceHistory) {
-        createPriceChart(priceHistory, range);
+      const card = document.querySelector('#priceChart')?.closest('.dashboard-card');
+      if (card) {
+        card.classList.add('loading');
       }
+      
+      // Clear previous timeout
+      if (priceRequestTimeout) {
+        clearTimeout(priceRequestTimeout);
+      }
+      
+      // Debounce: warte 300ms bevor Request
+      priceRequestTimeout = setTimeout(async () => {
+        try {
+          const priceHistory = await fetchPriceHistory(range);
+          if (priceHistory) {
+            createPriceChart(priceHistory, range);
+          } else {
+            console.warn('⚠️  No price history received');
+            if (card) {
+              card.classList.remove('loading');
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error loading price chart:', error);
+          if (card) {
+            card.classList.remove('loading');
+          }
+        } finally {
+          // Re-enable buttons
+          buttons.forEach(b => b.disabled = false);
+        }
+      }, 300);
     });
   });
 }
@@ -375,11 +430,11 @@ function setupTimeRangeToggle() {
 async function refreshDashboard() {
   console.log('🔄 Refreshing dashboard data...');
   
-  const [networkData, historyData, taoPrice, priceHistory] = await Promise.all([
+  // Nur Network/History refreshen, Price Chart nur bei manuellem Toggle
+  const [networkData, historyData, taoPrice] = await Promise.all([
     fetchNetworkData(),
     fetchHistoryData(),
-    fetchTaoPrice(),
-    fetchPriceHistory(currentPriceRange)
+    fetchTaoPrice()
   ]);
   
   updateNetworkStats(networkData);
@@ -387,10 +442,6 @@ async function refreshDashboard() {
   
   if (historyData && (!validatorsChart || historyData.length > 0)) {
     createValidatorsChart(historyData);
-  }
-  
-  if (priceHistory && (!priceChart || priceHistory.length > 0)) {
-    createPriceChart(priceHistory, currentPriceRange);
   }
   
   console.log('✅ Dashboard updated');
@@ -401,8 +452,27 @@ async function initDashboard() {
   console.log('🚀 Initializing Bittensor-Labs Dashboard...');
   
   setupTimeRangeToggle();
-  await refreshDashboard();
   
+  // Initial load (inkl. Price Chart)
+  const [networkData, historyData, taoPrice, priceHistory] = await Promise.all([
+    fetchNetworkData(),
+    fetchHistoryData(),
+    fetchTaoPrice(),
+    fetchPriceHistory(currentPriceRange)
+  ]);
+  
+  updateNetworkStats(networkData);
+  updateTaoPrice(taoPrice);
+  
+  if (historyData) {
+    createValidatorsChart(historyData);
+  }
+  
+  if (priceHistory) {
+    createPriceChart(priceHistory, currentPriceRange);
+  }
+  
+  // Auto-refresh ohne Price Chart (nur Network Stats)
   setInterval(refreshDashboard, REFRESH_INTERVAL);
   
   console.log(`⏱️  Auto-refresh: every ${REFRESH_INTERVAL / 1000}s`);
