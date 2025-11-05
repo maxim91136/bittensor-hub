@@ -465,9 +465,9 @@ async function refreshDashboard() {
 // ===== Initialization =====
 async function initDashboard() {
   console.log('🚀 Initializing Bittensor-Labs Dashboard...');
-  
+
   setupTimeRangeToggle();
-  
+
   // Initial load (inkl. Price Chart)
   const [networkData, historyData, taoPrice, priceHistory] = await Promise.all([
     fetchNetworkData(),
@@ -475,21 +475,24 @@ async function initDashboard() {
     fetchTaoPrice(),
     fetchPriceHistory(currentPriceRange)
   ]);
-  
+
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
-  
+
   if (historyData) {
     createValidatorsChart(historyData);
   }
-  
+
+  const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
+
   if (priceHistory) {
     createPriceChart(priceHistory, currentPriceRange);
+  } else {
+    // ensure spinner clears even on failure/rate-limit
+    priceCard?.classList.remove('loading');
   }
-  
-  // Auto-refresh ohne Price Chart (nur Network Stats)
+
   setInterval(refreshDashboard, REFRESH_INTERVAL);
-  
   console.log(`⏱️  Auto-refresh: every ${REFRESH_INTERVAL / 1000}s`);
 }
 
