@@ -133,7 +133,8 @@ async function fetchPriceHistory(range = '7') {
   const cached = getCachedPrice?.(key);
   if (cached) return cached;
 
-  // Weniger Punkte abfragen: daily für lange Zeiträume
+  // Build endpoint: no interval for 7D (CoinGecko liefert automatisch hourly),
+  // daily für längere Zeiträume (weniger Punkte)
   const endpoint =
     key === 'max'
       ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=max&interval=daily`
@@ -141,13 +142,22 @@ async function fetchPriceHistory(range = '7') {
       ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=365&interval=daily`
       : key === '30'
       ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=30&interval=daily`
-      : `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=7&interval=hourly`;
+      : `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=7`; // <- no interval
 
-  const res = await fetch(endpoint, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
-  const data = await res.json();
-  setCachedPrice?.(key, data.prices);
-  return data.prices;
+  try {
+    const res = await fetch(endpoint, { cache: 'no-store' });
+    if (!res.ok) {
+      console.warn('⚠️ CoinGecko response:', res.status, res.statusText);
+      return null;
+    }
+    const data = await res.json();
+    if (!data?.prices?.length) return null;
+    setCachedPrice?.(key, data.prices);
+    return data.prices;
+  } catch (e) {
+    console.error('❌ fetchPriceHistory failed:', e);
+    return null;
+  }
 }
 
 // ===== UI Updates =====
@@ -468,27 +478,23 @@ async function initDashboard() {
 
   setupTimeRangeToggle();
 
-  // Initial load (inkl. Price Chart)
-  const [networkData, historyData, taoPrice, priceHistory] = await Promise.all([
+  // Erst Network/History/Price (Spot) laden – robust gegen CoinGecko-Fehler
+  const [networkData, historyData, taoPrice] = await Promise.all([
     fetchNetworkData(),
     fetchHistoryData(),
-    fetchTaoPrice(),
-    fetchPriceHistory(currentPriceRange)
+    fetchTaoPrice()
   ]);
 
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
+  if (historyData) createValidatorsChart(historyData);
 
-  if (historyData) {
-    createValidatorsChart(historyData);
-  }
-
+  // Danach Price-History separat, Spinner immer räumen
   const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
-
+  const priceHistory = await fetchPriceHistory(currentPriceRange);
   if (priceHistory) {
     createPriceChart(priceHistory, currentPriceRange);
   } else {
-    // ensure spinner clears even on failure/rate-limit
     priceCard?.classList.remove('loading');
   }
 
