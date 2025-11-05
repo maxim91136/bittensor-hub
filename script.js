@@ -157,14 +157,11 @@ function updateNetworkStats(data) {
   const neurons = document.getElementById('totalNeurons');
   if (neurons) neurons.textContent = formatFull(data.totalNeurons);
 
-  // Emission: robust fallback (API könnte emission oder emissionRate liefern)
-  const emissionValue = data.emission ?? data.emissionRate ?? 7200;
-  const emissionEl =
-    document.getElementById('emission') ||
-    document.getElementById('emissionRate') ||
-    document.querySelector('[data-kpi="emission"] .stat-value');
-
-  if (emissionEl) emissionEl.textContent = `${formatFull(emissionValue)} τ/day`;
+  // FIX: Emission kommt als String "7,200" – direkt anzeigen, nicht formatieren
+  const emissionEl = document.getElementById('emission');
+  if (emissionEl && data.emission) {
+    emissionEl.textContent = `${data.emission} τ/day`;
+  }
 }
 
 function updateTaoPrice(priceData) {
