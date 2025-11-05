@@ -14,13 +14,15 @@ let isLoadingPrice = false; // Einfacher Lock
 
 // ===== Utility Functions =====
 function formatNumber(num) {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(2) + 'M';
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'K';
-  }
-  return num.toLocaleString('en-US');
+  if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return Number(num).toLocaleString('en-US');
+}
+
+// Neu: volle Zahl (für alle Tiles außer Max Supply)
+function formatFull(num) {
+  if (num === null || num === undefined || isNaN(num)) return '—';
+  return Math.round(Number(num)).toLocaleString('en-US');
 }
 
 function formatPrice(price) {
@@ -156,31 +158,23 @@ function setPriceRangeNote(range) {
 // ===== UI Updates =====
 function updateNetworkStats(data) {
   if (!data) return;
-  
+
   const blockHeight = document.getElementById('blockHeight');
-  if (blockHeight) {
-    blockHeight.textContent = formatNumber(data.blockHeight);
-  }
-  
+  if (blockHeight) blockHeight.textContent = formatFull(data.blockHeight);
+
   const validators = document.getElementById('validators');
-  if (validators) {
-    validators.textContent = formatNumber(data.validators);
-  }
-  
+  if (validators) validators.textContent = formatFull(data.validators);
+
+  // Max Supply bleibt "21M τ" (keine Änderung hier)
+
   const subnets = document.getElementById('subnets');
-  if (subnets) {
-    subnets.textContent = data.subnets;
-  }
-  
+  if (subnets) subnets.textContent = formatFull(data.subnets);
+
   const emission = document.getElementById('emission');
-  if (emission) {
-    emission.textContent = data.emission + ' τ/day';
-  }
-  
+  if (emission) emission.textContent = `${formatFull(data.emission)} τ/day`;
+
   const neurons = document.getElementById('totalNeurons');
-  if (neurons) {
-    neurons.textContent = formatNumber(data.totalNeurons);
-  }
+  if (neurons) neurons.textContent = formatFull(data.totalNeurons);
 }
 
 function updateTaoPrice(priceData) {
@@ -199,9 +193,8 @@ function updateTaoPrice(priceData) {
 function createValidatorsChart(historyData) {
   const canvas = document.getElementById('validatorsChart');
   if (!canvas || !historyData || !Array.isArray(historyData) || historyData.length === 0) return;
-  
   const ctx = canvas.getContext('2d');
-  
+
   const labels = historyData.map(d => {
     const date = new Date(d.t * 1000);
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -255,19 +248,13 @@ function createValidatorsChart(historyData) {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { 
-            color: '#9ca3af',
-            maxTicksLimit: 6
-          }
+          ticks: { color: '#9ca3af', maxTicksLimit: 6 }
         },
         y: {
-          grid: { 
-            color: 'rgba(255,255,255,0.05)',
-            drawBorder: false
-          },
-          ticks: { 
+          grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+          ticks: {
             color: '#9ca3af',
-            callback: (value) => formatNumber(value)
+            callback: (value) => formatFull(value) // volle Zahlen
           }
         }
       },

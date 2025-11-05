@@ -327,6 +327,17 @@ body {
   word-break: break-word;
 }
 
+/* Slightly smaller font for KPI numbers (not labels) */
+#blockHeight,
+#validators,
+#subnets,
+#totalNeurons,
+#emission {
+  font-size: 0.92em;        /* ~8% kleiner */
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+}
+
 /* ---- Charts (Dynamisch) ---- */
 .dashboard-grid {
   display: grid;
