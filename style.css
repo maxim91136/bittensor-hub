@@ -184,7 +184,7 @@ body {
   padding: 20px 16px;
 }
 
-/* ---- Stats Grid: 2x2 immer ---- */
+/* ---- Stats Grid: 2x3 auf Desktop, 2x2 auf Tablet, 1 Spalte auf Mobile ---- */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -192,10 +192,15 @@ body {
   margin-bottom: 20px;
 }
 
-/* Nur extrem kleine Screens: 1 Spalte */
-@media (max-width: 359px) {
+@media (max-width: 768px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr); /* 2x3 auch auf Tablet */
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr; /* Mobile: 1 Spalte */
   }
 }
 

@@ -50,18 +50,6 @@
     </div>
     
     <div class="header-actions">
-      <div class="price-pill" aria-live="polite" title="Total Active Neurons">
-        <span class="price-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-            <path d="M12 9v4"/>
-            <circle cx="12" cy="17" r="1"/>
-            <path d="M7 13h10"/>
-          </svg>
-        </span>
-        <span id="totalNeurons" class="skeleton-text">Loading...</span>
-      </div>
-      
       <div class="price-pill" id="taoPricePill" title="TAO Price (USD)">
         <span class="price-icon">τ</span>
         <span id="taoPrice">$376.25</span>
@@ -137,6 +125,40 @@
           <span class="info-badge" data-tooltip="Daily TAO emission (1 τ per block)">ⓘ</span>
         </div>
         <div class="stat-value" id="emission">7,200 τ/day</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+          <path d="M12 2a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+          <path d="M12 9v4"/>
+          <circle cx="12" cy="17" r="1"/>
+          <path d="M7 13h10"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">
+          Total Neurons
+          <span class="info-badge" data-tooltip="All active neurons across subnets">ⓘ</span>
+        </div>
+        <div class="stat-value" id="totalNeurons">32.664</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 6v6l4 2"></path>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">
+          Total Supply
+          <span class="info-badge" data-tooltip="Maximum 21 million TAO tokens">ⓘ</span>
+        </div>
+        <div class="stat-value" id="totalSupply">~7.1M τ</div>
       </div>
     </div>
   </div>
