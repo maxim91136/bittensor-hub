@@ -177,7 +177,7 @@ body {
   padding: 20px 16px;
 }
 
-/* ---- Stats Grid: 2x3 auf Desktop, 2x2 auf Tablet, 1 Spalte auf Mobile ---- */
+/* ---- Stats Grid: Immer 2 Spalten (Desktop + Mobile) ---- */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -185,15 +185,31 @@ body {
   margin-bottom: 20px;
 }
 
-@media (max-width: 768px) {
+/* Nur extrem kleine Screens (< 360px): 1 Spalte */
+@media (max-width: 359px) {
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2x3 auch auf Tablet */
+    grid-template-columns: 1fr;
   }
 }
 
+/* Mobile: kleinere Schrift in Kacheln */
 @media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr; /* Mobile: 1 Spalte */
+  .stat-card {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+  }
+  
+  .stat-value {
+    font-size: 1.3rem;
   }
 }
 
