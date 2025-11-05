@@ -25,6 +25,31 @@ function formatFull(num) {
   return Math.round(Number(num)).toLocaleString('en-US');
 }
 
+// Update: robust emission selector
+function updateNetworkStats(data) {
+  if (!data) return;
+
+  const blockHeight = document.getElementById('blockHeight');
+  if (blockHeight) blockHeight.textContent = formatFull(data.blockHeight);
+
+  const validators = document.getElementById('validators');
+  if (validators) validators.textContent = formatFull(data.validators);
+
+  const subnets = document.getElementById('subnets');
+  if (subnets) subnets.textContent = formatFull(data.subnets);
+
+  const neurons = document.getElementById('totalNeurons');
+  if (neurons) neurons.textContent = formatFull(data.totalNeurons);
+
+  // Emission (support both #emission and #emissionRate)
+  const emissionEl =
+    document.getElementById('emission') ||
+    document.getElementById('emissionRate') ||
+    document.querySelector('[data-kpi="emission"] .stat-value');
+
+  if (emissionEl) emissionEl.textContent = `${formatFull(data.emission)} τ/day`;
+}
+
 function formatPrice(price) {
   return `$${price.toFixed(2)}`;
 }
@@ -165,16 +190,19 @@ function updateNetworkStats(data) {
   const validators = document.getElementById('validators');
   if (validators) validators.textContent = formatFull(data.validators);
 
-  // Max Supply bleibt "21M τ" (keine Änderung hier)
-
   const subnets = document.getElementById('subnets');
   if (subnets) subnets.textContent = formatFull(data.subnets);
 
-  const emission = document.getElementById('emission');
-  if (emission) emission.textContent = `${formatFull(data.emission)} τ/day`;
-
   const neurons = document.getElementById('totalNeurons');
   if (neurons) neurons.textContent = formatFull(data.totalNeurons);
+
+  // Emission (support both #emission and #emissionRate)
+  const emissionEl =
+    document.getElementById('emission') ||
+    document.getElementById('emissionRate') ||
+    document.querySelector('[data-kpi="emission"] .stat-value');
+
+  if (emissionEl) emissionEl.textContent = `${formatFull(data.emission)} τ/day`;
 }
 
 function updateTaoPrice(priceData) {

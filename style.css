@@ -327,6 +327,13 @@ body {
   word-break: break-word;
 }
 
+/* Make all stat numbers slightly smaller (incl. Max Supply) */
+.stat-card .stat-value {
+  font-size: 0.92em;       /* ~8% smaller */
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+}
+
 /* Slightly smaller font for KPI numbers (not labels) */
 #blockHeight,
 #validators,
