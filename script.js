@@ -170,7 +170,8 @@ function updateTaoPrice(priceData) {
     priceEl.classList.remove('skeleton-text');
     if (changeEl && priceData.change24h !== undefined && priceData.change24h !== null) {
       const change = priceData.change24h;
-      changeEl.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+      // Variante 1: 24h explizit anzeigen
+      changeEl.textContent = `${change > 0 ? '↑' : '↓'}${change.toFixed(2)}% (24h)`;
       changeEl.style.display = 'inline';
       changeEl.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
     }
