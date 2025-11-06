@@ -348,7 +348,7 @@ body {
 /* ---- Charts (Dynamisch) ---- */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-md);
   margin-top: var(--space-lg);
 }
@@ -404,7 +404,7 @@ body {
 
 .chart-container {
   position: relative;
-  height: clamp(160px, 30vw, 200px);
+  height: clamp(180px, 35vw, 280px);
 }
 
 .chart-skeleton {
@@ -441,7 +441,6 @@ body {
 
 /* ---- Disclaimer Card (Subtle & Compact) ---- */
 .disclaimer-card {
-  grid-column: 1 / -1;
   background: rgba(255, 255, 255, 0.02);
   border-color: rgba(255, 255, 255, 0.06);
   border-left: 2px solid rgba(255, 107, 53, 0.3);
