@@ -12,37 +12,30 @@ let currentPriceRange = '7';
 let isLoadingPrice = false;
 
 // Halving State
-let halvingDate = null;
-let halvingInterval = null;
-let circulatingSupply = null; // ✅ State für Circ Supply
+window.halvingDate = null;
+window.halvingInterval = null;
+window.circulatingSupply = null;
 
 // ===== Utility Functions =====
 function animateValue(element, start, end, duration = 1000) {
   const startTime = performance.now();
   const isFloat = end % 1 !== 0;
-  
   function update(currentTime) {
     const elapsed = currentTime - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    
-    // Easing function (ease-out-cubic)
     const easeProgress = 1 - Math.pow(1 - progress, 3);
-    
     const current = start + (end - start) * easeProgress;
-    
     if (isFloat) {
       element.textContent = formatNumber(current);
     } else {
       element.textContent = formatFull(Math.round(current));
     }
-    
     if (progress < 1) {
       requestAnimationFrame(update);
     } else {
       element.textContent = isFloat ? formatNumber(end) : formatFull(end);
     }
   }
-  
   requestAnimationFrame(update);
 }
 
@@ -66,17 +59,14 @@ function animatePriceChange(element, newPrice) {
     lastPrice = newPrice;
     return;
   }
-  
   if (newPrice > lastPrice) {
     element.classList.add('blink-green');
   } else if (newPrice < lastPrice) {
     element.classList.add('blink-red');
   }
-  
   setTimeout(() => {
     element.classList.remove('blink-green', 'blink-red');
   }, 600);
-  
   lastPrice = newPrice;
 }
 
@@ -117,9 +107,7 @@ async function fetchNetworkData() {
     const res = await fetch(`${API_BASE}/network`);
     if (!res.ok) throw new Error(`Network API error: ${res.status}`);
     const data = await res.json();
-    
     console.log('🔍 Backend data keys:', Object.keys(data)); // DEBUG
-    
     return data;
   } catch (err) {
     console.error('❌ fetchNetworkData:', err);
@@ -127,7 +115,6 @@ async function fetchNetworkData() {
   }
 }
 
-// ===== Data Fetching =====
 async function fetchTaoPrice() {
   const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bittensor&vs_currencies=usd&include_24hr_change=true';
   try {
@@ -146,14 +133,12 @@ async function fetchPriceHistory(range = '7') {
   const key = normalizeRange(range);
   const cached = getCachedPrice?.(key);
   if (cached) return cached;
-
   const endpoint =
     key === '365'
       ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=365&interval=daily`
       : key === '30'
       ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=30&interval=daily`
       : `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=7`;
-
   try {
     const res = await fetch(endpoint, { cache: 'no-store' });
     if (!res.ok) return null;
@@ -172,7 +157,6 @@ function updateTaoPrice(priceData) {
   if (priceData.price) {
     priceEl.textContent = `$${priceData.price.toFixed(2)}`;
     priceEl.classList.remove('skeleton-text');
-    // 24h Change anzeigen
     if (changeEl && priceData.change24h !== undefined && priceData.change24h !== null) {
       const change = priceData.change24h;
       changeEl.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
@@ -200,12 +184,10 @@ function updateNetworkStats(data) {
     const currentValue = parseInt(elements.blockHeight.textContent.replace(/,/g, '')) || 0;
     animateValue(elements.blockHeight, currentValue, data.blockHeight, 800);
   }
-  
   if (data.subnets !== undefined) {
     const currentValue = parseInt(elements.subnets.textContent.replace(/,/g, '')) || 0;
     animateValue(elements.subnets, currentValue, data.subnets, 600);
   }
-  
   if (data.emission !== undefined) {
     const rate = typeof data.emission === 'string' 
       ? parseInt(data.emission.replace(/,/g, '')) 
@@ -213,23 +195,29 @@ function updateNetworkStats(data) {
     const currentValue = parseInt(elements.emission.textContent.replace(/[^0-9]/g, '')) || 0;
     animateValue(elements.emission, currentValue, rate, 800);
   }
-  
   if (data.totalNeurons !== undefined) {
     const currentValue = parseInt(elements.totalNeurons.textContent.replace(/,/g, '')) || 0;
     animateValue(elements.totalNeurons, currentValue, data.totalNeurons, 1000);
   }
-  
   if (data.validators !== undefined) {
     const currentValue = parseInt(elements.validators.textContent.replace(/,/g, '')) || 0;
     animateValue(elements.validators, currentValue, data.validators, 800);
   }
-  
+
   // Circulating Supply dynamisch berechnen
   const emissionPerBlock = 1; // TAO pro Block
-  const circulatingSupply = typeof data.blockHeight === 'number' && data.blockHeight > 0
+  let circulatingSupply = typeof data.blockHeight === 'number' && data.blockHeight > 0
     ? data.blockHeight * emissionPerBlock
     : null;
 
+  // Kachel updaten
+  const supplyEl = document.getElementById('circulatingSupply');
+  if (supplyEl && circulatingSupply) {
+    const current = (circulatingSupply / 1_000_000).toFixed(2);
+    supplyEl.textContent = `${current}M / 21M τ`;
+  }
+
+  // Setze global für Countdown!
   window.circulatingSupply = circulatingSupply;
 
   // Halving-Berechnung
@@ -244,10 +232,9 @@ function updateNetworkStats(data) {
     ? new Date(Date.now() + daysToHalving * 24 * 60 * 60 * 1000)
     : null;
 
+  // Jetzt Countdown starten
   startHalvingCountdown();
 }
-
-// ✅ ENTFERNT: createValidatorsChart (no validator chart)
 
 // Price chart stays unchanged
 function createPriceChart(priceHistory, range = '7') {
@@ -256,13 +243,9 @@ function createPriceChart(priceHistory, range = '7') {
     console.warn('⚠️  Cannot create price chart: invalid data');
     return;
   }
-  
   const ctx = canvas.getContext('2d');
-  
-  // Format labels based on range
   const labels = priceHistory.map((p, index) => {
     const date = new Date(p[0]);
-    
     if (range === 'max' || range === '365') {
       const step = Math.ceil(priceHistory.length / 12);
       if (index % step !== 0 && index !== priceHistory.length - 1) {
@@ -279,13 +262,10 @@ function createPriceChart(priceHistory, range = '7') {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
   });
-  
   const prices = priceHistory.map(p => p[1]);
-  
   if (priceChart) {
     priceChart.destroy();
   }
-  
   priceChart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -310,7 +290,6 @@ function createPriceChart(priceHistory, range = '7') {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        // Decimation für große Datensätze
         decimation: { enabled: true, algorithm: 'lttb', samples: 400 },
         tooltip: {
           mode: 'index',
@@ -363,7 +342,6 @@ function createPriceChart(priceHistory, range = '7') {
       }
     }
   });
-  
   canvas.closest('.dashboard-card')?.classList.remove('loading');
   setPriceRangeNote(range);
 }
@@ -382,27 +360,20 @@ function setupTimeRangeToggle() {
   const buttons = document.querySelectorAll('.time-btn');
   buttons.forEach(btn => {
     btn.addEventListener('click', async (e) => {
-      // Simple Lock: verhindert parallele Requests
       if (isLoadingPrice) {
         console.log('⏳ Already loading, please wait...');
         return;
       }
-      
-      // Update active state
       buttons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      
       const raw = e.currentTarget?.dataset?.range;
-      const norm = normalizeRange(raw); // '7' | '30' | '365'
+      const norm = normalizeRange(raw);
       currentPriceRange = norm;
-      
       const card = document.querySelector('#priceChart')?.closest('.dashboard-card');
       if (card) {
         card.classList.add('loading');
       }
-      
       isLoadingPrice = true;
-      
       try {
         const priceHistory = await fetchPriceHistory(currentPriceRange);
         if (priceHistory) {
@@ -433,80 +404,60 @@ function setupMaxTooltip() {
 // ===== Data Refresh =====
 async function refreshDashboard() {
   console.log('🔄 Refreshing dashboard data...');
-  
-  // Only network + spot price
   const [networkData, taoPrice] = await Promise.all([
     fetchNetworkData(),
     fetchTaoPrice()
   ]);
-  
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
-
   console.log('✅ Dashboard updated');
 }
 
 // ===== Initialization =====
 async function initDashboard() {
   console.log('🚀 Initializing Bittensor-Labs Dashboard...');
-
   setupMaxTooltip();
   setupTimeRangeToggle();
-
-  // Initial load without validators/history
   const [networkData, taoPrice] = await Promise.all([
     fetchNetworkData(),
     fetchTaoPrice()
   ]);
-
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
-
-  // Load price history
   const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
   const priceHistory = await fetchPriceHistory(currentPriceRange);
   if (priceHistory) {
     createPriceChart(priceHistory, currentPriceRange);
   }
-  
-  // Start halving countdown if applicable
   startHalvingCountdown();
 }
 
 // ===== Halving Countdown =====
 function calculateHalvingDate(circulatingSupply, emissionRate) {
-  const HALVING_SUPPLY = 10_500_000; // 50% of 21M
+  const HALVING_SUPPLY = 10_500_000;
   const remaining = HALVING_SUPPLY - circulatingSupply;
-  
   if (remaining <= 0) return null;
-  
   const daysLeft = remaining / emissionRate;
   const msLeft = daysLeft * 24 * 60 * 60 * 1000;
-  
   return new Date(Date.now() + msLeft);
 }
 
 function updateHalvingCountdown() {
   const countdownEl = document.getElementById('halvingCountdown');
-  if (!countdownEl || !halvingDate) return;
-  
+  if (!countdownEl || !window.halvingDate) return;
   const now = Date.now();
-  const distance = halvingDate.getTime() - now;
-  
+  const distance = window.halvingDate.getTime() - now;
   if (distance < 0) {
     countdownEl.textContent = 'Halving Live! 🎉';
-    if (halvingInterval) {
-      clearInterval(halvingInterval);
-      halvingInterval = null;
+    if (window.halvingInterval) {
+      clearInterval(window.halvingInterval);
+      window.halvingInterval = null;
     }
     return;
   }
-  
   const days = Math.floor(distance / (1000 * 60 * 60 * 24));
   const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  
-  // Compact format
   if (days > 0) {
     countdownEl.textContent = `Halving in ${days}d ${hours}h`;
   } else if (hours > 0) {
@@ -523,49 +474,13 @@ function startHalvingCountdown() {
     countdownEl.textContent = 'Calculating...';
     return;
   }
-
   if (window.halvingInterval) {
     clearInterval(window.halvingInterval);
     window.halvingInterval = null;
   }
-
-  // Emission aus DOM holen
-  const emissionEl = document.getElementById('emission');
-  const emissionRate = emissionEl 
-    ? parseFloat(emissionEl.textContent.replace(/[^0-9]/g, '')) 
-    : 7200;
-
-  // Halving-Datum berechnen
-  window.halvingDate = calculateHalvingDate(window.circulatingSupply, emissionRate);
-
-  if (!window.halvingDate) {
-    countdownEl.textContent = 'Halving Info N/A';
-    return;
-  }
-
   updateHalvingCountdown();
-
   window.halvingInterval = setInterval(updateHalvingCountdown, 1000);
 }
 
 // Initialisierung
 initDashboard();
-
-// ===== Polling =====
-// setInterval(refreshDashboard, REFRESH_INTERVAL);
-
-// Neue dynamische Halving-Berechnung
-function calculateHalvingDateDynamic(blockHeight, emissionPerDay) {
-  // Fallback: Nutze die Standard-Halving-Berechnung
-  const HALVING_SUPPLY = 10_500_000;
-  const emissionPerBlock = 1;
-  const circulatingSupply = blockHeight * emissionPerBlock;
-  const remaining = HALVING_SUPPLY - circulatingSupply;
-  if (remaining <= 0) return { halvingDate: null, circulatingSupply };
-  const daysLeft = remaining / emissionPerDay;
-  const msLeft = daysLeft * 24 * 60 * 60 * 1000;
-  return {
-    halvingDate: new Date(Date.now() + msLeft),
-    circulatingSupply
-  };
-}
