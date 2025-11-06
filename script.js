@@ -235,8 +235,9 @@ function updateNetworkStats(data) {
     subnets: document.getElementById('subnets'),
     emission: document.getElementById('emission'),
     totalNeurons: document.getElementById('totalNeurons'),
-    validators: document.getElementById('validators')
-    // ✅ ENTFERNT: circulatingSupply (kommt jetzt von CoinGecko)
+    validators: document.getElementById('validators'),
+    circulatingSupply: document.getElementById('circulatingSupply'),
+    progress: document.querySelector('.stat-progress')
   };
 
   if (data.blockHeight !== undefined) {
@@ -265,6 +266,30 @@ function updateNetworkStats(data) {
   if (data.validators !== undefined) {
     const currentValue = parseInt(elements.validators.textContent.replace(/,/g, '')) || 0;
     animateValue(elements.validators, currentValue, data.validators, 800);
+  }
+  
+  // Dynamische Circulating Supply & Halving
+  if (data.blockHeight && data.emission) {
+    const emissionPerDay = typeof data.emission === 'string'
+      ? parseInt(data.emission.replace(/,/g, ''))
+      : data.emission;
+
+    const { halvingDate, circulatingSupply } = calculateHalvingDateDynamic(data.blockHeight, emissionPerDay);
+
+    // Circulating Supply Card
+    if (elements.circulatingSupply) {
+      const current = (circulatingSupply / 1_000_000).toFixed(2);
+      elements.circulatingSupply.textContent = `${current}M / 21M τ`;
+    }
+    if (elements.progress) {
+      const percent = ((circulatingSupply / 21_000_000) * 100).toFixed(1);
+      elements.progress.textContent = `${percent}%`;
+    }
+
+    // Halving Countdown
+    window.circulatingSupply = circulatingSupply; // global für Countdown
+    window.halvingDate = halvingDate;
+    startHalvingCountdown();
   }
 }
 
