@@ -1,6 +1,5 @@
 /* ---- Dark UI + Fluid Design System ---- */
 :root {
-  /* Colors */
   --bg: #0a0e12;
   --surface: #111318;
   --border: rgba(255,255,255,0.08);
@@ -10,23 +9,17 @@
   --accent: #22c55e;
   --accent-dim: #16a34a;
   --glow: rgba(34,197,94,0.15);
-  
-  /* Fluid Spacing */
   --space-xs: clamp(4px, 1vw, 8px);
   --space-sm: clamp(8px, 2vw, 12px);
   --space-md: clamp(12px, 2.5vw, 16px);
   --space-lg: clamp(16px, 3vw, 20px);
   --space-xl: clamp(20px, 4vw, 40px);
-  
-  /* Fluid Typography */
   --text-xs: clamp(0.6rem, 1.5vw, 0.7rem);
   --text-sm: clamp(0.7rem, 1.8vw, 0.85rem);
   --text-base: clamp(0.8rem, 2vw, 1rem);
   --text-lg: clamp(0.95rem, 2.5vw, 1.15rem);
   --text-xl: clamp(1rem, 2.8vw, 1.25rem);
   --text-2xl: clamp(1.15rem, 3.5vw, 1.6rem);
-  
-  /* Fluid Sizes */
   --icon-sm: clamp(28px, 6vw, 40px);
   --badge-size: clamp(14px, 3vw, 18px);
   --pill-padding: clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px);
@@ -35,14 +28,8 @@
   --gap-md: clamp(8px, 2vw, 12px);
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-html {
-  text-size-adjust: 100%;
-}
-
+*, *::before, *::after { box-sizing: border-box; }
+html { text-size-adjust: 100%; }
 body {
   margin: 0;
   padding: 0;
@@ -56,7 +43,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ---- Header (Fluid) ---- */
+/* ---- Header: Logo oben, Pills darunter, immer zentriert ---- */
 .site-header {
   position: sticky;
   top: 0;
@@ -91,14 +78,13 @@ body {
   width: 100%;
 }
 
-/* Stelle sicher, dass Pills nicht zu schmal werden */
 .halving-pill,
-.header-actions .price-pill {
+.price-pill {
+  min-width: 120px;
   flex-shrink: 1;
-  min-width: 120px; /* Mindestbreite, um Stapeln zu verhindern */
 }
 
-/* Pills sollen niemals umbrechen */
+/* Pills niemals umbrechen lassen */
 @media (max-width: 400px) {
   .pills-row {
     gap: 6px;
@@ -306,31 +292,6 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* Mobile Header Anpassung: Pills bleiben nebeneinander, Logo zentriert oben */
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .logo-section {
-    order: -1;
-    margin-bottom: var(--space-sm);
-  }
-  
-  .header-actions {
-    justify-content: center;
-  }
-  
-  /* Auf sehr kleinen Screens (<480px) stapeln */
-  @media (max-width: 480px) {
-    .header-actions {
-      flex-direction: column;
-      gap: var(--gap-sm);
-    }
-  }
-}
-
 /* ---- Dashboard (Container Query Ready) ---- */
 .dashboard {
   container-type: inline-size;
@@ -447,7 +408,7 @@ body {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.18s;
-  max-width: 240px; /* Reduziert für bessere Lesbarkeit */
+  max-width: 240px;
   text-align: left;
 }
 .dynamic-tooltip.visible {
