@@ -172,38 +172,40 @@ async function fetchPriceHistory(range = '7') {
 function updateNetworkStats(data) {
   const elements = {
     blockHeight: document.getElementById('blockHeight'),
-    // maxSupply: document.getElementById('maxSupply'), // ENTFERNT
     subnets: document.getElementById('subnets'),
     emission: document.getElementById('emission'),
     totalNeurons: document.getElementById('totalNeurons'),
     validators: document.getElementById('validators')
   };
 
-  if (data.block_height !== undefined) {
+  // ✅ KORRIGIERT: Nutze camelCase (wie Backend es zurückgibt)
+  if (data.blockHeight !== undefined) {
     const currentValue = parseInt(elements.blockHeight.textContent.replace(/,/g, '')) || 0;
-    animateValue(elements.blockHeight, currentValue, data.block_height, 800);
+    animateValue(elements.blockHeight, currentValue, data.blockHeight, 800);
   }
   
-  // MAX SUPPLY UPDATE ENTFERNT
-  
-  if (data.total_subnets !== undefined) {
+  if (data.subnets !== undefined) {
     const currentValue = parseInt(elements.subnets.textContent.replace(/,/g, '')) || 0;
-    animateValue(elements.subnets, currentValue, data.total_subnets, 600);
+    animateValue(elements.subnets, currentValue, data.subnets, 600);
   }
   
-  if (data.emission_rate !== undefined) {
+  if (data.emission !== undefined) {
+    // Parse "7,200" → 7200
+    const rate = typeof data.emission === 'string' 
+      ? parseInt(data.emission.replace(/,/g, '')) 
+      : data.emission;
     const currentValue = parseInt(elements.emission.textContent.replace(/[^0-9]/g, '')) || 0;
-    animateValue(elements.emission, currentValue, data.emission_rate, 800);
+    animateValue(elements.emission, currentValue, rate, 800);
   }
   
-  if (data.total_neurons !== undefined) {
+  if (data.totalNeurons !== undefined) {
     const currentValue = parseInt(elements.totalNeurons.textContent.replace(/,/g, '')) || 0;
-    animateValue(elements.totalNeurons, currentValue, data.total_neurons, 1000);
+    animateValue(elements.totalNeurons, currentValue, data.totalNeurons, 1000);
   }
   
-  if (data.active_validators !== undefined) {
+  if (data.validators !== undefined) {
     const currentValue = parseInt(elements.validators.textContent.replace(/,/g, '')) || 0;
-    animateValue(elements.validators, currentValue, data.active_validators, 800);
+    animateValue(elements.validators, currentValue, data.validators, 800);
   }
 }
 
