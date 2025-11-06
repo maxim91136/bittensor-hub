@@ -64,6 +64,7 @@ body {
   background: rgba(10, 14, 18, 0.95);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
+  animation: fadeInUp 0.6s ease-out;
 }
 
 .header-content {
@@ -189,9 +190,39 @@ body {
   border-radius: 4px;
 }
 
+.chart-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeleton 1.5s ease-in-out infinite;
+  border-radius: 8px;
+  opacity: 0.6;
+}
+
 @keyframes skeleton {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% { 
+    background-position: 200% 0;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% { 
+    background-position: -200% 0;
+    opacity: 0.6;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .blink-green {
@@ -227,6 +258,7 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
   gap: var(--gap-md);
   margin-bottom: var(--space-lg);
+  animation: fadeInUp 0.8s ease-out 0.1s both;
 }
 
 .stat-card {
@@ -288,7 +320,88 @@ body {
   box-shadow: 0 0 20px rgba(34,197,94,0.3);
 }
 
-/* ---- Charts (Glassmorphism) ---- */
+/* ---- Stat Card Content ---- */
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.stat-label {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+/* Info Badge with Tooltip */
+.info-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  cursor: help;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.info-badge:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.info-badge::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  padding: 6px 10px;
+  background: rgba(17, 19, 24, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+}
+
+.info-badge:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+/* ---- Charts (Dynamisch) ---- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
 .dashboard-card {
   background: rgba(17, 19, 24, 0.6);
   backdrop-filter: blur(12px);
@@ -371,6 +484,21 @@ body {
   background-size: 200% 100%;
   animation: skeleton 1.5s ease-in-out infinite;
   border-radius: 8px;
+  opacity: 0.6;
+}
+
+@keyframes skeleton {
+  0% { 
+    background-position: 200% 0;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% { 
+    background-position: -200% 0;
+    opacity: 0.6;
+  }
 }
 
 .dashboard-card:not(.loading) .chart-skeleton {
@@ -402,6 +530,7 @@ body {
   border-color: rgba(255, 255, 255, 0.06);
   border-left: 2px solid rgba(255, 107, 53, 0.3);
   padding: var(--space-md);
+  animation: fadeInUp 0.8s ease-out 0.3s both;
 }
 
 .disclaimer-header {
@@ -498,6 +627,7 @@ body {
   font-size: var(--text-xs);
   color: rgba(255, 255, 255, 0.4);
   border-top: 1px solid var(--border);
+  animation: fadeInUp 0.8s ease-out 0.4s both;
 }
 
 .site-footer p {
