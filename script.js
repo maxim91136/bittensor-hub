@@ -167,12 +167,21 @@ async function fetchPriceHistory(range = '7') {
 // ===== UI Updates =====
 function updateTaoPrice(priceData) {
   const priceEl = document.getElementById('taoPrice');
+  const changeEl = document.getElementById('priceChange');
   if (!priceEl) return;
   if (priceData.price) {
     priceEl.textContent = `$${priceData.price.toFixed(2)}`;
     priceEl.classList.remove('skeleton-text');
+    // 24h Change anzeigen
+    if (changeEl && priceData.change24h !== undefined && priceData.change24h !== null) {
+      const change = priceData.change24h;
+      changeEl.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+      changeEl.style.display = 'inline';
+      changeEl.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
+    }
   } else {
     priceEl.textContent = 'N/A';
+    if (changeEl) changeEl.style.display = 'none';
   }
 }
 
