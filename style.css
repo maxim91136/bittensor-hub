@@ -444,6 +444,10 @@ body {
   grid-column: 1 / -1;
   background: rgba(255, 107, 53, 0.03);
   border-color: rgba(255, 107, 53, 0.15);
+  /* Neu: linker Akzent + etwas mehr Luft */
+  border-left: 3px solid var(--brand);
+  padding-top: calc(var(--space-lg) - 2px);
+  padding-bottom: calc(var(--space-lg) - 2px);
 }
 
 .disclaimer-header {
@@ -454,21 +458,11 @@ body {
   color: var(--brand);
 }
 
-.disclaimer-header svg {
-  flex-shrink: 0;
-}
-
-.disclaimer-header h3 {
-  margin: 0;
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--text);
-}
-
 .disclaimer-content {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  text-align: left; /* explizit linksbündig */
 }
 
 .disclaimer-text {
@@ -485,7 +479,7 @@ body {
 
 .data-sources-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* etwas breiter */
   gap: var(--space-sm);
   padding: var(--space-md);
   background: rgba(255, 255, 255, 0.02);
