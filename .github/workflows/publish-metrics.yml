@@ -27,41 +27,41 @@ jobs:
           python .github/scripts/fetch_metrics.py
 
       - name: Build history array (last 24h)
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}   # ← Mappe auf richtiges Secret
         run: |
           if [ ! -f metrics.json ]; then
             echo "no metrics.json"
             exit 1
           fi
-          
-          # Download existing history
-          HISTORY_URL="https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/storage/kv/namespaces/${{ secrets.CF_KV_NAMESPACE_ID }}/values/history"
-          
-          curl -fsSL \
-            -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
-            "$HISTORY_URL" > history_old.json || echo "[]" > history_old.json
-          
-          # Append new metrics
-          NEW_ENTRY=$(cat metrics.json | jq -c .)
+
+          HISTORY_URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/history"
+
+          # Fetch existing history (404 = noch nicht vorhanden)
+          HTTP=$(curl -s -o history_old.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            "$HISTORY_URL" || true)
+
+          if [ "$HTTP" != "200" ]; then
+            echo "[]" > history_old.json
+          fi
+
+          NEW_ENTRY=$(jq -c . < metrics.json)
           jq --argjson new "$NEW_ENTRY" '. + [$new] | .[-96:]' history_old.json > history.json
-          
           echo "History entries: $(jq 'length' history.json)"
 
       - name: Push history to Cloudflare KV
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}   # ← gleiches Mapping
         run: |
           URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/history"
-          
-          if [ ! -f history.json ]; then
-            echo "no history.json"
-            exit 1
-          fi
-          
           curl -fsSL -X PUT \
             "$URL" \
-            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
             -H "Content-Type: application/json" \
             --data-binary @history.json
 
