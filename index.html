@@ -20,12 +20,8 @@
 <body>
 <header class="site-header">
   <div class="header-content">
-    <div class="halving-pill">
-      <span class="halving-icon">🔥</span>
-      <span id="halvingCountdown">Calculating...</span>
-    </div>
-    
     <div class="logo-section">
+      <!-- Logo bleibt unverändert -->
       <div class="logo">
         <span class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="22" height="22" role="img" focusable="false">
@@ -54,11 +50,19 @@
       </div>
     </div>
     
-    <div class="header-actions">
-      <div class="price-pill" id="taoPricePill" title="TAO Price (USD)">
-        <span class="price-icon">τ</span>
-        <span id="taoPrice" class="skeleton-text"></span>
-        <span id="priceChange" class="price-change" style="display: none;"></span>
+    <!-- NEU: Pills in einer Zeile gruppieren -->
+    <div class="pills-row">
+      <div class="halving-pill">
+        <span class="halving-icon">🔥</span>
+        <span id="halvingCountdown">Calculating...</span>
+      </div>
+      
+      <div class="header-actions">
+        <div class="price-pill" id="taoPricePill" title="TAO Price (USD)">
+          <span class="price-icon">τ</span>
+          <span id="taoPrice" class="skeleton-text"></span>
+          <span id="priceChange" class="price-change" style="display: none;"></span>
+        </div>
       </div>
     </div>
   </div>
