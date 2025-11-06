@@ -226,9 +226,10 @@ function updateNetworkStats(data) {
   
   // Circulating Supply dynamisch berechnen
   const emissionPerBlock = 1; // TAO pro Block
-  const circulatingSupply = data.blockHeight * emissionPerBlock;
+  const circulatingSupply = typeof data.blockHeight === 'number' && data.blockHeight > 0
+    ? data.blockHeight * emissionPerBlock
+    : null;
 
-  // Setze global für Countdown
   window.circulatingSupply = circulatingSupply;
 
   // Halving-Berechnung
@@ -236,10 +237,13 @@ function updateNetworkStats(data) {
   const emissionPerDay = typeof data.emission === 'string'
     ? parseInt(data.emission.replace(/,/g, ''))
     : data.emission;
-  const daysToHalving = (HALVING_SUPPLY - circulatingSupply) / emissionPerDay;
-  window.halvingDate = new Date(Date.now() + daysToHalving * 24 * 60 * 60 * 1000);
+  const daysToHalving = circulatingSupply && emissionPerDay
+    ? (HALVING_SUPPLY - circulatingSupply) / emissionPerDay
+    : null;
+  window.halvingDate = daysToHalving && daysToHalving > 0
+    ? new Date(Date.now() + daysToHalving * 24 * 60 * 60 * 1000)
+    : null;
 
-  // Jetzt Countdown starten
   startHalvingCountdown();
 }
 
