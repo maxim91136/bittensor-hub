@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 NETWORK = os.getenv("NETWORK", "finney")
-MAX_WORKERS = 10  # Parallel requests
+MAX_WORKERS = 1  # disable parallel; substrate client is not thread-safe
 
 def fetch_subnet_stats(subtensor, netuid: int) -> tuple:
     """Fetch stats for a single subnet"""

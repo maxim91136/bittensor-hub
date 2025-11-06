@@ -69,15 +69,11 @@ jobs:
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}   # fix: gleich wie bei History
         run: |
-          URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/bittensor_metrics"
-          
+          URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/metrics"  # fix: key = metrics
           if [ ! -f metrics.json ]; then
-            echo "no metrics.json"
-            exit 1
-          fi
-          
+            echo "no metrics.json"; exit 1; fi
           curl -fsSL -X PUT \
             "$URL" \
             -H "Authorization: Bearer $CF_API_TOKEN" \
