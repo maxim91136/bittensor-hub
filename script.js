@@ -129,29 +129,16 @@ async function fetchNetworkData() {
 
 // ===== Data Fetching =====
 async function fetchTaoPrice() {
+  const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bittensor&vs_currencies=usd&include_24hr_change=true';
   try {
-    // ✅ Nutze /coins/bittensor für Price + Circulating Supply
-    const res = await fetch(`${COINGECKO_API}/coins/bittensor?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false`);
-    
-    if (!res.ok) {
-      // Fallback bei Rate Limit
-      if (res.status === 429) {
-        console.warn('⚠️ CoinGecko rate limit, using cached data');
-        return { price: null, change24h: null, circulatingSupply: null };
-      }
-      throw new Error(`CoinGecko error: ${res.status}`);
-    }
-    
+    const res = await fetch(url);
     const data = await res.json();
-    
     return {
-      price: data.market_data?.current_price?.usd || null,
-      change24h: data.market_data?.price_change_percentage_24h || null,
-      circulatingSupply: data.market_data?.circulating_supply || null
+      price: data.bittensor?.usd ?? null,
+      change24h: data.bittensor?.usd_24h_change ?? null
     };
   } catch (err) {
-    console.error('❌ fetchTaoPrice:', err);
-    return { price: null, change24h: null, circulatingSupply: null };
+    return { price: null, change24h: null };
   }
 }
 
@@ -180,52 +167,12 @@ async function fetchPriceHistory(range = '7') {
 // ===== UI Updates =====
 function updateTaoPrice(priceData) {
   const priceEl = document.getElementById('taoPrice');
-  const changeEl = document.getElementById('priceChange');
-  const pillEl = document.getElementById('taoPricePill');
-  
   if (!priceEl) return;
-  
-  // Update Price
   if (priceData.price) {
-    priceEl.textContent = formatPrice(priceData.price);
+    priceEl.textContent = `$${priceData.price.toFixed(2)}`;
     priceEl.classList.remove('skeleton-text');
-    
-    // Update 24h change
-    if (priceData.change24h !== null && priceData.change24h !== undefined && changeEl) {
-      const change = priceData.change24h;
-      const isPositive = change >= 0;
-      
-      changeEl.textContent = `${Math.abs(change).toFixed(2)}%`;
-      changeEl.className = `price-change ${isPositive ? 'positive' : 'negative'}`;
-      changeEl.style.display = 'flex';
-    }
-    
-    animatePriceChange(pillEl, priceData.price);
   } else {
     priceEl.textContent = 'N/A';
-    priceEl.classList.remove('skeleton-text');
-    if (changeEl) changeEl.style.display = 'none';
-  }
-  
-  // ✅ Update Circulating Supply Card
-  if (priceData.circulatingSupply) {
-    circulatingSupply = priceData.circulatingSupply;
-    
-    const supplyEl = document.getElementById('circulatingSupply');
-    const progressEl = document.querySelector('.stat-progress');
-    
-    if (supplyEl) {
-      const current = (priceData.circulatingSupply / 1_000_000).toFixed(2);
-      supplyEl.textContent = `${current}M / 21M τ`;
-    }
-    
-    if (progressEl) {
-      const percent = ((priceData.circulatingSupply / 21_000_000) * 100).toFixed(1);
-      progressEl.textContent = `${percent}%`;
-    }
-    
-    // Start halving countdown
-    startHalvingCountdown();
   }
 }
 
