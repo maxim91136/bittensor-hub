@@ -14,6 +14,7 @@ let isLoadingPrice = false;
 // State
 let halvingDate = null;
 let halvingInterval = null;
+let circulatingSupply = null; // <-- Added circulatingSupply state
 
 // ===== Utility Functions =====
 function animateValue(element, start, end, duration = 1000) {
@@ -228,6 +229,11 @@ function updateTaoPrice(priceData) {
     priceEl.textContent = 'N/A';
     priceEl.classList.remove('skeleton-text');
     if (changeEl) changeEl.style.display = 'none';
+  }
+  
+  // Store circulating supply globally
+  if (priceData.circulatingSupply) {
+    circulatingSupply = priceData.circulatingSupply;
   }
 }
 
@@ -454,58 +460,82 @@ async function initDashboard() {
   const priceHistory = await fetchPriceHistory(currentPriceRange);
   if (priceHistory) {
     createPriceChart(priceHistory, currentPriceRange);
-  } else {
-    console.warn('⚠️  No price history received');
   }
   
   // Start halving countdown if applicable
   startHalvingCountdown();
-  
-  console.log('✅ Dashboard initialized');
 }
 
 // ===== Halving Countdown =====
 function calculateHalvingDate(circulatingSupply, emissionRate) {
-  const HALVING_SUPPLY = 10_500_000;
-  const remaining = HALVING_SUPPLY - circulatingSupply;
-  if (remaining <= 0) return null;
+  const totalSupply = 21000000; // Max supply for Bitcoin
+  const blocksPerHalving = 210000; // Bitcoin halving event occurs every 210,000 blocks
+  const secondsPerBlock = 600; // Average time between blocks in seconds (10 minutes)
   
-  const daysLeft = remaining / emissionRate;
-  return new Date(Date.now() + daysLeft * 24 * 60 * 60 * 1000);
+  const currentReward = emissionRate / 1000000; // Convert to TAO units
+  const nextHalvingReward = currentReward / 2;
+  
+  // Calculate blocks to next halving
+  const blocksToHalving = Math.ceil((totalSupply - circulatingSupply) / (currentReward - nextHalvingReward));
+  
+  // Calculate time to next halving in milliseconds
+  const timeToHalving = blocksToHalving * blocksPerHalving * secondsPerBlock * 1000;
+  
+  return new Date(Date.now() + timeToHalving);
 }
 
 function updateHalvingCountdown() {
-  if (!halvingDate) return;
-  const distance = halvingDate - Date.now();
+  const el = document.getElementById('halvingCountdown');
+  if (!el || !halvingDate) return;
   
-  const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const now = Date.now();
+  const diff = halvingDate - now;
   
-  document.getElementById('halvingCountdown').textContent = 
-    `Halving in ${days}d ${hours}h`;
+  if (diff <= 0) {
+    el.textContent = 'Halving event in progress...';
+    clearInterval(halvingInterval);
+    halvingInterval = null;
+    return;
+  }
+  
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  
+  el.textContent = `${hours}h ${minutes}m ${seconds}s`;
 }
 
 function startHalvingCountdown() {
-  // Stop any existing countdown
-  if (halvingInterval) {
-    clearInterval(halvingInterval);
-    halvingInterval = null;
-  }
+  if (!circulatingSupply) return;
   
-  // Calculate next halving date
-  const emissionRate = parseFloat(document.getElementById('emission').textContent.replace(/[^0-9.]/g, ''));
-  const circulatingSupply = parseFloat(document.getElementById('maxSupply').textContent.replace(/[^0-9.]/g, ''));
+  const emissionRate = parseFloat(document.getElementById('emission')?.textContent.replace(/[^0-9.]/g, '')) || 7200;
   halvingDate = calculateHalvingDate(circulatingSupply, emissionRate);
-  
-  // Immediate update
   updateHalvingCountdown();
-  
-  // Update every hour
   halvingInterval = setInterval(updateHalvingCountdown, 60 * 60 * 1000);
 }
 
-// Start dashboard initialization
+// ===== Service Worker Registration (for PWA) =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('✅ Service Worker registered:', registration);
+      })
+      .catch(error => {
+        console.error('❌ Service Worker registration failed:', error);
+      });
+  });
+}
+
+// Start the dashboard initialization
 initDashboard();
 
-// Global refresh interval (z.B. für Preisupdates)
-setInterval(refreshDashboard, REFRESH_INTERVAL);
+// Debugging: Expose some functions to window for manual testing
+window.debug = {
+  refreshDashboard,
+  fetchNetworkData,
+  fetchTaoPrice,
+  fetchPriceHistory,
+  createPriceChart,
+  startHalvingCountdown
+};
