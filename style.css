@@ -73,7 +73,7 @@ body {
   padding: var(--space-md) var(--space-md);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: var(--space-md);
   flex-wrap: wrap;
 }
@@ -277,14 +277,28 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* Mobile: Stack vertically */
+/* Mobile Header Anpassung: Pills bleiben nebeneinander, Logo zentriert oben */
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;
+    align-items: center;
   }
   
-  .halving-pill {
+  .logo-section {
     order: -1;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .header-actions {
+    justify-content: center;
+  }
+  
+  /* Auf sehr kleinen Screens (<480px) stapeln */
+  @media (max-width: 480px) {
+    .header-actions {
+      flex-direction: column;
+      gap: var(--gap-sm);
+    }
   }
 }
 
@@ -389,7 +403,7 @@ body {
   line-height: 1.2;
 }
 
-/* ---- Dynamic Tooltip ---- */
+/* ---- Dynamic Tooltip (Verbessert für Desktop) ---- */
 .dynamic-tooltip {
   position: fixed;
   background: #222;
@@ -404,7 +418,8 @@ body {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.18s;
-  max-width: 260px;
+  max-width: 240px; /* Reduziert für bessere Lesbarkeit */
+  text-align: left;
 }
 .dynamic-tooltip.visible {
   opacity: 1;
@@ -692,7 +707,7 @@ body {
   background: var(--glow);
 }
 
-/* ---- Dynamic Tooltip ---- */
+/* ---- Dynamic Tooltip (Verbessert für Desktop) ---- */
 .dynamic-tooltip {
   position: fixed;
   background: #222;
@@ -707,9 +722,9 @@ body {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.18s;
-  max-width: 260px;
+  max-width: 240px;
+  text-align: left;
 }
-
 .dynamic-tooltip.visible {
   opacity: 1;
   pointer-events: auto;
