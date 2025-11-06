@@ -224,29 +224,23 @@ function updateNetworkStats(data) {
     animateValue(elements.validators, currentValue, data.validators, 800);
   }
   
-  // Dynamische Circulating Supply & Halving
-  if (data.blockHeight && data.emission) {
-    const emissionPerDay = typeof data.emission === 'string'
-      ? parseInt(data.emission.replace(/,/g, ''))
-      : data.emission;
+  // Circulating Supply dynamisch berechnen
+  const emissionPerBlock = 1; // TAO pro Block
+  const circulatingSupply = data.blockHeight * emissionPerBlock;
 
-    const { halvingDate, circulatingSupply } = calculateHalvingDateDynamic(data.blockHeight, emissionPerDay);
+  // Setze global für Countdown
+  window.circulatingSupply = circulatingSupply;
 
-    // Circulating Supply Card
-    if (elements.circulatingSupply) {
-      const current = (circulatingSupply / 1_000_000).toFixed(2);
-      elements.circulatingSupply.textContent = `${current}M / 21M τ`;
-    }
-    if (elements.progress) {
-      const percent = ((circulatingSupply / 21_000_000) * 100).toFixed(1);
-      elements.progress.textContent = `${percent}%`;
-    }
+  // Halving-Berechnung
+  const HALVING_SUPPLY = 10_500_000;
+  const emissionPerDay = typeof data.emission === 'string'
+    ? parseInt(data.emission.replace(/,/g, ''))
+    : data.emission;
+  const daysToHalving = (HALVING_SUPPLY - circulatingSupply) / emissionPerDay;
+  window.halvingDate = new Date(Date.now() + daysToHalving * 24 * 60 * 60 * 1000);
 
-    // Halving Countdown
-    window.circulatingSupply = circulatingSupply; // global für Countdown
-    window.halvingDate = halvingDate;
-    startHalvingCountdown();
-  }
+  // Jetzt Countdown starten
+  startHalvingCountdown();
 }
 
 // ✅ ENTFERNT: createValidatorsChart (no validator chart)
@@ -520,6 +514,12 @@ function updateHalvingCountdown() {
 }
 
 function startHalvingCountdown() {
+  const countdownEl = document.getElementById('halvingCountdown');
+  if (!window.circulatingSupply || !window.halvingDate || !countdownEl) {
+    countdownEl.textContent = 'Calculating...';
+    return;
+  }
+  
   if (halvingInterval) {
     clearInterval(halvingInterval);
     halvingInterval = null;
