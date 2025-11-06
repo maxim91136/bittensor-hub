@@ -536,3 +536,19 @@ initDashboard();
 
 // ===== Polling =====
 // setInterval(refreshDashboard, REFRESH_INTERVAL);
+
+// Neue dynamische Halving-Berechnung
+function calculateHalvingDateDynamic(blockHeight, emissionPerDay) {
+  // Fallback: Nutze die Standard-Halving-Berechnung
+  const HALVING_SUPPLY = 10_500_000;
+  const emissionPerBlock = 1;
+  const circulatingSupply = blockHeight * emissionPerBlock;
+  const remaining = HALVING_SUPPLY - circulatingSupply;
+  if (remaining <= 0) return { halvingDate: null, circulatingSupply };
+  const daysLeft = remaining / emissionPerDay;
+  const msLeft = daysLeft * 24 * 60 * 60 * 1000;
+  return {
+    halvingDate: new Date(Date.now() + msLeft),
+    circulatingSupply
+  };
+}
