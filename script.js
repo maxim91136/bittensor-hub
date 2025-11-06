@@ -6,15 +6,15 @@ const PRICE_CACHE_TTL = 300000;
 const PRICE_CACHE_TTL_MAX = 3600000;
 
 // ===== State Management =====
-let priceChart = null;           // removed: validatorsChart
+let priceChart = null;
 let lastPrice = null;
 let currentPriceRange = '7';
 let isLoadingPrice = false;
 
-// State
+// Halving State
 let halvingDate = null;
 let halvingInterval = null;
-let circulatingSupply = null; // <-- Added circulatingSupply state
+let circulatingSupply = null; // ✅ State für Circ Supply
 
 // ===== Utility Functions =====
 function animateValue(element, start, end, duration = 1000) {
@@ -129,20 +129,19 @@ async function fetchNetworkData() {
 
 async function fetchTaoPrice() {
   try {
-    // ÄNDERUNG: Nutze /coins/bittensor statt /simple/price
-    const res = await fetch(`${COINGECKO_API}/coins/bittensor?localization=false&tickers=false&community_data=false&developer_data=false`);
+    // ✅ Nur noch Price + 24h Change holen (kein Circ Supply mehr)
+    const res = await fetch(`${COINGECKO_API}/simple/price?ids=bittensor&vs_currencies=usd&include_24hr_change=true`);
     if (!res.ok) throw new Error(`CoinGecko error: ${res.status}`);
     
     const data = await res.json();
     
     return {
-      price: data.market_data?.current_price?.usd || null,
-      change24h: data.market_data?.price_change_percentage_24h || null,
-      circulatingSupply: data.market_data?.circulating_supply || null
+      price: data?.bittensor?.usd || null,
+      change24h: data?.bittensor?.usd_24h_change || null
     };
   } catch (err) {
     console.error('❌ fetchTaoPrice:', err);
-    return { price: null, change24h: null, circulatingSupply: null };
+    return { price: null, change24h: null };
   }
 }
 
@@ -175,22 +174,24 @@ function updateNetworkStats(data) {
     subnets: document.getElementById('subnets'),
     emission: document.getElementById('emission'),
     totalNeurons: document.getElementById('totalNeurons'),
-    validators: document.getElementById('validators')
+    validators: document.getElementById('validators'),
+    circulatingSupply: document.getElementById('circulatingSupply') // ✅ NEU
   };
 
-  // ✅ KORRIGIERT: Nutze camelCase (wie Backend es zurückgibt)
+  // Animate Block Height
   if (data.blockHeight !== undefined) {
     const currentValue = parseInt(elements.blockHeight.textContent.replace(/,/g, '')) || 0;
     animateValue(elements.blockHeight, currentValue, data.blockHeight, 800);
   }
   
+  // Animate Subnets
   if (data.subnets !== undefined) {
     const currentValue = parseInt(elements.subnets.textContent.replace(/,/g, '')) || 0;
     animateValue(elements.subnets, currentValue, data.subnets, 600);
   }
   
+  // Animate Emission
   if (data.emission !== undefined) {
-    // Parse "7,200" → 7200
     const rate = typeof data.emission === 'string' 
       ? parseInt(data.emission.replace(/,/g, '')) 
       : data.emission;
@@ -198,14 +199,37 @@ function updateNetworkStats(data) {
     animateValue(elements.emission, currentValue, rate, 800);
   }
   
+  // Animate Total Neurons
   if (data.totalNeurons !== undefined) {
     const currentValue = parseInt(elements.totalNeurons.textContent.replace(/,/g, '')) || 0;
     animateValue(elements.totalNeurons, currentValue, data.totalNeurons, 1000);
   }
   
+  // Animate Validators
   if (data.validators !== undefined) {
     const currentValue = parseInt(elements.validators.textContent.replace(/,/g, '')) || 0;
     animateValue(elements.validators, currentValue, data.validators, 800);
+  }
+  
+  // ✅ NEU: Update Circulating Supply
+  if (data.circulatingSupply !== undefined) {
+    circulatingSupply = data.circulatingSupply;
+    
+    const supplyEl = elements.circulatingSupply;
+    const progressEl = document.querySelector('.stat-progress');
+    
+    if (supplyEl) {
+      const current = (data.circulatingSupply / 1_000_000).toFixed(2);
+      supplyEl.textContent = `${current}M / 21M τ`;
+    }
+    
+    if (progressEl) {
+      const percent = ((data.circulatingSupply / 21_000_000) * 100).toFixed(1);
+      progressEl.textContent = `${percent}%`;
+    }
+    
+    // Start halving countdown with fresh supply data
+    startHalvingCountdown();
   }
 }
 
@@ -235,27 +259,6 @@ function updateTaoPrice(priceData) {
     priceEl.textContent = 'N/A';
     priceEl.classList.remove('skeleton-text');
     if (changeEl) changeEl.style.display = 'none';
-  }
-  
-  // NEU: Update Circulating Supply Card
-  if (priceData.circulatingSupply) {
-    circulatingSupply = priceData.circulatingSupply;
-    
-    const supplyEl = document.getElementById('circulatingSupply');
-    const progressEl = document.querySelector('.stat-progress');
-    
-    if (supplyEl) {
-      const current = (priceData.circulatingSupply / 1_000_000).toFixed(2);
-      supplyEl.textContent = `${current}M / 21M τ`;
-    }
-    
-    if (progressEl) {
-      const percent = ((priceData.circulatingSupply / 21_000_000) * 100).toFixed(1);
-      progressEl.textContent = `${percent}%`;
-    }
-    
-    // Start halving countdown
-    startHalvingCountdown();
   }
 }
 
@@ -533,36 +536,24 @@ function updateHalvingCountdown() {
 }
 
 function startHalvingCountdown() {
-  if (halvingInterval) clearInterval(halvingInterval);
+  if (halvingInterval) {
+    clearInterval(halvingInterval);
+    halvingInterval = null;
+  }
   
   if (!circulatingSupply) {
-    console.warn('⚠️ No circulating supply for halving countdown');
+    console.warn('⚠️ No circulating supply available for halving countdown');
     return;
   }
   
-  const emissionRate = parseFloat(document.getElementById('emission')?.textContent.replace(/[^0-9]/g, '')) || 7200;
+  // Get emission rate from DOM (already formatted by backend)
+  const emissionEl = document.getElementById('emission');
+  const emissionRate = emissionEl 
+    ? parseFloat(emissionEl.textContent.replace(/[^0-9]/g, '')) 
+    : 7200;
   
   halvingDate = calculateHalvingDate(circulatingSupply, emissionRate);
   
   if (!halvingDate) {
     const countdownEl = document.getElementById('halvingCountdown');
-    if (countdownEl) countdownEl.textContent = 'Halving Reached';
-    return;
-  }
-  
-  updateHalvingCountdown();
-  halvingInterval = setInterval(updateHalvingCountdown, 1000); // Update every second
-}
-
-// Start the dashboard initialization
-initDashboard();
-
-// Debugging: Expose some functions to window for manual testing
-window.debug = {
-  refreshDashboard,
-  fetchNetworkData,
-  fetchTaoPrice,
-  fetchPriceHistory,
-  createPriceChart,
-  startHalvingCountdown
-};
+    if
