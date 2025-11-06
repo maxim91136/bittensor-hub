@@ -12,6 +12,35 @@ let currentPriceRange = '7';
 let isLoadingPrice = false;
 
 // ===== Utility Functions =====
+function animateValue(element, start, end, duration = 1000) {
+  const startTime = performance.now();
+  const isFloat = end % 1 !== 0;
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Easing function (ease-out-cubic)
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+    
+    const current = start + (end - start) * easeProgress;
+    
+    if (isFloat) {
+      element.textContent = formatNumber(current);
+    } else {
+      element.textContent = formatFull(Math.round(current));
+    }
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      element.textContent = isFloat ? formatNumber(end) : formatFull(end);
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
 function formatNumber(num) {
   if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
   if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
@@ -91,19 +120,17 @@ async function fetchNetworkData() {
 
 async function fetchTaoPrice() {
   try {
-    const response = await fetch(
-      `${COINGECKO_API}/simple/price?ids=bittensor&vs_currencies=usd&include_24hr_change=true`,
-      { cache: 'no-store' }
-    );
-    if (!response.ok) throw new Error('CoinGecko API failed');
-    const data = await response.json();
-    return {
-      price: data.bittensor.usd,
-      change24h: data.bittensor.usd_24h_change
-    };
-  } catch (error) {
-    console.error('❌ Error fetching TAO price:', error);
-    return null;
+    const res = await fetch(`${COINGECKO_API}/simple/price?ids=bittensor&vs_currencies=usd&include_24hr_change=true`);
+    if (!res.ok) throw new Error(`CoinGecko error: ${res.status}`);
+    
+    const data = await res.json();
+    const price = data?.bittensor?.usd;
+    const change24h = data?.bittensor?.usd_24h_change;
+    
+    return { price, change24h };
+  } catch (err) {
+    console.error('❌ fetchTaoPrice:', err);
+    return { price: null, change24h: null };
   }
 }
 
@@ -131,36 +158,73 @@ async function fetchPriceHistory(range = '7') {
 
 // ===== UI Updates =====
 function updateNetworkStats(data) {
-  if (!data) return;
+  const elements = {
+    blockHeight: document.getElementById('blockHeight'),
+    maxSupply: document.getElementById('maxSupply'),
+    subnets: document.getElementById('subnets'),
+    emission: document.getElementById('emission'),
+    totalNeurons: document.getElementById('totalNeurons'),
+    validators: document.getElementById('validators')
+  };
 
-  const blockHeight = document.getElementById('blockHeight');
-  if (blockHeight) blockHeight.textContent = formatFull(data.blockHeight);
-
-  const validators = document.getElementById('validators');
-  if (validators) validators.textContent = formatFull(data.validators);
-
-  const subnets = document.getElementById('subnets');
-  if (subnets) subnets.textContent = formatFull(data.subnets);
-
-  const neurons = document.getElementById('totalNeurons');
-  if (neurons) neurons.textContent = formatFull(data.totalNeurons);
-
-  // FIX: Emission kommt als String "7,200" – direkt anzeigen, nicht formatieren
-  const emissionEl = document.getElementById('emission');
-  if (emissionEl && data.emission) {
-    emissionEl.textContent = `${data.emission} τ/day`;
+  // Animate numbers instead of instant update
+  if (data.block_height !== undefined) {
+    const currentValue = parseInt(elements.blockHeight.textContent.replace(/,/g, '')) || 0;
+    animateValue(elements.blockHeight, currentValue, data.block_height, 800);
+  }
+  
+  if (data.max_supply !== undefined) {
+    const currentValue = parseInt(elements.maxSupply.textContent.replace(/[^0-9]/g, '')) || 0;
+    animateValue(elements.maxSupply, currentValue, data.max_supply, 1000);
+  }
+  
+  if (data.total_subnets !== undefined) {
+    const currentValue = parseInt(elements.subnets.textContent.replace(/,/g, '')) || 0;
+    animateValue(elements.subnets, currentValue, data.total_subnets, 600);
+  }
+  
+  if (data.emission_rate !== undefined) {
+    const currentValue = parseInt(elements.emission.textContent.replace(/[^0-9]/g, '')) || 0;
+    animateValue(elements.emission, currentValue, data.emission_rate, 800);
+  }
+  
+  if (data.total_neurons !== undefined) {
+    const currentValue = parseInt(elements.totalNeurons.textContent.replace(/,/g, '')) || 0;
+    animateValue(elements.totalNeurons, currentValue, data.total_neurons, 1000);
+  }
+  
+  if (data.active_validators !== undefined) {
+    const currentValue = parseInt(elements.validators.textContent.replace(/,/g, '')) || 0;
+    animateValue(elements.validators, currentValue, data.active_validators, 800);
   }
 }
 
 function updateTaoPrice(priceData) {
-  if (!priceData) return;
+  const priceEl = document.getElementById('taoPrice');
+  const changeEl = document.getElementById('priceChange');
+  const pillEl = document.getElementById('taoPricePill');
   
-  const priceElement = document.getElementById('taoPrice');
-  const pillElement = document.getElementById('taoPricePill');
+  if (!priceEl) return;
   
-  if (priceElement) {
-    priceElement.textContent = formatPrice(priceData.price);
-    animatePriceChange(pillElement, priceData.price);
+  if (priceData.price) {
+    priceEl.textContent = formatPrice(priceData.price);
+    priceEl.classList.remove('skeleton-text');
+    
+    // Update 24h change indicator
+    if (priceData.change24h !== null && priceData.change24h !== undefined && changeEl) {
+      const change = priceData.change24h;
+      const isPositive = change >= 0;
+      
+      changeEl.textContent = `${Math.abs(change).toFixed(2)}%`;
+      changeEl.className = `price-change ${isPositive ? 'positive' : 'negative'}`;
+      changeEl.style.display = 'flex';
+    }
+    
+    animatePriceChange(pillEl, priceData.price);
+  } else {
+    priceEl.textContent = 'N/A';
+    priceEl.classList.remove('skeleton-text');
+    if (changeEl) changeEl.style.display = 'none';
   }
 }
 
@@ -385,24 +449,4 @@ async function initDashboard() {
   // Load price history
   const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
   const priceHistory = await fetchPriceHistory(currentPriceRange);
-  if (priceHistory) {
-    createPriceChart(priceHistory, currentPriceRange);
-  } else {
-    priceCard?.classList.remove('loading');
-  }
-
-  setInterval(refreshDashboard, REFRESH_INTERVAL);
-  console.log(`⏱️  Auto-refresh: every ${REFRESH_INTERVAL / 1000}s`);
-}
-
-// ===== Start on DOM Ready =====
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initDashboard);
-} else {
-  initDashboard();
-}
-
-// Einmalige Migration: altes MAX-Caching entfernen
-(function migratePriceCacheKeys() {
-  try { localStorage.removeItem('tao_price_max'); } catch {}
-})();
+  if

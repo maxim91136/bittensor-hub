@@ -139,15 +139,38 @@ body {
 .price-pill#taoPricePill {
   background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.03));
   border-color: rgba(34,197,94,0.2);
+  gap: clamp(8px, 2vw, 10px);
 }
 
-.price-pill#taoPricePill .price-icon {
-  font-size: var(--text-xl);
+.price-change {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
 }
 
-.price-pill#taoPricePill #taoPrice {
-  font-size: var(--text-xl);
-  color: var(--accent);
+.price-change.positive {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.price-change.positive::before {
+  content: '↑';
+  font-size: 1.1em;
+}
+
+.price-change.negative {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.price-change.negative::before {
+  content: '↓';
+  font-size: 1.1em;
 }
 
 .price-icon {
@@ -198,7 +221,7 @@ body {
   padding: var(--space-lg) var(--space-md);
 }
 
-/* ---- Stats Grid (Dynamisch anpassend) ---- */
+/* ---- Stats Grid (Glassmorphism Enhanced) ---- */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
@@ -211,158 +234,92 @@ body {
   align-items: flex-start;
   gap: var(--gap-sm);
   padding: var(--card-padding);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: rgba(17, 19, 24, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 12px;
-  transition: border-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle gradient overlay */
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(34,197,94,0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .stat-card:hover {
-  border-color: rgba(255,255,255,0.15);
+  border-color: rgba(34,197,94,0.3);
+  background: rgba(17, 19, 24, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(34,197,94,0.1);
 }
 
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+/* Icon Glow on Hover */
 .stat-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: var(--icon-sm);
   height: var(--icon-sm);
-  background: var(--glow);
+  background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05));
   border-radius: 10px;
   color: var(--accent);
   flex-shrink: 0;
-}
-
-.stat-icon svg {
-  width: clamp(16px, 3.5vw, 20px);
-  height: clamp(16px, 3.5vw, 20px);
-}
-
-.stat-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.stat-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: clamp(4px, 1vw, 6px);
-  line-height: 1.2;
-}
-
-.info-badge {
+  transition: all 0.3s ease;
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--badge-size);
-  height: var(--badge-size);
-  font-size: clamp(10px, 2vw, 12px);
-  font-weight: 700;
-  color: rgba(255,255,255,0.6);
-  background: rgba(255,255,255,0.08);
-  border-radius: 50%;
-  cursor: help;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
 }
 
-.info-badge:hover {
-  background: rgba(255,255,255,0.15);
-  color: var(--accent);
-  transform: scale(1.1);
+.stat-card:hover .stat-icon {
+  background: linear-gradient(135deg, rgba(34,197,94,0.25), rgba(34,197,94,0.1));
+  box-shadow: 0 0 20px rgba(34,197,94,0.3);
 }
 
-/* Tooltip (Desktop: hover, Mobile: active) */
-.info-badge::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 12px);
-  background: rgba(17, 19, 24, 0.98);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: clamp(0.65rem, 1.5vw, 0.75rem);
-  font-weight: 500;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 1000;
-}
-
-.info-badge:hover::after {
-  opacity: 1;
-}
-
-/* Touch devices: Tooltip unten + mehrzeilig */
-@media (hover: none) {
-  .info-badge::after {
-    bottom: auto;
-    top: calc(100% + 6px);
-    white-space: normal;
-    max-width: min(200px, 80vw);
-  }
-  
-  .info-badge:active::after {
-    opacity: 1;
-  }
-}
-
-.stat-value {
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1.2;
-  word-break: break-word;
-}
-
-/* Make all stat numbers slightly smaller (incl. Max Supply) */
-.stat-card .stat-value {
-  font-size: 0.92em;       /* ~8% smaller */
-  font-variant-numeric: tabular-nums;
-  line-height: 1.05;
-}
-
-/* Slightly smaller font for KPI numbers (not labels) */
-#blockHeight,
-#validators,
-#subnets,
-#totalNeurons,
-#emission {
-  font-size: 0.92em;        /* ~8% kleiner */
-  font-variant-numeric: tabular-nums;
-  line-height: 1.05;
-}
-
-/* ---- Charts (Dynamisch) ---- */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-md);
-  margin-top: var(--space-lg);
-}
-
+/* ---- Charts (Glassmorphism) ---- */
 .dashboard-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: rgba(17, 19, 24, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 12px;
   padding: var(--space-lg);
-  transition: border-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .dashboard-card:hover {
-  border-color: rgba(255,255,255,0.15);
+  border-color: rgba(34,197,94,0.25);
+  background: rgba(17, 19, 24, 0.8);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(34,197,94,0.1);
+}
+
+.dashboard-card:hover::before {
+  opacity: 1;
 }
 
 .card-header {
