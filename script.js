@@ -523,34 +523,29 @@ function startHalvingCountdown() {
     countdownEl.textContent = 'Calculating...';
     return;
   }
-  
-  if (halvingInterval) {
-    clearInterval(halvingInterval);
-    halvingInterval = null;
+
+  if (window.halvingInterval) {
+    clearInterval(window.halvingInterval);
+    window.halvingInterval = null;
   }
-  
-  if (!circulatingSupply) {
-    console.warn('⚠️ No circulating supply available for halving countdown');
-    return;
-  }
-  
-  // Get emission rate from DOM (already formatted by backend)
+
+  // Emission aus DOM holen
   const emissionEl = document.getElementById('emission');
   const emissionRate = emissionEl 
     ? parseFloat(emissionEl.textContent.replace(/[^0-9]/g, '')) 
     : 7200;
-  
-  halvingDate = calculateHalvingDate(circulatingSupply, emissionRate);
-  
-  if (!halvingDate) {
-    const countdownEl = document.getElementById('halvingCountdown');
+
+  // Halving-Datum berechnen
+  window.halvingDate = calculateHalvingDate(window.circulatingSupply, emissionRate);
+
+  if (!window.halvingDate) {
     countdownEl.textContent = 'Halving Info N/A';
     return;
   }
-  
+
   updateHalvingCountdown();
-  
-  halvingInterval = setInterval(updateHalvingCountdown, 1000);
+
+  window.halvingInterval = setInterval(updateHalvingCountdown, 1000);
 }
 
 // Initialisierung
