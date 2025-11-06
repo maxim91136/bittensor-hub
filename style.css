@@ -719,3 +719,25 @@ body {
   opacity: 1;
   pointer-events: auto;
 }
+
+@media (max-width: 600px) {
+  .stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.01em;
+  }
+  .stat-value {
+    font-size: 1.05rem;
+    word-break: break-all;
+  }
+  .stat-card {
+    padding: 10px 6px;
+  }
+  .stat-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 1.1em;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
