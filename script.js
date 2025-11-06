@@ -181,27 +181,19 @@ function updateNetworkStats(data) {
   };
 
   if (data.blockHeight !== undefined) {
-    const currentValue = parseInt(elements.blockHeight.textContent.replace(/,/g, '')) || 0;
-    animateValue(elements.blockHeight, currentValue, data.blockHeight, 800);
+    elements.blockHeight.textContent = formatFull(data.blockHeight);
   }
   if (data.subnets !== undefined) {
-    const currentValue = parseInt(elements.subnets.textContent.replace(/,/g, '')) || 0;
-    animateValue(elements.subnets, currentValue, data.subnets, 600);
-  }
-  if (data.emission !== undefined) {
-    const rate = typeof data.emission === 'string' 
-      ? parseInt(data.emission.replace(/,/g, '')) 
-      : data.emission;
-    const currentValue = parseInt(elements.emission.textContent.replace(/[^0-9]/g, '')) || 0;
-    animateValue(elements.emission, currentValue, rate, 800);
-  }
-  if (data.totalNeurons !== undefined) {
-    const currentValue = parseInt(elements.totalNeurons.textContent.replace(/,/g, '')) || 0;
-    animateValue(elements.totalNeurons, currentValue, data.totalNeurons, 1000);
+    elements.subnets.textContent = formatFull(data.subnets);
   }
   if (data.validators !== undefined) {
-    const currentValue = parseInt(elements.validators.textContent.replace(/,/g, '')) || 0;
-    animateValue(elements.validators, currentValue, data.validators, 800);
+    elements.validators.textContent = formatFull(data.validators);
+  }
+  if (data.emission !== undefined) {
+    elements.emission.textContent = formatFull(data.emission);
+  }
+  if (data.totalNeurons !== undefined) {
+    elements.totalNeurons.textContent = formatFull(data.totalNeurons);
   }
 
   // Circulating Supply dynamisch berechnen
