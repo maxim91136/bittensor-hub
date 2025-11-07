@@ -542,10 +542,7 @@ async function refreshDashboard() {
   // LAST UPDATE setzen
   const lastUpdateEl = document.getElementById('lastUpdate');
   if (lastUpdateEl) {
-    const now = new Date();
-    const hh = now.getHours().toString().padStart(2, '0');
-    const mm = now.getMinutes().toString().padStart(2, '0');
-    lastUpdateEl.textContent = `Updated: ${hh}:${mm}`;
+    lastUpdateEl.textContent = 'Test!';
   }
 }
 
