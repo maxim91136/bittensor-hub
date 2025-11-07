@@ -388,7 +388,7 @@ async function refreshDashboard() {
   // Volume aus taostats holen!
   const volumeEl = document.getElementById('volume24h');
   if (volumeEl && taostats && typeof taostats.volume_24h === 'number') {
-    volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })} (⟳ ${lastUpdateStr})`;
+    volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   }
 
   // API Status setzen
