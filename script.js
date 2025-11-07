@@ -115,17 +115,41 @@ async function fetchNetworkData() {
   }
 }
 
+async function fetchTaostats() {
+  try {
+    const res = await fetch(`${API_BASE}/taostats`);
+    if (!res.ok) throw new Error(`Taostats API error: ${res.status}`);
+    const data = await res.json();
+    if (!data || !data.circulating_supply || !data.price) throw new Error('No valid Taostats data');
+    return data;
+  } catch (err) {
+    console.warn('⚠️ Taostats fetch failed:', err);
+    return null;
+  }
+}
+
 async function fetchTaoPrice() {
+  // 1. Versuche Taostats
+  const taostats = await fetchTaostats();
+  if (taostats && taostats.price) {
+    return {
+      price: taostats.price,
+      change24h: taostats.percent_change_24h ?? null,
+      _source: 'taostats'
+    };
+  }
+  // 2. Fallback: CoinGecko
   const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bittensor&vs_currencies=usd&include_24hr_change=true';
   try {
     const res = await fetch(url);
     const data = await res.json();
     return {
       price: data.bittensor?.usd ?? null,
-      change24h: data.bittensor?.usd_24h_change ?? null
+      change24h: data.bittensor?.usd_24h_change ?? null,
+      _source: 'coingecko'
     };
   } catch (err) {
-    return { price: null, change24h: null };
+    return { price: null, change24h: null, _source: 'error' };
   }
 }
 
@@ -150,12 +174,20 @@ async function fetchPriceHistory(range = '7') {
 }
 
 async function fetchCirculatingSupply() {
+  // 1. Versuche Taostats
+  const taostats = await fetchTaostats();
+  if (taostats && taostats.circulating_supply) {
+    window._circSupplySource = taostats._source || 'taostats';
+    return taostats.circulating_supply;
+  }
+  // 2. Fallback: CoinGecko
   try {
     const res = await fetch('https://api.coingecko.com/api/v3/coins/bittensor');
     const data = await res.json();
+    window._circSupplySource = 'coingecko';
     return data.market_data?.circulating_supply ?? null;
   } catch (err) {
-    console.warn('⚠️ Circulating supply fetch failed:', err);
+    window._circSupplySource = 'fallback';
     return null;
   }
 }
@@ -229,12 +261,13 @@ async function updateNetworkStats(data) {
     elements.totalNeurons.textContent = formatFull(data.totalNeurons);
   }
 
-  // Circulating Supply aus CoinGecko holen
+  // Circulating Supply bevorzugt von Taostats
   const circSupply = await fetchCirculatingSupply();
   const supplyEl = document.getElementById('circulatingSupply');
   if (supplyEl && circSupply) {
     const current = (circSupply / 1_000_000).toFixed(2);
     supplyEl.textContent = `${current}M / 21M τ`;
+    supplyEl.title = `Source: ${window._circSupplySource || 'unknown'}`;
     window.circulatingSupply = circSupply;
   } else {
     // Fallback: dynamisch berechnen
@@ -245,6 +278,7 @@ async function updateNetworkStats(data) {
     if (supplyEl && fallbackSupply) {
       const current = (fallbackSupply / 1_000_000).toFixed(2);
       supplyEl.textContent = `${current}M / 21M τ`;
+      supplyEl.title = 'Source: fallback';
       window.circulatingSupply = fallbackSupply;
     }
   }
