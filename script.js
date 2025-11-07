@@ -541,13 +541,15 @@ function renderRefreshIndicator() {
   const circ = 2 * Math.PI * radius;
   const progress = (refreshCountdown / REFRESH_SECONDS);
   el.innerHTML = `
-    <svg viewBox="0 0 16 16">
-      <circle cx="8" cy="8" r="${radius}" stroke="#222" stroke-width="${stroke}" fill="none"/>
-      <circle cx="8" cy="8" r="${radius}" stroke="#22c55e" stroke-width="${stroke}" fill="none"
-        stroke-dasharray="${circ}" stroke-dashoffset="${circ * (1 - progress)}"
-        style="transition: stroke-dashoffset 0.5s;"/>
-    </svg>
-    <span class="refresh-label">${refreshCountdown}</span>
+    <div class="refresh-circle-wrap">
+      <svg viewBox="0 0 16 16">
+        <circle cx="8" cy="8" r="${radius}" stroke="#222" stroke-width="${stroke}" fill="none"/>
+        <circle cx="8" cy="8" r="${radius}" stroke="#22c55e" stroke-width="${stroke}" fill="none"
+          stroke-dasharray="${circ}" stroke-dashoffset="${circ * (1 - progress)}"
+          style="transition: stroke-dashoffset 0.5s;"/>
+      </svg>
+      <span class="refresh-label">${refreshCountdown}</span>
+    </div>
     <span class="refresh-text">Refresh</span>
   `;
   el.title = `Auto-refresh in ${refreshCountdown}s – Click to refresh now`;
