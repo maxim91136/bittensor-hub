@@ -657,4 +657,4 @@ function startHalvingCountdown() {
 }
 
 // Initialisierung
-initDashboard();s
+initDashboard();
