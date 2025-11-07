@@ -1,0 +1,45 @@
+name: Fetch Taostats metrics to Cloudflare KV
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'  # alle 10 Minuten
+  workflow_dispatch: {}
+
+jobs:
+  fetch-taostats:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Fetch Taostats data
+        env:
+          TAOSTATS_API_KEY: ${{ secrets.TAOSTATS_API_KEY }}
+        run: |
+          python .github/scripts/fetch_taostats.py
+
+      - name: Push Taostats data to Cloudflare KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+        run: |
+          if [ ! -f taostats_latest.json ]; then
+            echo "No taostats_latest.json found"
+            exit 1
+          fi
+          URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/taostats_latest"
+          curl -fsSL -X PUT \
+            "$URL" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @taostats_latest.json
