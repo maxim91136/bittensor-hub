@@ -540,9 +540,10 @@ setupDynamicTooltips();
 
 // ===== Data Refresh =====
 async function refreshDashboard() {
-  const [networkData, taoPrice] = await Promise.all([
+  const [networkData, taoPrice, taostats] = await Promise.all([
     fetchNetworkData(),
-    fetchTaoPrice()
+    fetchTaoPrice(),
+    fetchTaostats() // <--- Ergänzen!
   ]);
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
@@ -570,9 +571,10 @@ async function refreshDashboard() {
     }
   }
 
+  // Volume aus taostats holen!
   const volumeEl = document.getElementById('volume24h');
-  if (volumeEl && taoPrice && typeof taoPrice.volume_24h === 'number') {
-    volumeEl.textContent = `$${taoPrice.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  if (volumeEl && taostats && typeof taostats.volume_24h === 'number') {
+    volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   }
 }
 
