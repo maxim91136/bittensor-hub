@@ -568,6 +568,11 @@ async function refreshDashboard() {
       lastUpdateEl.textContent = `Updated: --:--`;
     }
   }
+
+  const volumeEl = document.getElementById('volume24h');
+  if (volumeEl && taoPrice && typeof taoPrice.volume_24h === 'number') {
+    volumeEl.textContent = `$${taoPrice.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  }
 }
 
 // ===== Auto-Refresh mit Countdown-Circle =====
