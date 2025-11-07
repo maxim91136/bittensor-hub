@@ -484,6 +484,8 @@ function createPriceChart(priceHistory, range) {
       }]
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
         x: { display: true, grid: { display: false } },
