@@ -120,7 +120,12 @@ async function fetchTaostats() {
     if (!res.ok) throw new Error(`Taostats API error: ${res.status}`);
     const data = await res.json();
     if (!data || !data.circulating_supply || !data.price) throw new Error('No valid Taostats data');
-    return data;
+    // last_updated mitgeben
+    return {
+      ...data,
+      last_updated: data.last_updated || data._timestamp || null,
+      _source: 'taostats'
+    };
   } catch (err) {
     console.warn('⚠️ Taostats fetch failed:', err);
     return null;
@@ -134,6 +139,7 @@ async function fetchTaoPrice() {
     return {
       price: taostats.price,
       change24h: taostats.percent_change_24h ?? null,
+      last_updated: taostats.last_updated ?? null,
       _source: 'taostats'
     };
   }
@@ -145,10 +151,11 @@ async function fetchTaoPrice() {
     return {
       price: data.bittensor?.usd ?? null,
       change24h: data.bittensor?.usd_24h_change ?? null,
+      last_updated: null,
       _source: 'coingecko'
     };
   } catch (err) {
-    return { price: null, change24h: null, _source: 'error' };
+    return { price: null, change24h: null, last_updated: null, _source: 'error' };
   }
 }
 
@@ -539,13 +546,27 @@ async function refreshDashboard() {
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
 
-  // LAST UPDATE setzen
+  // LAST UPDATE aus Taostats, sonst Fallback
   const lastUpdateEl = document.getElementById('lastUpdate');
+  let lastUpdated = null;
+
+  // Versuche Zeitstempel aus Taostats
+  if (taoPrice && taoPrice._source === 'taostats' && taoPrice.last_updated) {
+    lastUpdated = taoPrice.last_updated;
+  } else if (taoPrice && taoPrice._source === 'taostats' && taoPrice._timestamp) {
+    lastUpdated = taoPrice._timestamp;
+  }
+
   if (lastUpdateEl) {
-    const now = new Date();
-    const hh = now.getHours().toString().padStart(2, '0');
-    const mm = now.getMinutes().toString().padStart(2, '0');
-    lastUpdateEl.textContent = `Updated: ${hh}:${mm}`;
+    if (lastUpdated) {
+      // ISO-String zu HH:MM umwandeln
+      const d = new Date(lastUpdated);
+      const hh = d.getHours().toString().padStart(2, '0');
+      const mm = d.getMinutes().toString().padStart(2, '0');
+      lastUpdateEl.textContent = `Updated: ${hh}:${mm}`;
+    } else {
+      lastUpdateEl.textContent = `Updated: --:--`;
+    }
   }
 }
 
