@@ -453,6 +453,42 @@ function startAutoRefresh() {
   }
 }
 
+// ===== Initialization of Price Chart =====
+function createPriceChart(priceHistory, range) {
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  const labels = priceHistory.map(([timestamp]) => {
+    const date = new Date(timestamp);
+    return `${date.getMonth()+1}/${date.getDate()}`;
+  });
+  const data = priceHistory.map(([_, price]) => price);
+
+  if (window.priceChart) {
+    window.priceChart.destroy();
+  }
+  window.priceChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'TAO Price',
+        data,
+        borderColor: '#22c55e',
+        backgroundColor: 'rgba(34,197,94,0.1)',
+        tension: 0.2,
+        pointRadius: 0,
+        fill: true
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { display: true, grid: { display: false } },
+        y: { display: true, grid: { color: '#222' } }
+      }
+    }
+  });
+}
+
 // ===== Initialization =====
 async function initDashboard() {
   const [networkData, taoPrice] = await Promise.all([
