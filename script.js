@@ -374,21 +374,31 @@ async function refreshDashboard() {
   } else if (taoPrice && taoPrice._source === 'taostats' && taoPrice._timestamp) {
     lastUpdated = taoPrice._timestamp;
   }
-  if (lastUpdateEl) {
-    if (lastUpdated) {
-      const d = new Date(lastUpdated);
-      const hh = d.getHours().toString().padStart(2, '0');
-      const mm = d.getMinutes().toString().padStart(2, '0');
-      lastUpdateEl.textContent = `Updated: ${hh}:${mm}`;
-    } else {
-      lastUpdateEl.textContent = `Updated: --:--`;
-    }
+  let lastUpdateStr = '--:--';
+  if (lastUpdated) {
+    const d = new Date(lastUpdated);
+    const hh = d.getHours().toString().padStart(2, '0');
+    const mm = d.getMinutes().toString().padStart(2, '0');
+    lastUpdateStr = `${hh}:${mm}`;
+    if (lastUpdateEl) lastUpdateEl.textContent = `Updated: ${lastUpdateStr}`;
+  } else {
+    if (lastUpdateEl) lastUpdateEl.textContent = `Updated: --:--`;
   }
 
   // Volume aus taostats holen!
   const volumeEl = document.getElementById('volume24h');
   if (volumeEl && taostats && typeof taostats.volume_24h === 'number') {
-    volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+    volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })} (⟳ ${lastUpdateStr})`;
+  }
+
+  // Market Cap und FDV ergänzen
+  const marketCapEl = document.getElementById('marketCap');
+  if (marketCapEl && marketCapEl.textContent && lastUpdateStr !== '--:--') {
+    marketCapEl.textContent += ` (⟳ ${lastUpdateStr})`;
+  }
+  const fdvEl = document.getElementById('fdv');
+  if (fdvEl && fdvEl.textContent && lastUpdateStr !== '--:--') {
+    fdvEl.textContent += ` (⟳ ${lastUpdateStr})`;
   }
 
   // API Status setzen
