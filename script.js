@@ -539,21 +539,22 @@ let refreshTimer = null;
 function renderRefreshIndicator() {
   const el = document.getElementById('refresh-indicator');
   if (!el) return;
-  // SVG Circle (animiert)
-  const radius = 12;
-  const stroke = 3;
+  // SVG Circle (kompakt)
+  const radius = 7;
+  const stroke = 2.2;
   const circ = 2 * Math.PI * radius;
   const progress = (refreshCountdown / REFRESH_SECONDS);
   el.innerHTML = `
-    <svg viewBox="0 0 28 28">
-      <circle cx="14" cy="14" r="${radius}" stroke="#222" stroke-width="${stroke}" fill="none"/>
-      <circle cx="14" cy="14" r="${radius}" stroke="#22c55e" stroke-width="${stroke}" fill="none"
+    <svg viewBox="0 0 18 18">
+      <circle cx="9" cy="9" r="${radius}" stroke="#222" stroke-width="${stroke}" fill="none"/>
+      <circle cx="9" cy="9" r="${radius}" stroke="#22c55e" stroke-width="${stroke}" fill="none"
         stroke-dasharray="${circ}" stroke-dashoffset="${circ * (1 - progress)}"
         style="transition: stroke-dashoffset 0.5s;"/>
     </svg>
     <span class="refresh-label">${refreshCountdown}</span>
+    <span class="refresh-text">Refresh</span>
   `;
-  el.title = `Auto-refresh in ${refreshCountdown}s`;
+  el.title = `Auto-refresh in ${refreshCountdown}s – Click to refresh now`;
 }
 
 function startAutoRefresh() {

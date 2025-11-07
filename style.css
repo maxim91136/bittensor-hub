@@ -773,23 +773,24 @@ body {
   }
 }
 
-/* --- Refresh Indicator (Countdown Circle) --- */
+/* --- Refresh Indicator (Kompakt & Dezent) --- */
 .refresh-indicator {
-  width: 28px;
-  height: 28px;
-  margin-left: 18px;
+  width: 18px;
+  height: 18px;
+  margin-left: 10px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
   cursor: pointer;
   user-select: none;
+  opacity: 0.8;
   transition: opacity 0.2s;
-  opacity: 0.85;
 }
 .refresh-indicator svg {
-  width: 28px;
-  height: 28px;
+  width: 18px;
+  height: 18px;
   display: block;
 }
 .refresh-indicator .refresh-label {
@@ -798,12 +799,25 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.95em;
+  font-size: 0.75em;
   font-weight: 600;
   color: #22c55e;
   pointer-events: none;
   letter-spacing: -0.5px;
 }
+.refresh-indicator .refresh-text {
+  display: none;
+  font-size: 0.65em;
+  color: #9ca3af;
+  margin-top: 2px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
 .refresh-indicator:hover {
   opacity: 1;
+}
+@media (min-width: 600px) {
+  .refresh-indicator .refresh-text {
+    display: block;
+  }
 }
