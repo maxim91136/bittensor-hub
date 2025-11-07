@@ -140,6 +140,7 @@ async function fetchTaoPrice() {
       price: taostats.price,
       change24h: taostats.percent_change_24h ?? null,
       last_updated: taostats.last_updated ?? null,
+      volume_24h: taostats.volume_24h ?? null,
       _source: 'taostats'
     };
   }
