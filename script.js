@@ -391,20 +391,10 @@ async function refreshDashboard() {
     volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })} (⟳ ${lastUpdateStr})`;
   }
 
-  // Market Cap und FDV ergänzen
-  const marketCapEl = document.getElementById('marketCap');
-  if (marketCapEl && marketCapEl.textContent && lastUpdateStr !== '--:--') {
-    marketCapEl.textContent += ` (⟳ ${lastUpdateStr})`;
-  }
-  const fdvEl = document.getElementById('fdv');
-  if (fdvEl && fdvEl.textContent && lastUpdateStr !== '--:--') {
-    fdvEl.textContent += ` (⟳ ${lastUpdateStr})`;
-  }
-
   // API Status setzen
   const apiStatusEl = document.getElementById('apiStatus');
   const apiStatusIcon = document.querySelector('#apiStatusCard .stat-icon');
-  let statusText = 'All systems operational';
+  let statusText = 'All systems ok';
   let statusIcon = '🟢';
   if (!networkData || !taostats) {
     statusText = 'API error';
