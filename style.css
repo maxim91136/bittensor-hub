@@ -197,7 +197,7 @@ body {
 
 .skeleton-text {
   display: inline-block;
-  min-width: 36px;
+  min-width: 75px;
   height: 1em;
   background: linear-gradient(90deg, rgba(255,255,255,0.08) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.08) 75%);
   background-size: 200% 100%;
@@ -210,7 +210,7 @@ body {
   inset: 0;
   background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
   background-size: 200% 100%;
-  animation: skeleton 1.5s ease-in-out infinite;
+  animation: skeleton 3.5s ease-in-out infinite;
   border-radius: 8px;
   opacity: 0.6;
 }
