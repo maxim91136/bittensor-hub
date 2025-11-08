@@ -1,5 +1,4 @@
   // Entferne losgelösten Codeblock und stelle sicher, dass formatCompact als Funktion existiert
-}
 // ===== API Configuration =====
 const API_BASE = '/api';
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
