@@ -197,11 +197,11 @@ body {
 
 .skeleton-text {
   display: inline-block;
-  min-width: 50px;
+  min-width: 36px;
   height: 1em;
   background: linear-gradient(90deg, rgba(255,255,255,0.08) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.08) 75%);
   background-size: 200% 100%;
-  animation: skeleton 1.5s ease-in-out infinite;
+  animation: skeleton 2.5s ease-in-out infinite;
   border-radius: 4px;
 }
 
