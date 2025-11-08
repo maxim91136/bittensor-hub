@@ -221,12 +221,12 @@ function updateMarketCapAndFDV(price, circulatingSupply) {
   const fdvEl = document.getElementById('fdv');
   const maxSupply = 21_000_000;
   if (marketCapEl && price && circulatingSupply) {
-    const marketCap = price * circulatingSupply;
-    marketCapEl.textContent = `$${marketCap.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+  const marketCap = price * circulatingSupply;
+  marketCapEl.textContent = `$${marketCap.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
   }
   if (fdvEl && price) {
-    const fdv = price * maxSupply;
-    fdvEl.textContent = `$${fdv.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+  const fdv = price * maxSupply;
+  fdvEl.textContent = `$${fdv.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
   }
 }
 
@@ -403,7 +403,7 @@ async function refreshDashboard() {
   // Volume aus taostats holen!
   const volumeEl = document.getElementById('volume24h');
   if (volumeEl && taostats && typeof taostats.volume_24h === 'number') {
-    volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   }
 
   // API Status setzen
