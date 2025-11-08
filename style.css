@@ -933,3 +933,23 @@ body {
 .socials-links a:hover svg {
   opacity: 1;
 }
+
+.useful-links {
+  display: flex;
+  gap: 1.5em;
+  flex-wrap: wrap;
+  margin-top: 0.5em;
+  font-size: 1em;
+}
+.useful-links a {
+  color: #22c55e;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.2em 0.6em;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+.useful-links a:hover {
+  background: rgba(34,197,94,0.08);
+  color: #fff;
+}
