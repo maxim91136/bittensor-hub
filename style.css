@@ -631,6 +631,11 @@ body {
   gap: 2px;
 }
 
+.source-item-wide {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+}
+
 .source-label {
   font-size: clamp(0.55rem, 1.2vw, 0.65rem);
   font-weight: 500;
