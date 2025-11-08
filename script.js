@@ -247,21 +247,36 @@ async function updateNetworkStats(data) {
     progress: document.querySelector('.stat-progress')
   };
 
-  if (data.blockHeight !== undefined) {
-    elements.blockHeight.textContent = formatFull(data.blockHeight);
-  }
-  if (data.subnets !== undefined) {
-    elements.subnets.textContent = formatFull(data.subnets);
-  }
-  if (data.validators !== undefined) {
-    elements.validators.textContent = formatFull(data.validators);
-  }
-  if (data.emission !== undefined) {
-    elements.emission.textContent = formatFull(data.emission);
-  }
-  if (data.totalNeurons !== undefined) {
-    elements.totalNeurons.textContent = formatFull(data.totalNeurons);
-  }
+    if (data.blockHeight !== undefined) {
+      if (elements.blockHeight) {
+        elements.blockHeight.textContent = formatFull(data.blockHeight);
+        elements.blockHeight.classList.remove('skeleton-text');
+      }
+    }
+    if (data.subnets !== undefined) {
+      if (elements.subnets) {
+        elements.subnets.textContent = formatFull(data.subnets);
+        elements.subnets.classList.remove('skeleton-text');
+      }
+    }
+    if (data.validators !== undefined) {
+      if (elements.validators) {
+        elements.validators.textContent = formatFull(data.validators);
+        elements.validators.classList.remove('skeleton-text');
+      }
+    }
+    if (data.emission !== undefined) {
+      if (elements.emission) {
+        elements.emission.textContent = formatFull(data.emission);
+        elements.emission.classList.remove('skeleton-text');
+      }
+    }
+    if (data.totalNeurons !== undefined) {
+      if (elements.totalNeurons) {
+        elements.totalNeurons.textContent = formatFull(data.totalNeurons);
+        elements.totalNeurons.classList.remove('skeleton-text');
+      }
+    }
 
   const circSupply = await fetchCirculatingSupply();
   const supplyEl = document.getElementById('circulatingSupply');
