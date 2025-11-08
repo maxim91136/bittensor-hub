@@ -1,4 +1,3 @@
-  // Entferne losgelösten Codeblock und stelle sicher, dass formatCompact als Funktion existiert
 // ===== API Configuration =====
 const API_BASE = '/api';
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
@@ -18,14 +17,6 @@ window.halvingInterval = null;
 window.circulatingSupply = null;
 
 // ===== Utility Functions =====
-function formatCompact(num) {
-  if (num === null || num === undefined || isNaN(num)) return '—';
-  num = Number(num);
-  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(2) + 'B';
-  if (num >= 1_000_000) return (num / 1_000_000).toFixed(2) + 'M';
-  if (num >= 1_000) return (num / 1_000).toFixed(1) + 'K';
-  return num.toLocaleString('en-US');
-}
 function animateValue(element, start, end, duration = 1000) {
   const startTime = performance.now();
   const isFloat = end % 1 !== 0;
@@ -230,12 +221,12 @@ function updateMarketCapAndFDV(price, circulatingSupply) {
   const fdvEl = document.getElementById('fdv');
   const maxSupply = 21_000_000;
   if (marketCapEl && price && circulatingSupply) {
-    const marketCap = price * circulatingSupply;
-    marketCapEl.textContent = `$${formatCompact(marketCap)}`;
+  const marketCap = price * circulatingSupply;
+  marketCapEl.textContent = `$${marketCap.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
   }
   if (fdvEl && price) {
-    const fdv = price * maxSupply;
-    fdvEl.textContent = `$${formatCompact(fdv)}`;
+  const fdv = price * maxSupply;
+  fdvEl.textContent = `$${fdv.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
   }
 }
 
@@ -412,7 +403,7 @@ async function refreshDashboard() {
   // Volume aus taostats holen!
   const volumeEl = document.getElementById('volume24h');
   if (volumeEl && taostats && typeof taostats.volume_24h === 'number') {
-    volumeEl.textContent = `$${formatCompact(taostats.volume_24h)}`;
+  volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   }
 
   // API Status setzen
@@ -532,7 +523,7 @@ async function initDashboard() {
   const taostats = await fetchTaostats();
   const volumeEl = document.getElementById('volume24h');
   if (volumeEl && taostats && typeof taostats.volume_24h === 'number') {
-    volumeEl.textContent = `$${formatCompact(taostats.volume_24h)}`;
+    volumeEl.textContent = `$${taostats.volume_24h.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   }
 
   // API Status initial befüllen
