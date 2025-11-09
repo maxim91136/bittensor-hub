@@ -1,19 +1,20 @@
 # bittensor-labs
 
-Bittensor-Labs Dashboard with essential metrics
+Bittensor-Labs ultra-compact Dashboard
 
 ## Overview
+Started: November 3, 2025
 
 This project provides a compact dashboard for visualizing and monitoring key Bittensor metrics. It is designed for anyone interested in understanding the Bittensor ecosystem. 
 
-First it was just a learning project, but now it is passion.
-PS: This is my first ever GitHub and website projekt, with many headaches but also much fun.
+First it was just a learning and hobby project, but now it is passion.
+PS: This is my first ever GitHub and website project, with many headaches but also much fun.
 
 ## Features
 
 - Clear display of network statistics
 - Node status and performance overview
-- Real-time updates of important metrics
+- Real-time updates of important metrics / price
 - Easily extendable and customizable
 
 ## Installation
