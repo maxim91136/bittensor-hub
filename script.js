@@ -261,7 +261,9 @@ async function updateNetworkStats(data) {
     }
     if (data.subnets !== undefined) {
       if (elements.subnets) {
-        elements.subnets.textContent = formatFull(data.subnets);
+  // Subtract 1 to exclude Subtensor (subnet 0) from the displayed subnet count
+        const displaySubnets = data.subnets > 0 ? data.subnets - 1 : 0;
+        elements.subnets.textContent = formatFull(displaySubnets);
         elements.subnets.classList.remove('skeleton-text');
       }
     }
