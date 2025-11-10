@@ -25,8 +25,19 @@ jobs:
           X_USER_ID: ${{ secrets.X_USER_ID }}
         run: |
             python .github/scripts/fetch_x_alerts.py
-      - name: Upload alerts artifact
-        uses: actions/upload-artifact@v4
-        with:
-            name: x-alerts
-            path: .github/scripts/x_alerts.json
+      - name: Push X Alerts to Cloudflare KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+        run: |
+          if [ ! -f x_alerts_latest.json ]; then
+            echo "No x_alerts_latest.json found"
+            exit 1
+          fi
+          URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/x_alerts_latest"
+          curl -fsSL -X PUT \
+            "$URL" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @x_alerts_latest.json
