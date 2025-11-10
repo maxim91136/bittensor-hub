@@ -1,4 +1,4 @@
-name: Update TAO Alerts from X
+name: Fetch TAO Alerts from X to Cloudflare KV
 
 on:
   schedule:
