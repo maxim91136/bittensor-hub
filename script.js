@@ -416,18 +416,26 @@ async function refreshDashboard() {
 
   // Set API status
   const apiStatusEl = document.getElementById('apiStatus');
-  const apiStatusIcon = document.querySelector('#apiStatusCard .stat-icon');
+  const apiStatusIcon = document.querySelector('#apiStatusCard .stat-icon svg');
   let statusText = 'All systems ok';
-  let statusIcon = '🟢';
+  let color = '#22c55e'; // green
   if (!networkData || !taostats) {
     statusText = 'API error';
-    statusIcon = '🔴';
+    color = '#ef4444'; // red
   } else if (!taostats.price || !taostats.volume_24h) {
     statusText = 'Partial data';
-    statusIcon = '🟡';
+    color = '#eab308'; // yellow
   }
   if (apiStatusEl) apiStatusEl.textContent = statusText;
-  // Do not overwrite the SVG icon with emoji
+  // Dynamically update SVG colors
+  if (apiStatusIcon) {
+    // Update circle color
+    const circle = apiStatusIcon.querySelector('circle');
+    if (circle) circle.setAttribute('stroke', color);
+    // Update heartbeat line color
+    const polyline = apiStatusIcon.querySelector('polyline');
+    if (polyline) polyline.setAttribute('stroke', color);
+  }
 }
 
 // ===== Auto-refresh with countdown circle =====
