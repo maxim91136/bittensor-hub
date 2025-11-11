@@ -427,7 +427,7 @@ async function refreshDashboard() {
     statusIcon = '🟡';
   }
   if (apiStatusEl) apiStatusEl.textContent = statusText;
-  if (apiStatusIcon) apiStatusIcon.textContent = statusIcon;
+  // Do not overwrite the SVG icon with emoji
 }
 
 // ===== Auto-refresh with countdown circle =====
