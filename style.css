@@ -954,6 +954,7 @@ body {
   color: #16a34a;
   background: rgba(34,197,94,0.08);
   border-radius: 6px;
+  box-shadow: 0 0 8px 2px var(--glow);
 }
 
 .socials-links a:hover svg,
