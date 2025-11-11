@@ -81,7 +81,17 @@
   <a class="stat-card" href="https://taostats.io/subnets" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit; cursor: pointer; position: relative;">
   <!-- Exclude info-badge from link -->
   <span class="info-badge" data-tooltip="Number of active subnets in the network">i</span>
-  <div class="stat-icon" aria-hidden="true">🧩</div>
+  <div class="stat-icon" aria-hidden="true">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <title>Subnets</title>
+      <circle cx="6" cy="6" r="3" fill="#22c55e"/>
+      <circle cx="18" cy="6" r="3" fill="#22c55e"/>
+      <circle cx="12" cy="18" r="3" fill="#22c55e"/>
+      <line x1="6" y1="6" x2="12" y2="18" stroke="#16a34a" stroke-width="2"/>
+      <line x1="18" y1="6" x2="12" y2="18" stroke="#16a34a" stroke-width="2"/>
+      <line x1="6" y1="6" x2="18" y2="6" stroke="#16a34a" stroke-width="2"/>
+    </svg>
+  </div>
   <div class="stat-content">
     <div class="stat-label">Subnets</div>
   <div class="stat-value" id="subnets">—</div>
@@ -89,7 +99,13 @@
   </a>
   <a class="stat-card" href="https://taostats.io/validators" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit; cursor: pointer;">
     <span class="info-badge" data-tooltip="Number of active validators securing the network">i</span>
-    <div class="stat-icon" aria-hidden="true">🧑‍💻</div>
+      <div class="stat-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <title>User Icon</title>
+          <circle cx="12" cy="8" r="4" fill="#22c55e"/>
+          <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="#16a34a" stroke-width="2" fill="none"/>
+        </svg>
+      </div>
     <div class="stat-content">
       <div class="stat-label">Validators</div>
   <div class="stat-value" id="validators">—</div>
@@ -97,7 +113,15 @@
   </a>
      <div class="stat-card">
         <span class="info-badge" data-tooltip="TAO trading volume in the last 24 hours across all tracked exchanges">i</span>
-        <div class="stat-icon" aria-hidden="true">💹</div>
+        <div class="stat-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <title>Volume 24h</title>
+            <rect x="4" y="14" width="3" height="6" rx="1" fill="#22c55e"/>
+            <rect x="9" y="10" width="3" height="10" rx="1" fill="#22c55e"/>
+            <rect x="14" y="6" width="3" height="14" rx="1" fill="#22c55e"/>
+            <rect x="19" y="12" width="3" height="8" rx="1" fill="#16a34a"/>
+          </svg>
+        </div>
         <div class="stat-content">
           <div class="stat-label">Volume 24h</div>
     <div class="stat-value" id="volume24h">—</div>
@@ -105,15 +129,29 @@
       </div>
   <div class="stat-card">
       <span class="info-badge" data-tooltip="Current circulating supply of TAO tokens">i</span>
-      <div class="stat-icon" aria-hidden="true">💎</div>
+      <div class="stat-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <title>Circulating Supply</title>
+          <ellipse cx="12" cy="17" rx="7" ry="3" fill="#22c55e"/>
+          <ellipse cx="12" cy="13" rx="7" ry="3" fill="#16a34a"/>
+          <ellipse cx="12" cy="9" rx="7" ry="3" fill="#22c55e"/>
+        </svg>
+      </div>
       <div class="stat-content">
-        <div class="stat-label">Circ. Supply</div>
+    <div class="stat-label">Circ Supply</div>
   <div class="stat-value" id="circulatingSupply">—</div>
       </div>
    </div>
     <div class="stat-card">
       <span class="info-badge" data-tooltip="Market capitalization = price × circulating supply">i</span>
-      <div class="stat-icon" aria-hidden="true">💰</div>
+      <div class="stat-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <title>Market Cap</title>
+          <rect x="5" y="8" width="14" height="10" rx="3" fill="#22c55e"/>
+          <rect x="8" y="5" width="8" height="4" rx="2" fill="#16a34a"/>
+          <rect x="10" y="12" width="4" height="2" rx="1" fill="#111318"/>
+        </svg>
+      </div>
       <div class="stat-content">
         <div class="stat-label">Mkt Cap</div>
   <div class="stat-value" id="marketCap">—</div>
@@ -121,7 +159,14 @@
     </div>
     <div class="stat-card">
       <span class="info-badge" data-tooltip="Fully Diluted Valuation = price × max supply">i</span>
-      <div class="stat-icon" aria-hidden="true">🌐</div>
+      <div class="stat-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <title>FDV</title>
+          <circle cx="12" cy="12" r="8" fill="#22c55e"/>
+          <ellipse cx="12" cy="12" rx="8" ry="4" fill="#16a34a"/>
+          <ellipse cx="12" cy="12" rx="4" ry="8" fill="none" stroke="#111318" stroke-width="2"/>
+        </svg>
+      </div>
       <div class="stat-content">
         <div class="stat-label">FDV</div>
   <div class="stat-value" id="fdv">—</div>
@@ -129,7 +174,12 @@
     </div>
     <div class="stat-card">
       <span class="info-badge" data-tooltip="Current emission rate of TAO per day">i</span>
-      <div class="stat-icon" aria-hidden="true">⚡</div>
+      <div class="stat-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <title>Emission</title>
+          <polygon points="13 2 6 14 12 14 11 22 18 10 12 10" fill="#22c55e"/>
+        </svg>
+      </div>
       <div class="stat-content">
         <div class="stat-label">Emission</div>
   <div class="stat-value" id="emission">—</div>
@@ -137,7 +187,14 @@
     </div>
     <div class="stat-card">
       <span class="info-badge" data-tooltip="Total number of neurons in the network">i</span>
-      <div class="stat-icon" aria-hidden="true">🧠</div>
+      <div class="stat-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <title>Neurons</title>
+            <circle cx="9" cy="13" r="2.2" fill="#22c55e"/>
+            <circle cx="17" cy="11" r="2.2" fill="#16a34a"/>
+            <path d="M11.2 13 Q13 16 14.8 11" stroke="#111318" stroke-width="1.2" fill="none"/>
+        </svg>
+      </div>
       <div class="stat-content">
         <div class="stat-label">Neurons</div>
   <div class="stat-value" id="totalNeurons">—</div>
@@ -145,7 +202,12 @@
     </div>
       <div class="stat-card">
         <span class="info-badge" data-tooltip="Current block height of the Bittensor blockchain">i</span>
-        <div class="stat-icon" aria-hidden="true">⛓️</div>
+        <div class="stat-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <title>Block</title>
+            <polygon points="12,6 18,10 18,16 12,20 6,16 6,10" fill="#22c55e" stroke="#16a34a" stroke-width="1.5"/>
+          </svg>
+        </div>
         <div class="stat-content">
           <div class="stat-label">Block</div>
           <div class="stat-value" id="blockHeight">—</div>
@@ -159,7 +221,13 @@
         data-tooltip="Status of all data sources powering the dashboard&#10;Taostats: OK&#10;CoinGecko: OK&#10;Bittensor SDK: OK">
         i
       </span>
-      <div class="stat-icon" aria-hidden="true">🟢</div>
+      <div class="stat-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <title>API Status</title>
+          <circle cx="12" cy="14" r="6" fill="#22c55e"/>
+          <polyline points="10,14 12,16 15,12" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
       <div class="stat-content">
         <div class="stat-label">API Status</div>
         <div class="stat-value" id="apiStatus">Checking…</div>
