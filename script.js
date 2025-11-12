@@ -575,6 +575,11 @@ async function initDashboard() {
 }
 
 // ===== Halving Countdown =====
+function startHalvingCountdown() {
+  if (window.halvingInterval) clearInterval(window.halvingInterval);
+  updateHalvingCountdown();
+  window.halvingInterval = setInterval(updateHalvingCountdown, 1000);
+}
 function calculateHalvingDate(circulatingSupply, emissionRate) {
   const HALVING_SUPPLY = 10_500_000;
   const remaining = HALVING_SUPPLY - circulatingSupply;
