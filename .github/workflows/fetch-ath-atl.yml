@@ -1,0 +1,26 @@
+name: Fetch ATH/ATL from Coingecko
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: '0 */3 * * *' # Every 3 hours
+jobs:
+  fetch-ath-atl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install requests
+      - name: Fetch ATH/ATL data
+        run: python .github/scripts/fetch_ath-atl-coingecko.py
+      - name: Commit KV file
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add tao_ath_atl.json
+          git commit -m 'Update ATH/ATL data from Coingecko' || echo 'No changes to commit'
+          git push
