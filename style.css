@@ -846,6 +846,31 @@ body {
 @media (max-width: 700px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--gap-md);
+  }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+  .dashboard-card, .stat-card {
+    width: 100%;
+    min-width: 0;
+    border-radius: 10px;
+    padding: var(--space-md);
+  }
+  .card-header h2, .card-header h3 {
+    font-size: 1.1em;
+  }
+  .socials-links a, .useful-links a {
+    font-size: 1em;
+    padding: 8px 0;
+    min-height: 44px;
+  }
+  .socials-links a svg, .useful-links a svg {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    min-height: 22px;
   }
 }
 
