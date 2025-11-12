@@ -624,8 +624,10 @@ function updateHalvingCountdown() {
   }
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  // Show days and hours only
-  el.textContent = `${days}d ${hours}h`;
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+  // Show days, hours, minutes, and seconds
+  el.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 // Prevent link click on info badge (pro solution)
 document.addEventListener('DOMContentLoaded', () => {
