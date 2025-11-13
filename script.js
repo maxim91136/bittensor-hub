@@ -676,24 +676,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })();
 });
-
-  // Load data and redraw chart
-      const priceHistory = await fetchPriceHistory(currentPriceRange);
-      if (priceHistory) {
-        createPriceChart(priceHistory, currentPriceRange);
-      }
-
-  // Hide skeleton
-      if (priceCard) priceCard.classList.remove('loading');
-    });
-  });
-
-  // Info badge tooltip for API status card: static text
-  const infoBadge = document.querySelector('#apiStatusCard .info-badge');
-  if (infoBadge) {
-    infoBadge.setAttribute(
-      'data-tooltip',
-      'Status of all data sources powering the dashboard\nTaostats: OK\nCoinGecko: OK\nBittensor SDK: OK'
-    );
-  }
-});
