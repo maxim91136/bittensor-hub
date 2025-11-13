@@ -629,43 +629,52 @@ async function updateAthAtlPills() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  initDashboard();
-  updateAthAtlPills();
+  (async () => {
+    await initDashboard();
+    await updateAthAtlPills();
 
-  // Prevent link click on info badge (pro solution)
-  document.querySelectorAll('.stat-card .info-badge').forEach(badge => {
-    badge.addEventListener('click', function(e) {
-      e.stopPropagation();
-      e.preventDefault();
+    // Prevent link click on info badge (pro solution)
+    document.querySelectorAll('.stat-card .info-badge').forEach(badge => {
+      badge.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+      });
+      badge.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
+      });
     });
-    badge.addEventListener('touchstart', function(e) {
-      e.stopPropagation();
+
+    // Time range buttons for the chart
+    document.querySelectorAll('.time-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const range = btn.getAttribute('data-range'); // "7", "30", "365"
+        if (range === currentPriceRange) return; // No reload if same
+        currentPriceRange = range;
+
+        // Update button UI
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Show chart skeleton (optional)
+        const priceCard = btn.closest('.dashboard-card');
+        if (priceCard) priceCard.classList.add('loading');
+
+        // Load data and redraw chart
+        const priceHistory = await fetchPriceHistory(currentPriceRange);
+        if (priceHistory) {
+          createPriceChart(priceHistory, currentPriceRange);
+        }
+        // Hide skeleton
+        if (priceCard) priceCard.classList.remove('loading');
+      });
     });
-  });
 
-  // Time range buttons for the chart
-  document.querySelectorAll('.time-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const range = btn.getAttribute('data-range'); // "7", "30", "365"
-      if (range === currentPriceRange) return; // No reload if same
-      currentPriceRange = range;
-
-      // Update button UI
-      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      // Show chart skeleton (optional)
-      const priceCard = btn.closest('.dashboard-card');
-      if (priceCard) priceCard.classList.add('loading');
-      // ...existing code for chart update (if any)...
-    });
-  });
-
-  // Info badge tooltip for API status card: static text
-  const infoBadge = document.querySelector('#apiStatusCard .info-badge');
-  if (infoBadge) {
-    infoBadge.setAttribute('data-tooltip', 'API status: Network, Taostats, Coingecko');
-  }
+    // Info badge tooltip for API status card: static text
+    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
+    if (infoBadge) {
+      infoBadge.setAttribute('data-tooltip', 'API status: Network, Taostats, Coingecko');
+    }
+  })();
 });
 
   // Load data and redraw chart
