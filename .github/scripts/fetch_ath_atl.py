@@ -1,16 +1,9 @@
+
 import requests
 import json
-import os
 from datetime import datetime
 
 COINGECKO_API = 'https://api.coingecko.com/api/v3/coins/bittensor'
-CF_API_TOKEN = os.getenv('CF_API_TOKEN')
-CF_ACCOUNT_ID = os.getenv('CF_ACCOUNT_ID')
-CF_METRICS_NAMESPACE_ID = os.getenv('CF_METRICS_NAMESPACE_ID')
-KV_KEY = 'tao_ath_atl'
-
-# Cloudflare KV API endpoint
-CF_KV_API = f'https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/storage/kv/namespaces/{CF_METRICS_NAMESPACE_ID}/values/{KV_KEY}'
 
 def fetch_ath_atl():
     try:
@@ -31,14 +24,10 @@ def fetch_ath_atl():
             'source': 'coingecko',
             'updated': datetime.utcnow().isoformat() + 'Z'
         }
-        # Store result in Cloudflare KV
-        headers = {
-            'Authorization': f'Bearer {CF_API_TOKEN}',
-            'Content-Type': 'application/json'
-        }
-        kv_res = requests.put(CF_KV_API, headers=headers, data=json.dumps(result))
-        kv_res.raise_for_status()
-        print('ATH/ATL data saved to Cloudflare KV:', result)
+        with open('tao_ath_atl.json', 'w') as f:
+            json.dump(result, f, indent=2)
+        print('ATH/ATL data written to tao_ath_atl.json')
+        print(json.dumps(result, indent=2))
     except Exception as e:
         print('Error:', str(e))
         exit(1)

@@ -17,11 +17,20 @@ jobs:
         run: pip install requests
       - name: Fetch ATH/ATL data
         run: python .github/scripts/fetch_ath_atl.py
-      - name: Commit KV file
+
+      - name: Push ATH/ATL data to Cloudflare KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git add tao_ath_atl.json
-          git commit -m 'Update ATH/ATL data from Coingecko' || echo 'No changes to commit'
-          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/maxim91136/bittensor-labs.git
-          git push
+          if [ ! -f tao_ath_atl.json ]; then
+            echo "No tao_ath_atl.json found"
+            exit 1
+          fi
+          URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/tao_ath_atl"
+          curl -fsSL -X PUT \
+            "$URL" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @tao_ath_atl.json
