@@ -608,8 +608,29 @@ function updateHalvingCountdown() {
   el.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 // Prevent link click on info badge (pro solution)
+
+// Fetch ATH/ATL data and update pills
+async function updateAthAtlPills() {
+  try {
+    const res = await fetch('/api/ath-atl');
+    if (!res.ok) throw new Error('ATH/ATL API error');
+    const data = await res.json();
+    const athValue = document.getElementById('athValue');
+    const athDate = document.getElementById('athDate');
+    const atlValue = document.getElementById('atlValue');
+    const atlDate = document.getElementById('atlDate');
+    if (athValue && data.ath) athValue.textContent = `$${Number(data.ath).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    if (athDate && data.ath_date) athDate.textContent = new Date(data.ath_date).toLocaleDateString('en-US');
+    if (atlValue && data.atl) atlValue.textContent = `$${Number(data.atl).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    if (atlDate && data.atl_date) atlDate.textContent = new Date(data.atl_date).toLocaleDateString('en-US');
+  } catch (err) {
+    console.error('❌ updateAthAtlPills:', err);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initDashboard();
+  updateAthAtlPills();
   document.querySelectorAll('.stat-card .info-badge').forEach(badge => {
     badge.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -619,7 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation();
     });
   });
-
+});
   // Time range buttons for the chart
   document.querySelectorAll('.time-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
