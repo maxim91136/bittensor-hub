@@ -2,7 +2,7 @@
   0%, 100% { opacity: 1; filter: drop-shadow(0 0 0px #ff6b35); }
   50% { opacity: 0.7; filter: drop-shadow(0 0 10px #ff6b35); }
 }
-/* Socials & Useful Links Table: Mehr Padding für Zellen */
+/* Socials & Useful Links Table: More padding for cells */
 table.socials-useful-table td, table.socials-useful-table th {
   padding: 10px 12px;
 }
@@ -62,7 +62,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ---- Header: Logo oben, Pills darunter, immer zentriert ---- */
+/* ---- Header: Logo at the top, pills below, always centered ---- */
 .site-header {
   position: sticky;
   top: 0;
@@ -106,7 +106,7 @@ body {
   background: linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.03) 100%);
 }
 
-/* Pills niemals umbrechen lassen */
+/* Pills should never wrap */
 @media (max-width: 400px) {
   .pills-row {
     gap: 6px;
@@ -194,13 +194,13 @@ body {
 .price-change.positive {
   color: #22c55e;
   background: rgba(34, 197, 94, 0.1);
-  /* keine weitere Klammer */
+
 }
 
 .price-change.negative {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.1);
-  /* keine weitere Klammer */
+
 }
 
 .price-icon {
