@@ -636,7 +636,7 @@ body {
 
 .data-sources-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: clamp(6px, 1.5vw, 8px);
   padding: var(--space-sm);
   background: rgba(255, 255, 255, 0.01);
