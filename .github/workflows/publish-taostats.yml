@@ -1,4 +1,4 @@
-name: Fetch Taostats metrics to Cloudflare KV
+name: Fetch and Push Taostats metrics to Cloudflare KV
 
 on:
   schedule:
