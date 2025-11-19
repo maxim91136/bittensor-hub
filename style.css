@@ -526,6 +526,11 @@ body {
   background: rgba(17, 19, 24, 0.8);
   box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(34,197,94,0.1);
 }
+.dashboard-card.light-bg:hover {
+  background: #fff !important; /* keep it white in Light Mode */
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+}
+.dashboard-card.light-bg:hover::before { opacity: 0 !important; }
 
 .dashboard-card:hover::before {
   opacity: 1;
@@ -1107,6 +1112,7 @@ header.site-header.light-bg {
   color: #222 !important;
   border: 1px solid #c0c0c0 !important;
   box-shadow: 0 1px 1px #0001;
+  backdrop-filter: none !important;
 }
 .price-pill.light-bg,
 .halving-pill.light-bg {
@@ -1176,8 +1182,12 @@ header.site-header.light-bg {
 .disclaimer-card.light-bg {
   /* stronger, near-white background for maximal contrast in Light Mode */
   background: #ffffff !important;
+  background-image: none !important;
   color: #000 !important;
   border: 1px solid #c0c0c0 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08) !important;
 }
 .disclaimer-card.light-bg .disclaimer-header {
   color: #000 !important;
@@ -1199,6 +1209,9 @@ header.site-header.light-bg {
   opacity: 1 !important;
   filter: none !important;
 }
+
+/* Remove :before overlay on cards (in case it darkens the card in Safari) */
+.disclaimer-card.light-bg::before { display: none !important; }
 .disclaimer-card.light-bg .disclaimer-text strong {
   color: #000 !important;
   -webkit-text-fill-color: #000 !important; /* Safari fallback */

@@ -689,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const elementsToToggle = [
     body,
     header,
-    ...Array.from(document.querySelectorAll('.dashboard-card, .stat-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, .stat-value, .info-badge, .pill-value'))
+    ...Array.from(document.querySelectorAll('.dashboard-card, .stat-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, .stat-value, .info-badge, .pill-value, .disclaimer-card'))
   ];
   function setLightMode(active) {
     elementsToToggle.forEach(el => {
@@ -698,6 +698,50 @@ document.addEventListener('DOMContentLoaded', () => {
         el.classList.add('light-bg');
       } else {
         el.classList.remove('light-bg');
+      }
+    });
+    // JS fallback for browsers that do not fully respect CSS overrides (Safari, PWA quirks)
+    // Apply inline styles to key elements to force proper Light Mode contrast
+    const rootStyle = getComputedStyle(document.documentElement);
+    const accent = (rootStyle.getPropertyValue('--accent') || '#22c55e').trim();
+    const brand = (rootStyle.getPropertyValue('--brand') || '#ff6b35').trim();
+    document.querySelectorAll('.disclaimer-card, .price-pill, .halving-pill').forEach(el => {
+      if (!el) return;
+      if (active) {
+        if (el.classList.contains('disclaimer-card')) {
+          el.style.background = '#fff';
+          el.style.backgroundImage = 'none';
+          el.style.border = '1px solid #c0c0c0';
+          el.style.boxShadow = '0 12px 32px rgba(0,0,0,0.08)';
+          el.style.color = '#000';
+          el.style.backdropFilter = 'none';
+          el.style.filter = 'none';
+        }
+        if (el.classList.contains('price-pill')) {
+          el.style.background = '#fff';
+          el.style.borderColor = '#dcdcdc';
+          el.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
+          el.style.color = '#000';
+          el.style.borderLeft = `4px solid ${accent}`;
+        }
+        if (el.classList.contains('halving-pill')) {
+          el.style.background = '#fff';
+          el.style.borderColor = '#dcdcdc';
+          el.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
+          el.style.color = '#000';
+          el.style.borderLeft = `4px solid ${brand}`;
+        }
+      } else {
+        // Remove inline styles to fall back to CSS rules for Dark Mode
+        el.style.background = '';
+        el.style.backgroundImage = '';
+        el.style.border = '';
+        el.style.borderColor = '';
+        el.style.boxShadow = '';
+        el.style.color = '';
+        el.style.borderLeft = '';
+        el.style.backdropFilter = '';
+        el.style.filter = '';
       }
     });
     if (active) {
