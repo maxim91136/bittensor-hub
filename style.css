@@ -1114,6 +1114,29 @@ body {
   font-size: 0.70em;
 }
 
+/* Scale whitepaper icon to match the refresh timer and keep a consistent accent */
+.whitepaper-btn svg {
+  width: 22px !important;
+  height: 22px !important;
+  vertical-align: middle;
+  margin-right: 6px;
+  display: inline-block;
+  fill: var(--accent) !important; /* ensure matching color */
+}
+@media (min-width: 600px) {
+  .whitepaper-btn svg {
+    width: 30px !important;
+    height: 30px !important;
+  }
+}
+@media (max-width: 420px) {
+  .whitepaper-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 4px;
+  }
+}
+
 /* ---- Light Mode Overrides ---- */
 body.light-bg, header.site-header.light-bg {
   background: #dadada !important;
