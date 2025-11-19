@@ -1247,6 +1247,14 @@ header.site-header.light-bg {
   -webkit-text-fill-color: rgba(34, 197, 94, 0.85) !important; /* Safari fallback */
 }
 
+/* Strong override when .source-item receives the light-bg parent color (prevents inheritance overrides) */
+.data-sources-grid .source-item.light-bg a,
+.disclaimer-card.light-bg .source-item a,
+.disclaimer-card.light-bg .source-item a:visited {
+  color: rgba(34,197,94,0.9) !important;
+  -webkit-text-fill-color: rgba(34,197,94,0.9) !important;
+}
+
 /* ATH / ATL color accents - keep them color-coded across themes */
 .ath-atl-pill.atl-pill {
   background: rgba(239,68,68,0.04) !important;
