@@ -699,8 +699,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     if (active) {
-      body.style.background = '#f7f7f7';
-      if (header) header.style.background = '#f7f7f7';
+      body.style.background = '#dadada';
+      if (header) header.style.background = '#dadada';
       moonIcon.style.display = 'none';
       sunIcon.style.display = 'inline';
     } else {
