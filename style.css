@@ -980,8 +980,7 @@ body {
 
 /* If parent container is too small: */
 
-.socials-card {
-
+/* stray empty rule removed */
 .chart-container {
   position: relative;
   width: 100%;
@@ -1046,6 +1045,7 @@ body {
   padding: 0;
   background: none;
   border: none;
+}
 /* Socials & Useful Links: Subtle hover, smaller icons/text */
 .socials-links a,
 .useful-links a {
@@ -1172,6 +1172,17 @@ header.site-header.light-bg {
 .site-footer.light-bg {
   background: #dadada !important;
   color: #222 !important;
+}
+/* Ensure paragraph text (footer) also switches to dark in Light Mode */
+.site-footer.light-bg p {
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important; /* Safari fallback */
+  opacity: 1 !important;
+}
+
+/* Keep links brand-colored while other text goes dark */
+.site-footer.light-bg a {
+  color: var(--brand) !important;
 }
 .last-update.light-bg {
   color: #222 !important;

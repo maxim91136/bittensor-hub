@@ -689,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const elementsToToggle = [
     body,
     header,
-    ...Array.from(document.querySelectorAll('.dashboard-card, .stat-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, .stat-value, .info-badge, .pill-value, .disclaimer-card'))
+    ...Array.from(document.querySelectorAll('.dashboard-card, .stat-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, .stat-value, .info-badge, .pill-value, .disclaimer-card, .site-footer'))
   ];
   function setLightMode(active) {
     elementsToToggle.forEach(el => {
@@ -765,11 +765,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (active) {
       body.style.background = '#dadada';
       if (header) header.style.background = '#dadada';
+      // JS fallback for footer in case CSS does not apply (Safari / PWA quirks)
+      document.querySelectorAll('.site-footer').forEach(f => {
+        f.style.background = '#dadada';
+        f.style.color = '#222';
+        // Ensure paragraphs inside the footer are readable
+        const p = f.querySelectorAll('p');
+        p.forEach(el => {
+          el.style.color = '#222';
+          el.style.opacity = '1';
+          el.style.webkitTextFillColor = '#222';
+        });
+      });
       moonIcon.style.display = 'none';
       sunIcon.style.display = 'inline';
     } else {
       body.style.background = '';
       if (header) header.style.background = '';
+      document.querySelectorAll('.site-footer').forEach(f => {
+        f.style.background = '';
+        f.style.color = '';
+        const p = f.querySelectorAll('p');
+        p.forEach(el => {
+          el.style.color = '';
+          el.style.opacity = '';
+          el.style.webkitTextFillColor = '';
+        });
+      });
       moonIcon.style.display = 'inline';
       sunIcon.style.display = 'none';
     }
