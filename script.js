@@ -684,10 +684,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const body = document.body;
   // Initial state from localStorage
   const header = document.querySelector('header.site-header');
+  // Add .pill-value directly and use Array.from() when querying NodeList
+  // This is Safari-friendly (older versions may not support spread on NodeList)
   const elementsToToggle = [
     body,
     header,
-    ...document.querySelectorAll('.dashboard-card, .stat-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, .stat-value, .info-badge')
+    ...Array.from(document.querySelectorAll('.dashboard-card, .stat-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, .stat-value, .info-badge, .pill-value'))
   ];
   function setLightMode(active) {
     elementsToToggle.forEach(el => {

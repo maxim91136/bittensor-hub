@@ -3,7 +3,8 @@
   color: #000 !important;
 }
 .pill-value.light-bg {
-  color: #222 !important;
+  /* Make pill values pure black in Light Mode. Avoid conflicting duplicate rules. */
+  color: #000 !important;
 }
 #bgToggleBtn {
   position: fixed;
@@ -184,7 +185,9 @@ body {
 .logo-subtitle {
   font-size: var(--text-xs);
   font-weight: 400;
-  color: #222 !important;
+  /* Use muted text color by default so it remains readable in Dark Mode.
+     Light Mode overrides will set this darker where needed. */
+  color: var(--text-muted);
   letter-spacing: 0.02em;
   line-height: 1;
 }
@@ -1095,6 +1098,9 @@ header.site-header.light-bg {
 .logo-subtitle {
   color: #555 !important;
 }
+.site-header.light-bg .logo-subtitle {
+  color: #222 !important;
+}
 .dashboard-card.light-bg,
 .stat-card.light-bg {
   background: #e2e2e2 !important;
@@ -1111,6 +1117,11 @@ header.site-header.light-bg {
 }
 .price-pill.light-bg .price-icon {
   color: #22c55e !important;
+}
+.price-pill.light-bg .pill-value,
+.halving-pill.light-bg .pill-value,
+.pill-value.skeleton-text.light-bg {
+  color: #000 !important;
 }
 .price-change.light-bg.positive {
   color: #15803d !important;
@@ -1157,8 +1168,20 @@ header.site-header.light-bg {
   color: #000 !important;
   border: 1px solid #c0c0c0 !important;
 }
+.disclaimer-card.light-bg .disclaimer-header {
+  color: #000 !important;
+}
+.disclaimer-card.light-bg .disclaimer-header h3 {
+  color: #000 !important;
+}
 .disclaimer-card.light-bg .disclaimer-text,
 .disclaimer-card.light-bg .source-label {
+  color: #000 !important;
+}
+.disclaimer-card.light-bg .disclaimer-text strong {
+  color: #000 !important;
+}
+.disclaimer-card.light-bg .coingecko-attribution {
   color: #000 !important;
 }
 .disclaimer-card.light-bg a {
