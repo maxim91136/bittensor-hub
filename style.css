@@ -552,6 +552,18 @@ body {
   color: var(--text);
 }
 
+/* Make TAO Price History header black in Light Mode */
+.dashboard-card.light-bg .card-header h2 {
+  color: #000 !important;
+  -webkit-text-fill-color: #000 !important; /* Safari / iOS fallback */
+}
+/* Optional: target the specific chart card when :has is supported */
+@supports selector(:has) {
+  .dashboard-card:has(#priceChart) .card-header h2 {
+    color: #000 !important;
+  }
+}
+
 .card-badge {
   padding: clamp(3px, 0.8vw, 4px) clamp(8px, 2vw, 10px);
   font-size: clamp(0.65rem, 1.5vw, 0.75rem);
