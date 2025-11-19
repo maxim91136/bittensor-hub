@@ -1,3 +1,6 @@
+.pill-value.light-bg {
+  color: #222 !important;
+}
 #bgToggleBtn {
   position: fixed;
   top: 18px;
