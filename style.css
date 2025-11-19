@@ -1080,6 +1080,7 @@ body.light-bg, header.site-header.light-bg {
 header.site-header.light-bg {
   background: #dadada !important;
   border-bottom: 1px solid #c0c0c0 !important;
+  color: #222 !important;
 }
 .logo-title {
   color: #ff6b35;
