@@ -678,22 +678,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Background toggle button
   const btn = document.getElementById('bgToggleBtn');
-  if (!btn) return;
+  const moonIcon = document.getElementById('moonIcon');
+  const sunIcon = document.getElementById('sunIcon');
+  if (!btn || !moonIcon || !sunIcon) return;
   const body = document.body;
   // Initial state from localStorage
   if (localStorage.getItem('bgMode') === 'light') {
     body.style.background = '#f7f7f7';
     body.classList.add('light-bg');
+    moonIcon.style.display = 'none';
+    sunIcon.style.display = 'inline';
+  } else {
+    moonIcon.style.display = 'inline';
+    sunIcon.style.display = 'none';
   }
   btn.addEventListener('click', function() {
     if (body.classList.contains('light-bg')) {
       body.style.background = '';
       body.classList.remove('light-bg');
       localStorage.setItem('bgMode', 'dark');
+      moonIcon.style.display = 'inline';
+      sunIcon.style.display = 'none';
     } else {
       body.style.background = '#f7f7f7';
       body.classList.add('light-bg');
       localStorage.setItem('bgMode', 'light');
+      moonIcon.style.display = 'none';
+      sunIcon.style.display = 'inline';
     }
   });
 });
