@@ -1,3 +1,32 @@
+#bgToggleBtn {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 200;
+  background: var(--surface);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0002;
+  border: 1px solid var(--border);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  outline: none;
+  user-select: none;
+  pointer-events: auto;
+}
+@media (max-width: 700px) {
+  #bgToggleBtn {
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+  }
+}
+
 @keyframes halving-pulse {
   0%, 100% { opacity: 1; filter: drop-shadow(0 0 0px #ff6b35); }
   50% { opacity: 0.7; filter: drop-shadow(0 0 10px #ff6b35); }
@@ -1045,12 +1074,12 @@ body {
 
 /* ---- Light Mode Overrides ---- */
 body.light-bg, header.site-header.light-bg {
-  background: #f9fafb !important;
-  color: #222 !important;
+  background: #f4f6fa !important;
+  color: #23272f !important;
 }
 header.site-header.light-bg {
-  background: #f9fafb !important;
-  border-bottom: 1px solid #e5e7eb !important;
+  background: #f4f6fa !important;
+  border-bottom: 1px solid #dbe2ea !important;
 }
 .logo-title {
   color: #ff6b35;
@@ -1060,16 +1089,16 @@ header.site-header.light-bg {
 }
 .dashboard-card.light-bg,
 .stat-card.light-bg {
-  background: #fff !important;
-  color: #222 !important;
-  border: 1px solid #e5e7eb !important;
+  background: #f8fafc !important;
+  color: #23272f !important;
+  border: 1px solid #dbe2ea !important;
   box-shadow: 0 2px 8px #0001;
 }
 .price-pill.light-bg,
 .halving-pill.light-bg {
-  background: linear-gradient(135deg, #f5f5f5 0%, #eaeaea 100%) !important;
-  color: #222 !important;
-  border-color: #d1d5db !important;
+  background: linear-gradient(135deg, #f6f8fa 0%, #e3e8ef 100%) !important;
+  color: #23272f !important;
+  border-color: #dbe2ea !important;
   box-shadow: 0 1px 4px #0001;
 }
 .price-pill.light-bg .price-icon {
@@ -1084,51 +1113,51 @@ header.site-header.light-bg {
   background: #fbeaea !important;
 }
 .ath-atl-pill.light-bg {
-  background: #f3f4f6 !important;
-  color: #222 !important;
-  border-color: #e5e7eb !important;
+  background: #f6f8fa !important;
+  color: #23272f !important;
+  border-color: #dbe2ea !important;
 }
 .whitepaper-btn.light-bg {
-  background: #fff !important;
+  background: #f8fafc !important;
   color: #22c55e !important;
-  border: 1px solid #e5e7eb !important;
+  border: 1px solid #dbe2ea !important;
 }
 #bgToggleBtn.light-bg {
-  background: #e5e7eb !important;
-  color: #222 !important;
+  background: #e3e8ef !important;
+  color: #23272f !important;
   box-shadow: 0 1px 4px #0001;
 }
 .stat-value.light-bg {
-  color: #222 !important;
+  color: #23272f !important;
 }
 .info-badge.light-bg {
-  background: #e5e7eb !important;
-  color: #222 !important;
+  background: #e3e8ef !important;
+  color: #23272f !important;
 }
 .site-footer.light-bg {
-  background: #f9fafb !important;
-  color: #222 !important;
+  background: #f4f6fa !important;
+  color: #23272f !important;
 }
 .last-update.light-bg {
-  color: #555 !important;
+  color: #4b5563 !important;
 }
 .chart-note.light-bg {
-  color: #555 !important;
+  color: #4b5563 !important;
 }
 .disclaimer-card.light-bg {
-  background: #f9fafb !important;
-  color: #222 !important;
-  border: 1px solid #e5e7eb !important;
+  background: #f4f6fa !important;
+  color: #23272f !important;
+  border: 1px solid #dbe2ea !important;
 }
 .disclaimer-card.light-bg .disclaimer-text,
 .disclaimer-card.light-bg .source-label {
-  color: #555 !important;
+  color: #4b5563 !important;
 }
 .disclaimer-card.light-bg a {
-  color: #1d4ed8 !important;
+  color: #2563eb !important;
 }
 .data-sources-grid .source-item.light-bg {
-  background: #fff !important;
-  color: #222 !important;
-  border: 1px solid #e5e7eb !important;
+  background: #f8fafc !important;
+  color: #23272f !important;
+  border: 1px solid #dbe2ea !important;
 }
