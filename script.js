@@ -359,16 +359,13 @@ async function updateNetworkStats(data) {
     window.halvingDate = null;
   }
 
-  // update pill tooltip and Next Halving stat card
+  // update pill tooltip only (we intentionally don't add other UI cards)
   const halvingPill = document.querySelector('.halving-pill');
   if (halvingPill) {
     const remainingSafe = Math.max(0, remaining || 0);
     halvingPill.setAttribute('data-tooltip', `Next halving: ${formatNumber(HALVING_SUPPLY, 1)} TAO. Remaining ${formatNumber(remainingSafe, 0)} TAO.`);
   }
-  const nextHalvingValue = document.getElementById('nextHalvingValue');
-  const nextRemaining = document.getElementById('nextHalvingRemaining');
-  if (nextHalvingValue) nextHalvingValue.textContent = formatNumber(HALVING_SUPPLY, 1);
-  if (nextRemaining) nextRemaining.textContent = formatNumber(Math.max(0, remaining || 0), 0) + ' TAO';
+  // We intentionally don't add a new stat-card for the halving; keep the pill-only UI.
   // store previous circulating supply snapshot for next refresh
   window._prevCircSupply = window.circulatingSupply;
 
