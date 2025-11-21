@@ -86,12 +86,42 @@ def gather_metrics(network: str = "finney") -> Dict[str, Any]:
       except: pass
       gc.collect()
 
+  # Total issuance: try to query SubtensorModule::TotalIssuance via substrate
+  total_issuance_raw = None
+  total_issuance_human = None
+  try:
+    if hasattr(st, 'substrate') and st.substrate is not None:
+      try:
+        issuance = st.substrate.query('SubtensorModule', 'TotalIssuance')
+        total_issuance_raw = int(issuance.value) if issuance and issuance.value is not None else None
+      except Exception:
+        total_issuance_raw = None
+      try:
+        props = st.substrate.rpc_request('system_properties', [])
+        dec = props.get('result', {}).get('tokenDecimals')
+        if isinstance(dec, list):
+          decimals = int(dec[0])
+        else:
+          decimals = int(dec) if dec is not None else 9
+      except Exception:
+        decimals = 9
+      if total_issuance_raw is not None:
+        try:
+          total_issuance_human = float(total_issuance_raw) / (10 ** decimals)
+        except Exception:
+          total_issuance_human = None
+  except Exception:
+    total_issuance_raw = None
+    total_issuance_human = None
+
   return {
     "blockHeight": block,
     "validators": total_validators,
     "subnets": total_subnets,
     "emission": 7200,
     "totalNeurons": total_neurons,
+    "totalIssuance": total_issuance_raw,
+    "totalIssuanceHuman": total_issuance_human,
     "_source": "bittensor-sdk"
   }
 

@@ -39,6 +39,31 @@ def fetch_metrics() -> Dict[str, Any]:
             continue
 
     daily_emission = 7200
+    # Total issuance from on-chain storage
+    total_issuance_raw = None
+    total_issuance_human = None
+    try:
+        if hasattr(subtensor, 'substrate') and subtensor.substrate is not None:
+            try:
+                issuance = subtensor.substrate.query('SubtensorModule', 'TotalIssuance')
+                total_issuance_raw = int(issuance.value) if issuance and issuance.value is not None else None
+            except Exception as e:
+                print(f"TotalIssuance fetch failed: {e}", file=sys.stderr)
+                total_issuance_raw = None
+            try:
+                props = subtensor.substrate.rpc_request('system_properties', [])
+                dec = props.get('result', {}).get('tokenDecimals')
+                if isinstance(dec, list):
+                    decimals = int(dec[0])
+                else:
+                    decimals = int(dec) if dec is not None else 9
+            except Exception:
+                decimals = 9
+            if total_issuance_raw is not None:
+                total_issuance_human = float(total_issuance_raw) / (10 ** decimals)
+    except Exception:
+        total_issuance_raw = None
+        total_issuance_human = None
 
     result = {
         "blockHeight": block,
@@ -46,6 +71,8 @@ def fetch_metrics() -> Dict[str, Any]:
         "validators": total_validators,
         "totalNeurons": total_neurons,
         "emission": daily_emission,
+        "totalIssuance": total_issuance_raw,
+        "totalIssuanceHuman": total_issuance_human,
         "_source": "bittensor-sdk",
         "_timestamp": datetime.now(timezone.utc).isoformat()
     }

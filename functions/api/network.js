@@ -44,6 +44,8 @@ export async function onRequest(context) {
       subnets: m.subnets ?? 0,
       emission: m.emission ?? '7,200',
       totalNeurons: m.totalNeurons ?? 0,
+      totalIssuance: m.totalIssuance ?? null,
+      totalIssuanceHuman: m.totalIssuanceHuman ?? null,
       _source: m._source || 'kv-cache'
     }), { status: 200, headers: { ...cors, 'Content-Type': 'application/json' } });
   } catch {
