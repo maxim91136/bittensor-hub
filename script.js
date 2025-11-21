@@ -414,18 +414,7 @@ function setupDynamicTooltips() {
       showTooltip(e, text);
       setTimeout(hideTooltip, 2500);
     });
-    // Swap the miner map thumbnail once per theme change (only update once)
-    const mapThumb = document.getElementById('mapThumb');
-    if (mapThumb) {
-      if (active) {
-        mapThumb.src = 'assets/miner-map-thumb-light.png';
-        mapThumb.style.filter = 'none';
-      } else {
-        mapThumb.src = 'assets/miner-map-thumb.png';
-        mapThumb.style.filter = '';
-      }
-    }
-    
+    // No theme-dependent behavior here; map swap is handled centrally in setLightMode().
   });
 
   document.querySelectorAll('.halving-pill[data-tooltip]').forEach(pill => {
@@ -855,6 +844,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+    // Swap the miner map thumbnail once per theme change (only update once)
+    const mapThumb = document.getElementById('mapThumb');
+    if (mapThumb) {
+      if (active) {
+        const lightSrc = 'assets/miner-map-thumb-light.png';
+        mapThumb.onerror = function() { /* fallback to dark */ mapThumb.onerror = null; mapThumb.src = 'assets/miner-map-thumb.png'; mapThumb.style.filter = ''; };
+        mapThumb.src = lightSrc;
+        // Ensure we don't apply additional CSS filter when using the light asset
+        mapThumb.style.filter = 'none';
+      } else {
+        // Clear any error handler from previous attempts
+        mapThumb.onerror = null;
+        mapThumb.src = 'assets/miner-map-thumb.png';
+        mapThumb.style.filter = '';
+      }
+    }
+
     if (active) {
       body.style.background = '#dadada';
       if (header) header.style.background = '#dadada';
@@ -889,6 +895,15 @@ document.addEventListener('DOMContentLoaded', () => {
       sunIcon.style.display = 'none';
     }
   }
+  // Preload light thumbnail to reduce flicker when toggling themes
+  (function preloadLightThumb(){
+    try {
+      const img = new Image();
+      img.src = 'assets/miner-map-thumb-light.png';
+    } catch (e) {
+      // ignore in environments that prevent preloading
+    }
+  })();
   // Initial state
   setLightMode(localStorage.getItem('bgMode') === 'light');
   btn.addEventListener('click', function() {
