@@ -34,9 +34,50 @@ jobs:
             BODY=$(cat /tmp/body | tr -d '\r')
             echo "Retry status: $STATUS"
           fi
-          if [[ "$STATUS" != "200" ]]; then
-            echo "🛑 Network API returned non-200 code ($STATUS). Body: $(echo "$BODY" | head -c 500)"; exit 1
+          if [[ "$STATUS" == "200" ]]; then
+            # If status is OK ensure it's not a challenge page
+            if echo "$BODY" | grep -qi "Just a moment" || echo "$BODY" | grep -qi "Enable JavaScript and cookies"; then
+              echo "ℹ️  Found challenge page despite 200 status (Cloudflare)"; exit 0
+            fi
+            echo "ok" > /tmp/api_ok
           fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Health check - Network API (Playwright fallback)
+        if: always()
+        run: |
+          set -e
+          if [ -f /tmp/api_ok ]; then
+            echo "Skipping Playwright fallback — initial curl was successful"
+            exit 0
+          fi
+          echo "Running Playwright fallback"
+          URL="${{ github.event.inputs.url || 'https://bittensor-labs.com/api/network' }}"
+          # Setup Node and Playwright (Node is configured by setup-node in previous step)
+          pushd dev-tests
+          npm ci || npm install
+          npx playwright install chromium
+          popd
+          node dev-tests/playwright_fetch.js "$URL" || true
+          if [ -f /tmp/playwright_body ]; then
+            echo "Copying playwright_body to /tmp/body"
+            cp /tmp/playwright_body /tmp/body
+            echo "ok" > /tmp/api_ok
+          fi
+
+      - name: Validate Network API JSON
+        if: always()
+        run: |
+          set -e
+          if [ ! -f /tmp/api_ok ]; then
+            echo "No successful API fetch via curl or Playwright"; exit 1
+          fi
+          BODY=$(cat /tmp/body | tr -d '\r')
           # If the body is Cloudflare challenge page, fail with clear message
           if echo "$BODY" | grep -qi "Just a moment" || echo "$BODY" | grep -qi "Enable JavaScript and cookies"; then
             echo "🛑 Cloudflare challenge detected in API response"; exit 1
@@ -56,3 +97,4 @@ jobs:
           if [ "$status" != "200" ]; then
             echo "🛑 Site root returned non-200"; exit 1
           fi
+      
