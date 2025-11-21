@@ -38,13 +38,25 @@ export async function onRequest(context) {
       m = { blockHeight: null, validators: 0, subnets: 0, emission: '7,200', totalNeurons: 0, _fallback: true };
     }
 
+    // compute a halvingThresholds fallback if KV doesn't contain it
+    function generateHalvingThresholds(maxSupply = 21_000_000, maxEvents = 6) {
+      const arr = [];
+      for (let n = 1; n <= maxEvents; n++) {
+        const threshold = Math.round(maxSupply * (1 - 1 / Math.pow(2, n)));
+        arr.push(threshold);
+      }
+      return arr;
+    }
+
+    const halvingThresholds = m?.halvingThresholds ?? generateHalvingThresholds();
+
     return new Response(JSON.stringify({
       blockHeight: m.blockHeight ?? null,
       validators: m.validators ?? 0,
       subnets: m.subnets ?? 0,
       emission: m.emission ?? '7,200',
       totalNeurons: m.totalNeurons ?? 0,
-      halvingThresholds: m.halvingThresholds ?? null,
+      halvingThresholds: halvingThresholds,
       totalIssuance: m.totalIssuance ?? null,
       totalIssuanceHuman: m.totalIssuanceHuman ?? null,
       _source: m._source || 'kv-cache'
