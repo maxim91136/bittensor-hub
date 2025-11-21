@@ -587,6 +587,15 @@ body {
   color: var(--text);
 }
 
+/* Unified rule for the main dashboard card headlines (TAO Price, Miner Map, Film) */
+.dashboard-grid .dashboard-card .card-header h2 {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text);
+}
+
 /* Make TAO Price History header black in Light Mode */
 .dashboard-card.light-bg .card-header h2 {
   color: #000 !important;
