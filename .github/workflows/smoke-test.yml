@@ -5,6 +5,12 @@ on:
     tags:
       - 'v*'
       - 'v*-rc.*'
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Network API URL to test (defaults to prod)'
+        required: false
+        default: 'https://bittensor-labs.com/api/network'
 
 jobs:
   smoke-test:
