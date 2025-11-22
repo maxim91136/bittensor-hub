@@ -51,6 +51,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: 'dev-tests/package-lock.json'
 
       - name: Health check - Network API (Playwright fallback)
         if: always()
