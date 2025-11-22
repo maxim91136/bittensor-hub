@@ -459,7 +459,12 @@ async function fetchAndApplyVersion() {
     if (!text) return;
     text = text.trim();
     if (!text) return;
-    if (!text.startsWith('v')) text = `v${text}`;
+    // Normalize: remove leading 'v' for processing, then re-add a single 'v' prefix.
+    let raw = text.replace(/^v/i, '');
+    // Normalize prerelease labels that use the `label.number` format to `labelnumber` (e.g. rc.1 -> rc1)
+    raw = raw.replace(/-(rc|alpha|beta)\.(\d+)/i, (m, label, num) => `-${label}${num}`);
+    // Keep other semver dots intact (e.g., 1.0.0). Ensure final display uses a single leading 'v'.
+    text = `v${raw}`;
     const el = document.getElementById('siteVersion');
     if (el) el.textContent = text;
     // Optionally expose globally for other scripts
