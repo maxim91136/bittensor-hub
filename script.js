@@ -72,6 +72,21 @@ function formatPercent(value) {
   return `${sign}${num.toFixed(2)}%`;
 }
 
+function readPercentValue(ts, keys) {
+  if (!ts) return null;
+  for (const k of keys) {
+    if (ts[k] !== undefined && ts[k] !== null) return ts[k];
+    // allow nested objects (some APIs nest percent_change inside 'market_data' etc.)
+    const parts = k.split('.');
+    if (parts.length > 1) {
+      let v = ts;
+      for (const p of parts) { if (v && v[p] !== undefined) { v = v[p]; } else { v = undefined; break; } }
+      if (v !== undefined && v !== null) return v;
+    }
+  }
+  return null;
+}
+
 function animatePriceChange(element, newPrice) {
   if (lastPrice === null) {
     lastPrice = newPrice;
@@ -240,10 +255,10 @@ function updateTaoPrice(priceData) {
       const ts = window._taostats ?? null;
       const parts = [];
       if (ts) {
-        const p1h = ts.percent_change_1h ?? ts.percent_change_1hr ?? null;
-        const p24 = ts.percent_change_24h ?? ts.percent_change_24hr ?? priceData.change24h ?? null;
-        const p7d = ts.percent_change_7d ?? null;
-        const p30d = ts.percent_change_30d ?? null;
+        const p1h = readPercentValue(ts, ['percent_change_1h','percent_change_1hr','pct_change_1h','percent_1h_change','percent_change_1Hour','percent_change_1hr']);
+        const p24 = readPercentValue(ts, ['percent_change_24h','percent_change_24hr','pct_change_24h','percent_24h_change','percent_change_24hr']) ?? priceData.change24h ?? null;
+        const p7d = readPercentValue(ts, ['percent_change_7d','percent_change_7day','pct_change_7d','percent_change_7day']);
+        const p30d = readPercentValue(ts, ['percent_change_30d','percent_change_30day','pct_change_30d','percent_change_30day']);
         if (p1h !== null && p1h !== undefined) parts.push(`1h: ${formatPercent(p1h)}`);
         if (p24 !== null && p24 !== undefined) parts.push(`24h: ${formatPercent(p24)}`);
         if (p7d !== null && p7d !== undefined) parts.push(`7d: ${formatPercent(p7d)}`);
