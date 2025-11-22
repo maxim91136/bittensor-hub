@@ -1390,6 +1390,11 @@ body.light-bg .map-preview-card {
   border-color: #e6e6e6 !important;
 }
 
+/* Ensure map attribution text is visible in Light Mode */
+body.light-bg .map-preview-card .map-attribution {
+  color: #111 !important;
+}
+
 /* Make sure disclaimer links are green across browsers and modes (Safari fallback) */
 .disclaimer-card a,
 .disclaimer-card .source-item a,
