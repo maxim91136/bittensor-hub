@@ -285,7 +285,9 @@
       <section class="dashboard-card taotensor-card" aria-labelledby="taotensor-heading">
         <div class="card-header">
           <h2 id="taotensor-heading">TAO Tensor Law — Price Model</h2>
-          <span class="info-badge" data-tooltip="TAO Tensor Law model by decodejar; click to open">i</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button id="taotensorFullBtn" class="card-action">Open full</button>
+          </div>
         </div>
         <div class="taotensor-embed" id="taotensorEmbed">
           <iframe id="taotensorFrame" src="https://taotensorlaw.com" title="TAO Tensor Law price model" aria-label="TAO Tensor Law embed" loading="lazy"></iframe>
@@ -300,6 +302,18 @@
           </div>
         </div>
       </section>
+
+      <!-- Modal for full-screen TAO Tensor Law embed -->
+      <div class="embed-modal" id="taotensorModal" aria-hidden="true" role="dialog" aria-labelledby="taotensor-heading">
+        <div class="embed-modal-body">
+          <div class="embed-modal-header">
+            <button id="taotensorModalClose" class="card-action">Close</button>
+          </div>
+          <div class="embed-modal-content" id="taotensorModalContent">
+            <!-- The iframe will be moved into this container so it does NOT reload when opening modal. -->
+          </div>
+        </div>
+      </div>
       <!-- Map Preview Card (Option A) -->
       <section class="dashboard-card map-preview-card" aria-labelledby="map-preview-heading">
         <div class="card-header">

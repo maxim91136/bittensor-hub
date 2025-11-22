@@ -636,6 +636,22 @@ body {
   animation: pulse 2s ease-in-out infinite;
 }
 
+.card-action {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  cursor: pointer;
+}
+.card-action:hover { opacity: 0.95; transform: translateY(-1px); }
+
+/* Placeholder so layout doesn't collapse when iframe is moved into modal */
+.tao-embed-placeholder { display:block; width:100%; min-height:560px; }
+@media (max-width: 768px) { .tao-embed-placeholder { min-height: 720px; } }
+@media (max-width: 420px) { .tao-embed-placeholder { min-height: 760px; } }
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
@@ -924,6 +940,10 @@ body {
   color: #22c55e;
 }
 
+/* Inline info badge for TAOTensor card header to avoid overlap with other controls */
+/* TAO Tensor Law header no longer shows an inline info-badge; remove styling here. */
+/* No inline info badge in the TAO Tensor Law header; was removed intentionally. */
+
 .refresh-logo-row {
   display: flex;
   align-items: center;
@@ -1093,6 +1113,9 @@ body {
 /* ---- TAO Tensor Law Embed Card ---- */
 .taotensor-card { }
 .taotensor-card .card-header h2 { display:flex; align-items:center; gap:8px; }
+.taotensor-card .card-header { align-items: center; }
+.taotensor-card .card-header > div { display:flex; align-items:center; gap:8px; flex: 0 0 auto; }
+.taotensor-card .card-header h2 { flex: 1 1 auto; min-width: 0; margin-right: 12px; }
 .taotensor-embed {
   display: block;
   width: 100%;
@@ -1155,6 +1178,39 @@ body:not(.light-bg) .taotensor-embed .embed-fallback img {
 /* Very small phones (narrow screens) — still allow large previews but avoid too many scroll jumps */
 @media (max-width: 420px) {
   .taotensor-embed { min-height: 760px; height: clamp(560px, 86vh, 1080px); }
+}
+
+/* Fullscreen modal for TAO Tensor Law embed */
+.embed-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.65);
+  z-index: 9999;
+}
+.embed-modal.active { display: flex; }
+.embed-modal .embed-modal-body {
+  display: flex;
+  flex-direction: column;
+  width: min(1200px, 95vw);
+  height: min(1000px, 95vh);
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+.embed-modal .embed-modal-header {
+  display:flex; align-items:center; justify-content:flex-end; gap:8px; padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.embed-modal .embed-modal-content { flex: 1 1 auto; display:flex; }
+.embed-modal .embed-modal-content iframe { width: 100%; height: 100%; border: none; }
+
+/* Small screens: full-screen modal fits tight for phones */
+@media (max-width: 768px) {
+  .embed-modal .embed-modal-body { width: 100vw; height: 100vh; border-radius: 0; }
 }
 
 .useful-links-card {
