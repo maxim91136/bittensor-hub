@@ -405,7 +405,7 @@ async function updateNetworkStats(data) {
     const remainingSafe = Math.max(0, remaining || 0);
     const halvingSourceLabel = (window._halvingSupplySource === 'on-chain') ? 'On-chain (TotalIssuance)' : 'Taostats (circulating_supply)';
     // Remove trailing periods behind "TAO" in tooltip per user request
-    halvingPill.setAttribute('data-tooltip', `Next halving: ${formatNumber(HALVING_SUPPLY)} TAO Remaining ${formatNumber(remainingSafe)} TAO • Source: ${halvingSourceLabel}`);
+    halvingPill.setAttribute('data-tooltip', `Next halving: ${formatNumber(HALVING_SUPPLY)} TAO Remaining: ${formatNumber(remainingSafe)} TAO Source: ${halvingSourceLabel}`);
   }
   // We intentionally don't add a new stat-card for the halving; keep the pill-only UI.
   // store previous circulating and halving-supply snapshots for next refresh
