@@ -73,8 +73,16 @@ jobs:
             echo "No lockfile found: running npm install"
             npm install
           fi
-          npx playwright install chromium
+          # Debug versions
+          echo "node version: $(node -v)" || true
+          echo "npm version: $(npm -v)" || true
+          echo "List bin directory (node_modules/.bin):"; ls -la node_modules/.bin || true
+          # Show whether playwright CLI is available
+          npx playwright --version || true
+          # Try installing browsers and dependencies; try with deps first
+          npx playwright install --with-deps chromium || npx playwright install chromium || true
           popd
+          # Run the fetcher; output error if exit non-zero
           node dev-tests/playwright_fetch.js "$URL" || true
           if [ -f /tmp/playwright_body ]; then
             echo "Copying playwright_body to /tmp/body"
