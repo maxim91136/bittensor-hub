@@ -1,0 +1,88 @@
+name: Fetch X Alerts
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # every 5 minutes
+  workflow_dispatch: {}
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch alerts from X (Twitter)
+        id: fetch
+        env:
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+          X_USER_ID: ${{ secrets.X_USER_ID }}
+          ALERTS_MAX: 5
+        run: |
+          mkdir -p data
+          OUT_PATH=alerts.json node scripts/fetch_x_alerts.mjs
+          # ensure file exists
+          if [ ! -f alerts.json ]; then
+            echo "alerts.json not created"
+            exit 1
+          fi
+          cat alerts.json
+
+      - name: Upload artifact (backup)
+        uses: actions/upload-artifact@v3
+        with:
+          name: x_alerts_latest
+          path: alerts.json
+
+      - name: Determine if Cloudflare KV is configured
+        id: cf
+        run: |
+          enabled=false
+          if [ -n "${{ secrets.CF_API_TOKEN }}" ] && [ -n "${{ secrets.CF_ACCOUNT_ID }}" ] && [ -n "${{ secrets.CF_KV_NAMESPACE_ID }}" ]; then
+            enabled=true
+          fi
+          echo "enabled=${enabled}" >> $GITHUB_OUTPUT
+
+      - name: Write to Cloudflare KV if configured
+        if: ${{ steps.cf.outputs.enabled == 'true' }}
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+        run: |
+          echo "Attempting to write to Cloudflare KV..."
+          status=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/x_alerts_latest" \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-binary @alerts.json)
+          echo "Cloudflare API HTTP Status: $status"
+          if [ "$status" != "200" ] && [ "$status" != "204" ]; then
+            echo "Cloudflare KV write failed with status $status";
+            curl -v -X PUT "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/x_alerts_latest" \
+              -H "Authorization: Bearer ${CF_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data-binary @alerts.json || true
+            exit 1
+          fi
+
+      - name: Commit JSON to repo (fallback/record)
+        if: ${{ steps.cf.outputs.enabled != 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          mkdir -p data
+          mv alerts.json data/x_alerts_latest.json
+          git add data/x_alerts_latest.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update x_alerts_latest.json"
+            git push origin HEAD:main
+          fi
