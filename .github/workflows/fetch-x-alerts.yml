@@ -1,4 +1,4 @@
-name: Fetch X Alerts
+name: Fetch and Push X Alerts to Cloudflare KV
 
 on:
   schedule:
