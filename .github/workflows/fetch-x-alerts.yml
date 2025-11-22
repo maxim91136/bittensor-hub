@@ -22,12 +22,41 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Ensure X API secrets are configured
+        run: |
+          if [ -z "${{ secrets.X_BEARER_TOKEN }}" ] || [ -z "${{ secrets.X_USER_ID }}" ]; then
+            echo "Missing X_BEARER_TOKEN or X_USER_ID in repo secrets"
+            exit 1
+          fi
+
+      - name: Fetch last since_id from Cloudflare KV
+        id: get_since
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+        run: |
+          if [ -z "${{ secrets.CF_API_TOKEN }}" ] || [ -z "${{ secrets.CF_ACCOUNT_ID }}" ] || [ -z "${{ secrets.CF_METRICS_NAMESPACE_ID }}" ]; then
+            echo "since_id=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          VAL=$(curl -fsSL -H "Authorization: Bearer ${CF_API_TOKEN}" "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/x_alerts_latest" || true)
+          if [ -z "$VAL" ]; then
+            echo "since_id=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          SINCE=$(echo "$VAL" | jq -r '.alerts[0].id // empty')
+          echo "since_id=$SINCE" >> $GITHUB_OUTPUT
+
       - name: Fetch alerts from X (Twitter)
         id: fetch
         env:
           X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
           X_USER_ID: ${{ secrets.X_USER_ID }}
+          RETRY_ATTEMPTS: 3
+          RETRY_BACKOFF: 2
           ALERTS_MAX: 5
+          SINCE_ID: ${{ steps.get_since.outputs.since_id }}
         run: |
           mkdir -p data
           python -m pip install --upgrade pip && python -m pip install requests || true
@@ -48,8 +77,21 @@ jobs:
           fi
           echo "enabled=${enabled}" >> $GITHUB_OUTPUT
 
+      - name: Check whether fetch was skipped due to rate limits
+        id: check_skipped
+        run: |
+          if [ -f x_alerts_latest.json ]; then
+            if jq -e '._skipped == true' x_alerts_latest.json >/dev/null 2>&1; then
+              echo "skipped=true" >> $GITHUB_OUTPUT
+            else
+              echo "skipped=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "skipped=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Write to Cloudflare KV if configured
-        if: ${{ steps.cf.outputs.enabled == 'true' }}
+        if: ${{ steps.cf.outputs.enabled == 'true' && steps.check_skipped.outputs.skipped == 'false' }}
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
