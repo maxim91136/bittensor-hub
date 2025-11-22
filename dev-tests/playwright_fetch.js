@@ -12,11 +12,27 @@ if (!url) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
-  const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
-  page.setDefaultNavigationTimeout(30_000);
+    const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-dev-shm-usage'] });
+    const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
+    // Increase timeout to handle slow responses and Cloudflare challenges
+    page.setDefaultNavigationTimeout(120_000);
+    const NAV_TIMEOUT = 120_000;
+    const MAX_ATTEMPTS = 3;
   try {
-    const response = await page.goto(url, { waitUntil: 'networkidle' });
+    let response = null;
+    let lastError = null;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        response = await page.goto(url, { waitUntil: 'networkidle', timeout: NAV_TIMEOUT });
+        break;
+      } catch (err) {
+        lastError = err;
+        console.warn(`Playwright navigation attempt ${attempt} failed: ${err && err.message || err}`);
+        // If attempt is not last, wait a bit and retry
+        if (attempt < MAX_ATTEMPTS) await new Promise(res => setTimeout(res, 2000 * attempt));
+      }
+    }
+    if (!response && lastError) throw lastError;
     let text = await page.content();
     const preExists = await page.$('pre');
     if (preExists) {
@@ -27,6 +43,14 @@ if (!url) {
       text = bodyText;
     }
     fs.writeFileSync(path.resolve('/tmp', 'playwright_body'), text);
+    // Detect Cloudflare challenge pages and return a specific status so CI can decide how to behave
+    const lower = (text || '').toLowerCase();
+    if (lower.includes('just a moment') || lower.includes('enable javascript and cookies') || lower.includes('please enable javascript')) {
+      console.log('Detected Cloudflare-like challenge page');
+      await browser.close();
+      // Exit with a distinct code (2) but still write body so CI can inspect it
+      process.exit(2);
+    }
     const status = response ? response.status() : 599;
     console.log('Playwright status', status);
     await browser.close();
