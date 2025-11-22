@@ -498,7 +498,7 @@ function setupDynamicTooltips() {
     // No theme-dependent behavior here; map swap is handled centrally in setLightMode().
   });
 
-  document.querySelectorAll('.halving-pill[data-tooltip]').forEach(pill => {
+  document.querySelectorAll('.halving-pill').forEach(pill => {
     pill.addEventListener('mouseenter', e => showTooltip(e, pill.getAttribute('data-tooltip') || ''));
     pill.addEventListener('mouseleave', hideTooltip);
     pill.addEventListener('focus', e => showTooltip(e, pill.getAttribute('data-tooltip') || ''));
@@ -510,7 +510,7 @@ function setupDynamicTooltips() {
     });
   });
 
-  document.querySelectorAll('.price-pill[data-tooltip]').forEach(pill => {
+  document.querySelectorAll('.price-pill').forEach(pill => {
     pill.addEventListener('mouseenter', e => showTooltip(e, pill.getAttribute('data-tooltip') || ''));
     pill.addEventListener('mouseleave', hideTooltip);
     pill.addEventListener('focus', e => showTooltip(e, pill.getAttribute('data-tooltip') || ''));
