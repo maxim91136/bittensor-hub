@@ -449,6 +449,38 @@ function setupDynamicTooltips() {
 
   document.addEventListener('click', hideTooltip);
 }
+
+// ===== Version fetch and apply =====
+async function fetchAndApplyVersion() {
+  try {
+    const res = await fetch('/VERSION', { cache: 'no-store' });
+    if (!res.ok) return;
+    let text = await res.text();
+    if (!text) return;
+    text = text.trim();
+    if (!text) return;
+    if (!text.startsWith('v')) text = `v${text}`;
+    const el = document.getElementById('siteVersion');
+    if (el) el.textContent = text;
+    // Optionally expose globally for other scripts
+    window._siteVersion = text;
+  } catch (err) {
+    // Silent fallback — keep embedded version
+    console.warn('⚠️ Could not fetch version:', err?.message || err);
+  }
+}
+
+// Ensure the version is applied on page load
+try {
+  // Script is loaded with `defer`, but ensure DOM available
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fetchAndApplyVersion);
+  } else {
+    fetchAndApplyVersion();
+  }
+} catch (err) {
+  console.warn('⚠️ Version loader failed to run:', err && err.message);
+}
 setupDynamicTooltips();
 
 // ===== Data Refresh =====
