@@ -23,7 +23,7 @@ if (!url) {
     let lastError = null;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
-        response = await page.goto(url, { waitUntil: 'networkidle', timeout: NAV_TIMEOUT });
+        response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT });
         break;
       } catch (err) {
         lastError = err;
@@ -33,6 +33,8 @@ if (!url) {
       }
     }
     if (!response && lastError) throw lastError;
+    // Try to wait for networkidle briefly, but don't block indefinitely (short timeout)
+    try { await page.waitForLoadState('networkidle', { timeout: 3000 }); } catch(e) { /* ignore */ }
     let text = await page.content();
     const preExists = await page.$('pre');
     if (preExists) {
