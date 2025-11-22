@@ -11,6 +11,10 @@ on:
         description: 'Network API URL to test (defaults to prod)'
         required: false
         default: 'https://bittensor-labs.com/api/network'
+      skip_cloudflare_check:
+        description: 'Allow Cloudflare challenge pages to be treated as OK (skips JSON validation)'
+        required: false
+        default: 'false'
 
 jobs:
   smoke-test:
@@ -74,16 +78,23 @@ jobs:
         if: always()
         run: |
           set -e
-          if [ ! -f /tmp/api_ok ]; then
-            # If a body is present but indicates a Cloudflare challenge, skip validation
-            if [ -f /tmp/body ] && (grep -qi "Just a moment" /tmp/body || grep -qi "Enable JavaScript and cookies" /tmp/body); then
-              echo "⚠️ Cloudflare challenge detected — skipping JSON validation"; exit 0
+            SKIP_CF="${{ github.event.inputs.skip_cloudflare_check || 'false' }}"
+            if [ ! -f /tmp/api_ok ]; then
+              # If a body is present but indicates a Cloudflare challenge, either skip (if requested) or fail strictly
+              if [ -f /tmp/body ] && (grep -qi "Just a moment" /tmp/body || grep -qi "Enable JavaScript and cookies" /tmp/body); then
+                if [ "${SKIP_CF}" = "true" ]; then
+                  echo "⚠️ Cloudflare challenge detected and skip enabled — skipping JSON validation"; exit 0
+                fi
+                echo "🛑 Cloudflare challenge detected in body and skip disabled"; exit 1
+              fi
+              echo "No successful API fetch via curl or Playwright"; exit 1
             fi
-            echo "No successful API fetch via curl or Playwright"; exit 1
-          fi
           BODY=$(cat /tmp/body | tr -d '\r')
           # If the body is Cloudflare challenge page, fail with clear message
           if echo "$BODY" | grep -qi "Just a moment" || echo "$BODY" | grep -qi "Enable JavaScript and cookies"; then
+            if [ "${SKIP_CF}" = "true" ]; then
+              echo "⚠️ Cloudflare challenge detected in API response, skip enabled — passing."; exit 0
+            fi
             echo "🛑 Cloudflare challenge detected in API response"; exit 1
           fi
           # parse JSON if possible
