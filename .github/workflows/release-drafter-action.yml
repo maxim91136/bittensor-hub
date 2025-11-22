@@ -11,8 +11,14 @@ on:
 jobs:
   update_release_draft:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - uses: release-drafter/release-drafter@v5
+      - name: Run release-drafter
+        uses: release-drafter/release-drafter@v6
         with:
           config-name: .github/release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
