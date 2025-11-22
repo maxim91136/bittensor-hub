@@ -67,15 +67,8 @@ jobs:
           # Use `npm ci` only if a lockfile exists for deterministic installs.
           pushd dev-tests
           if [ -f package-lock.json ]; then
-            echo "package-lock.json found: trying npm ci"
-            set +e
-            npm ci
-            CI_EXIT=$?
-            set -e
-            if [ "$CI_EXIT" -ne 0 ]; then
-              echo "npm ci failed with exit $CI_EXIT — running npm install as fallback"
-              npm install
-            fi
+            echo "package-lock.json found: running npm ci (or falling back to npm install if it fails)"
+            npm ci || npm install
           else
             echo "No lockfile found: running npm install"
             npm install
