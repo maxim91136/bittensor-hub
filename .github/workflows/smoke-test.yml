@@ -91,13 +91,26 @@ jobs:
           )
           # Show whether playwright CLI is available
           npx playwright --version || true
-          # Try installing browsers and dependencies; try with deps first and add retries
+          # Try installing browsers and dependencies; try local bin, then npx, then direct node CLI -- with retries
           for i in 1 2 3; do
-            npx playwright install --with-deps chromium && break || (
-              echo "playwright install attempt $i failed, retrying...";
-              sleep 3
-            );
+            echo "Attempt $i: installing chromium via local bin (if available)"
+            ./node_modules/.bin/playwright install --with-deps chromium 2>/dev/null && break || true
+            ./node_modules/.bin/playwright-core install --with-deps chromium 2>/dev/null && break || true
+            echo "Attempt $i: installing chromium via npx"
+            npx playwright install --with-deps chromium && break || true
+            echo "Attempt $i: installing chromium via direct CLI (node path)"
+            node node_modules/playwright-core/cli.js install --with-deps chromium 2>/dev/null && break || true
+            node node_modules/playwright/cli.js install --with-deps chromium 2>/dev/null && break || true
+            echo "playwright install attempt $i failed, retrying...";
+            sleep 3
           done
+          # Run the fetcher while still inside dev-tests so local node_modules import resolution works
+          node playwright_fetch.js "$URL" || (
+            echo "Playwright fetch failed; dumping diagnostics (npm ls, size of node_modules)...";
+            npm ls --depth=0 || true;
+            du -sh node_modules || true;
+            true
+          )
           popd
           # Run the fetcher; output error if exit non-zero and dump diagnostics
           node dev-tests/playwright_fetch.js "$URL" || (
