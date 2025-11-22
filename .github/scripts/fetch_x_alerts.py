@@ -132,24 +132,99 @@ def fetch_tweets(bearer_token: str, user_id: str, max_results: int = 5, max_atte
         })
     return {'fetched_at': now_iso(), 'alerts': alerts}
 
+def fetch_nitter(nitter_instance: str, username: str, max_results: int = 5, since_id: str | None = None):
+    # Fetch RSS feed for the user using Nitter instance and parse to alerts format
+    url = f"{nitter_instance.rstrip('/')}/{username}/rss"
+    try:
+        if requests:
+            r = requests.get(url, headers={'Accept': 'application/rss+xml'}, timeout=15)
+            r.raise_for_status()
+            raw = r.text
+        else:
+            from urllib.request import Request, urlopen
+            req = Request(url, headers={'Accept': 'application/rss+xml'})
+            with urlopen(req, timeout=15) as res:
+                raw = res.read().decode('utf-8')
+    except Exception as e:
+        raise RuntimeError(f"Failed to fetch Nitter RSS: {e}")
+
+    # Parse RSS XML
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.fromstring(raw)
+    except Exception as e:
+        raise RuntimeError(f"Failed to parse RSS XML: {e}")
+
+    # Support both rss->channel->item and atom entries
+    items = root.findall('.//item') or root.findall('.//{http://www.w3.org/2005/Atom}entry')
+    alerts = []
+    for item in items:
+        # fields: title / description / link / pubDate
+        title = (item.find('title').text if item.find('title') is not None else '')
+        desc = (item.find('description').text if item.find('description') is not None else '')
+        link = (item.find('link').text if item.find('link') is not None else '')
+        pub = (item.find('pubDate').text if item.find('pubDate') is not None else '')
+        # fallback for atom
+        if not link:
+            link_el = item.find('{http://www.w3.org/2005/Atom}link')
+            link = link_el.get('href') if link_el is not None else ''
+        # Extract the tweet id from link `.../status/<id>`
+        tid = None
+        if link:
+            import re
+            m = re.search(r'/status/(\d+)', link)
+            if m:
+                tid = m.group(1)
+        # Parse pubDate into ISO
+        created_at = None
+        if pub:
+            try:
+                from email.utils import parsedate_to_datetime
+                dt = parsedate_to_datetime(pub)
+                # normalize to ISO 8601 UTC
+                created_at = dt.astimezone(timezone.utc).isoformat()
+            except Exception:
+                created_at = None
+
+        text = desc or title or ''
+        if since_id and tid:
+            try:
+                if int(tid) <= int(since_id):
+                    continue
+            except Exception:
+                pass
+        alerts.append({
+            'id': tid or '',
+            'text': text,
+            'edit_history_tweet_ids': [],
+            'author_id': '',
+            'created_at': created_at
+        })
+        if len(alerts) >= max_results:
+            break
+    return {'fetched_at': now_iso(), 'alerts': alerts}
+
 def main(argv=None):
     p = argparse.ArgumentParser()
     p.add_argument('--out', '-o', help='Write output JSON to path (default: x_alerts_latest.json)')
     p.add_argument('--since', help='Only return tweets with ID greater than (i.e., more recent) than this Tweet ID', default=None)
+    p.add_argument('--source', help='Data source to fetch (x|nitter)', choices=['x','nitter'], default=None)
+    p.add_argument('--nitter-instance', help='Nitter instance base URL (e.g. https://nitter.net)', default='https://nitter.net')
+    p.add_argument('--username', help='Username to fetch from (for Nitter source)', default='bittensor_alert')
     p.add_argument('--max', '-m', help='Max number of tweets to fetch', type=int, default=5)
     args = p.parse_args(argv)
 
-    bearer = os.getenv('X_BEARER_TOKEN')
-    user_id = os.getenv('X_USER_ID')
-    if not bearer or not user_id:
-        print('X_BEARER_TOKEN and X_USER_ID must be set', file=sys.stderr)
-        sys.exit(2)
+    # We now use only Nitter as the primary data source (free RSS). Keep CLI `--source` for future use.
+    source = args.source or 'nitter'
 
     attempts = int(os.getenv('RETRY_ATTEMPTS', '3'))
     backoff = int(os.getenv('RETRY_BACKOFF', '2'))
     since_id = args.since or os.getenv('SINCE_ID')
     try:
-        out = fetch_tweets(bearer, user_id, args.max, max_attempts=attempts, backoff_seconds=backoff, since_id=since_id)
+        # Always fetch from Nitter (free RSS) to avoid X API usage and rate limits
+        inst = args.nitter_instance or os.getenv('NITTER_INSTANCE', 'https://nitter.net')
+        username = args.username or os.getenv('NITTER_USERNAME', 'bittensor_alert')
+        out = fetch_nitter(inst, username, max_results=args.max, since_id=since_id)
         out_str = json.dumps(out, indent=2)
         out_path = args.out or 'x_alerts_latest.json'
         if out_path:

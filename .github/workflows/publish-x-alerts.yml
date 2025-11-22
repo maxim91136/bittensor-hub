@@ -2,7 +2,7 @@ name: Fetch and Push X Alerts to Cloudflare KV
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # every 15 minutes
+    - cron: '0 0,8,16 * * *' # every 8h (3x/day) at 00:00, 08:00, 16:00 UTC
   workflow_dispatch: {}
 
 jobs:
@@ -24,12 +24,9 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Ensure X API secrets are configured
+      - name: Using Nitter RSS as data source
         run: |
-          if [ -z "${{ secrets.X_BEARER_TOKEN }}" ] || [ -z "${{ secrets.X_USER_ID }}" ]; then
-            echo "Missing X_BEARER_TOKEN or X_USER_ID in repo secrets"
-            exit 1
-          fi
+          echo "Using Nitter instance: https://nitter.net and user: bittensor_alert"
 
       - name: Fetch last since_id from Cloudflare KV
         id: get_since
@@ -88,16 +85,17 @@ jobs:
         if: ${{ steps.skip_check.outputs.skip_fetch != 'true' }}
         id: fetch
         env:
-          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
-          X_USER_ID: ${{ secrets.X_USER_ID }}
           RETRY_ATTEMPTS: 3
           RETRY_BACKOFF: 2
-          ALERTS_MAX: 5
+          ALERTS_MAX: 1
+          FETCH_SOURCE: nitter
+          NITTER_INSTANCE: https://nitter.net
+          NITTER_USERNAME: bittensor_alert
           SINCE_ID: ${{ steps.get_since.outputs.since_id }}
         run: |
           mkdir -p data
           python -m pip install --upgrade pip && python -m pip install requests || true
-          python .github/scripts/fetch_x_alerts.py -o x_alerts_latest.json -m 5 --since "$SINCE_ID"
+          python .github/scripts/fetch_x_alerts.py -o x_alerts_latest.json -m 1 --source nitter --nitter-instance "$NITTER_INSTANCE" --username "$NITTER_USERNAME" --since "$SINCE_ID"
           if [ ! -f x_alerts_latest.json ]; then
             echo "alerts.json not created"
             exit 1
