@@ -286,11 +286,18 @@
         <div class="card-header">
           <h2 id="taotensor-heading">TAO Tensor Law — Price Model</h2>
           <div style="display:flex;align-items:center;gap:8px">
-            <a id="taotensorFullBtn" class="card-action" href="https://taotensorlaw.com" target="_blank" rel="noopener" role="button">Open full</a>
+            <a id="taotensorFullBtn" class="card-action icon-btn" href="https://taotensorlaw.com" target="_blank" rel="noopener" role="button" aria-label="Vollansicht öffnen" title="Vollansicht öffnen">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </a>
           </div>
         </div>
         <div class="taotensor-embed" id="taotensorEmbed">
           <iframe id="taotensorFrame" src="https://taotensorlaw.com" title="TAO Tensor Law price model" aria-label="TAO Tensor Law embed" loading="lazy"></iframe>
+          <!-- Mobile-only overlay: intercept taps to open the full-screen modal to avoid clipped tooltips in small viewports -->
+          <div class="embed-overlay-mobile" id="taotensorOverlay" role="button" aria-hidden="true">Tap to open full view</div>
           <div class="embed-fallback">
             <a href="https://taotensorlaw.com" target="_blank" rel="noopener" style="display:inline-block;width:100%;height:100%;">
               <img src="assets/tao-power-law-light.png" alt="TAO Tensor Law model preview" style="width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;" />

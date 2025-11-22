@@ -647,6 +647,17 @@ body {
 }
 .card-action:hover { opacity: 0.95; transform: translateY(-1px); }
 
+/* Icon-only variant (e.g., magnifying glass for 'Open full') */
+.card-action.icon-btn {
+  padding: 6px;
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+}
+.card-action.icon-btn svg { width: 20px; height: 20px; color: currentColor; }
+.card-action.icon-btn:focus { outline: 2px solid rgba(34,197,94,0.15); outline-offset: 2px; }
+
 /* Placeholder so layout doesn't collapse when iframe is moved into modal */
 .tao-embed-placeholder { display:block; width:100%; min-height:560px; }
 @media (max-width: 768px) { .tao-embed-placeholder { min-height: 720px; } }
@@ -1134,6 +1145,27 @@ body {
   border: none;
   display: block;
 }
+
+/* Mobile overlay CTA: show on phones to avoid clipped embed tooltips */
+.taotensor-embed { position: relative; }
+.embed-overlay-mobile {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.18) 100%);
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+@media (max-width: 768px) {
+  .embed-overlay-mobile { display: flex; }
+  .embed-overlay-mobile[aria-hidden="true"] { display: none; }
+}
 /* Dark mode presentation: attempt to make the embedded site look dark by filtering it.
    Only apply when the page is in dark mode (body does not have .light-bg). */
 body:not(.light-bg) .taotensor-embed iframe {
@@ -1344,6 +1376,22 @@ header.site-header.light-bg {
   border: 1px solid #c0c0c0 !important;
   box-shadow: 0 1px 1px #0001;
   backdrop-filter: none !important;
+}
+
+/* Specifically style card action buttons (e.g., 'Open full') for Light Mode so text is visible */
+body.light-bg .card-action {
+  background: linear-gradient(135deg, #ffffff 0%, #fbfbfb 100%) !important;
+  border: 1px solid #e6e6e6 !important;
+  color: #222 !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+body.light-bg .card-action.icon-btn { color: #222; }
+
+/* Make sure the TAO overlay CTA is still readable on Light Mode */
+body.light-bg .embed-overlay-mobile {
+  color: #111;
+  background: linear-gradient(180deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.85) 100%);
+  text-shadow: none;
 }
 .price-pill.light-bg,
 .halving-pill.light-bg {
