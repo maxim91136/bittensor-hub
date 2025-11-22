@@ -39,11 +39,19 @@ Pull requests and issues are welcome! Please follow the guidelines in CONTRIBUTI
 
 ## CI & Releases
 
-- The Release Drafter action used in this repository requires a GitHub secret named `GH_TOKEN` that has write permissions for releases and pull requests. Add it in the repository Settings → Secrets.
-- The Smoke Test workflow (`.github/workflows/smoke-test.yml`) can be triggered manually from Actions (workflow_dispatch). It accepts inputs:
-	- `url`: the Network API URL to validate (defaults to production API)
-	- `skip_cloudflare_check`: `true` or `false`. When `true`, Cloudflare challenge pages will be treated leniently and skip the JSON validation step (useful for manual or ephemeral environments).
-- For debugging in the client, set `window._debug = true` in the browser console to get debug logs about halving calculation and fallback behavior.
+This repository uses a simple, manual release process. The smoke-test and release drafter workflows were intentionally removed in favor of a deterministic, human-controlled process. For a detailed step-by-step checklist, see `RELEASE_CHECKLIST.md`.
+
+Quick Release Checklist (summary):
+
+- 1) Ensure CI checks on `main` have passed and the site is stable.
+- 2) Update `CHANGELOG.md` and the `VERSION` file if bumping the version.
+- 3) Create a tag locally and push (e.g., `git tag -a v1.0.0 -m "Release v1.0.0" && git push origin v1.0.0`).
+- 4) Create the GitHub Release via the UI or the `gh` CLI: `gh release create v1.0.0 --title "v1.0.0" --notes-file CHANGELOG.md`.
+- 5) Wait for GitHub Pages/CI deployments to finish, then verify the production site and API endpoints.
+
+If you need the full step-by-step tasks and validation points, open `RELEASE_CHECKLIST.md`.
+
+For debugging in the client, set `window._debug = true` in the browser console to get debug logs about halving calculation and fallback behavior.
 
 ## License
 
