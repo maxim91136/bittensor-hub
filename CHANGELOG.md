@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.2 (Release Candidate)
+### Added
+- TAO Tensor Law embed card under the price chart with live iframe (and preview fallback image).
+- Fullscreen modal to open TAO Tensor Law without reloading the embed; icon button (magnifying-glass) added.
+- Mobile overlay CTA to open the TAO Tensor Law embed full-screen, avoiding clipped tooltips on phones.
+- Mobile-first adjustments: increased TAO Tensor embed height and responsive clamp values to ensure key content (disclaimer, chart) is visible.
+### Fixed
+- Prevented tooltip overlap and removed the inline info badge ('i') in the TAO Tensor Law card header.
+- Improved Light Mode contrast for the 'Open full' action and ensured the overlay CTA is readable.
+### Changed
+- Tooltip binding skipped on `taotensor-card` elements to avoid orphaned or duplicate tooltips.
+- `script.js` cleanup: improved modal logic, overlay handling, and fallback checks.
+
 ## v1.0.0-rc.1 (Release Candidate)
 ### Added
 - Prefer on-chain `totalIssuanceHuman` for halving calculations, fallback to `circulating_supply` provided by Taostats.
