@@ -40,11 +40,13 @@ jobs:
         run: |
           if [ -z "${{ secrets.CF_API_TOKEN }}" ] || [ -z "${{ secrets.CF_ACCOUNT_ID }}" ] || [ -z "${{ secrets.CF_METRICS_NAMESPACE_ID }}" ]; then
             echo "since_id=" >> $GITHUB_OUTPUT
+            echo "fetched_at=" >> $GITHUB_OUTPUT
             exit 0
           fi
           VAL=$(curl -fsSL -H "Authorization: Bearer ${CF_API_TOKEN}" "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/x_alerts_latest" || true)
           if [ -z "$VAL" ]; then
             echo "since_id=" >> $GITHUB_OUTPUT
+            echo "fetched_at=" >> $GITHUB_OUTPUT
             exit 0
           fi
           SINCE=$(echo "$VAL" | jq -r '.alerts[0].id // empty')
@@ -100,8 +102,7 @@ PY
         run: |
           mkdir -p data
           python -m pip install --upgrade pip && python -m pip install requests || true
-          python .github/scripts/fetch_x_alerts.py -o x_alerts_latest.json -m 5
-          # ensure file exists
+          python .github/scripts/fetch_x_alerts.py -o x_alerts_latest.json -m 5 --since "$SINCE_ID"
           if [ ! -f x_alerts_latest.json ]; then
             echo "alerts.json not created"
             exit 1
