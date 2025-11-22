@@ -65,6 +65,13 @@ function formatPrice(price) {
   return `$${price.toFixed(2)}`;
 }
 
+function formatPercent(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+  const num = Number(value);
+  const sign = num > 0 ? '+' : '';
+  return `${sign}${num.toFixed(2)}%`;
+}
+
 function animatePriceChange(element, newPrice) {
   if (lastPrice === null) {
     lastPrice = newPrice;
@@ -225,6 +232,35 @@ function updateTaoPrice(priceData) {
   }
   lastPrice = priceData.price;
   tryUpdateMarketCapAndFDV();
+
+  // Price tooltip: show percent changes for available ranges from Taostats (in tooltip only)
+  try {
+    const pill = document.getElementById('taoPricePill') || document.querySelector('.price-pill');
+    if (pill) {
+      const ts = window._taostats ?? null;
+      const parts = [];
+      if (ts) {
+        const p1h = ts.percent_change_1h ?? ts.percent_change_1hr ?? null;
+        const p24 = ts.percent_change_24h ?? ts.percent_change_24hr ?? priceData.change24h ?? null;
+        const p7d = ts.percent_change_7d ?? null;
+        const p30d = ts.percent_change_30d ?? null;
+        if (p1h !== null && p1h !== undefined) parts.push(`1h: ${formatPercent(p1h)}`);
+        if (p24 !== null && p24 !== undefined) parts.push(`24h: ${formatPercent(p24)}`);
+        if (p7d !== null && p7d !== undefined) parts.push(`7d: ${formatPercent(p7d)}`);
+        if (p30d !== null && p30d !== undefined) parts.push(`30d: ${formatPercent(p30d)}`);
+      } else if (priceData && priceData.change24h !== undefined && priceData.change24h !== null) {
+        parts.push(`24h: ${formatPercent(priceData.change24h)}`);
+      }
+      if (parts.length) {
+        const source = (window._taostats && window._taostats._source) ? window._taostats._source : 'Taostats';
+        pill.setAttribute('data-tooltip', `Price changes: ${parts.join(' • ')} • Source: ${source}`);
+      } else {
+        pill.removeAttribute('data-tooltip');
+      }
+    }
+  } catch (err) {
+    if (window._debug) console.debug('Price tooltip construction failed:', err);
+  }
 
   
 
@@ -474,6 +510,18 @@ function setupDynamicTooltips() {
     });
   });
 
+  document.querySelectorAll('.price-pill[data-tooltip]').forEach(pill => {
+    pill.addEventListener('mouseenter', e => showTooltip(e, pill.getAttribute('data-tooltip') || ''));
+    pill.addEventListener('mouseleave', hideTooltip);
+    pill.addEventListener('focus', e => showTooltip(e, pill.getAttribute('data-tooltip') || ''));
+    pill.addEventListener('blur', hideTooltip);
+    pill.addEventListener('click', e => {
+      e.stopPropagation();
+      showTooltip(e, pill.getAttribute('data-tooltip') || '');
+      setTimeout(hideTooltip, 2500);
+    });
+  });
+
   document.addEventListener('click', hideTooltip);
 }
 
@@ -522,6 +570,8 @@ async function refreshDashboard() {
     fetchTaoPrice(),
     fetchTaostats()
   ]);
+  // Expose taostats globally for tooltips and other UI pieces
+  window._taostats = taostats ?? null;
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
 
@@ -673,6 +723,7 @@ async function initDashboard() {
 
   // Fill initial volume
   const taostats = await fetchTaostats();
+  window._taostats = taostats ?? null;
   const volumeEl = document.getElementById('volume24h');
   if (volumeEl && taostats && typeof taostats.volume_24h === 'number') {
     volumeEl.textContent = `$${formatCompact(taostats.volume_24h)}`;
