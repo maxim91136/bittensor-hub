@@ -16,6 +16,11 @@ window.halvingDate = null;
 window.halvingInterval = null;
 window.circulatingSupply = null;
 window._prevHalvingTs = null;
+// Persisted snapshots for halving calculation and rotation
+window._prevSupplyForHalving = null; // last snapshot of the supply used for halving computations
+window._halvingIndex = 0; // index into the halving thresholds array
+window._lastHalving = null; // { threshold, at: timestamp }
+window._showSinceMs = 1000 * 60 * 60 * 24; // show "since" text for 24h after a halving
 // Toggle to enable debugging messages in console: set `window._debug = true` at runtime
 window._debug = false;
 
@@ -395,7 +400,10 @@ async function updateNetworkStats(data) {
   // Use generated thresholds to support future halving events (first threshold only)
   const thresholds = generateHalvingThresholds(21_000_000, 6);
   window.halvingThresholds = thresholds;
-  const HALVING_SUPPLY = thresholds.length ? thresholds[0] : 10_500_000;
+  // Determine the active threshold index for the current supply
+  const currentSupplyForHalving = Number(supplyForHalving ?? 0);
+  window._halvingIndex = findNextThresholdIndex(thresholds, currentSupplyForHalving);
+  const HALVING_SUPPLY = thresholds.length ? thresholds[window._halvingIndex] : 10_500_000;
   // parse emission from API (TAO/day) or fallback to supply delta per day
   let emissionPerDay = null;
   if (data && (data.emission !== undefined && data.emission !== null)) {
@@ -409,7 +417,10 @@ async function updateNetworkStats(data) {
   // fallback: estimate emission from previous supply snapshot
   // Use previous halving supply snapshot when available so we estimate emission for the same supply basis.
   // Use previous halving snapshot if present for a consistent emission estimate.
-  const basePrevSupply = prevHalvingSupply ?? (window._prevCircSupply ?? null);
+  // Use the previous snapshot for the same selected source for consistent delta estimates
+  const basePrevSupply = (window._prevSupplyForHalving !== undefined && window._prevSupplyForHalving !== null)
+    ? window._prevSupplyForHalving
+    : (prevHalvingSupply ?? (window._prevCircSupply ?? null));
   const basePrevTs = prevHalvingSupply !== null ? prevHalvingTs : prevSupplyTs;
   if ((!emissionPerDay || !Number.isFinite(emissionPerDay) || emissionPerDay <= 0) && basePrevSupply !== null && basePrevTs) {
     const supplyDelta = Number((supplyForHalving ?? window.circulatingSupply)) - Number(basePrevSupply);
@@ -432,9 +443,13 @@ async function updateNetworkStats(data) {
   const remaining = (supplyForHalving !== null && supplyForHalving !== undefined) ? (HALVING_SUPPLY - supplyForHalving) : null;
   // halvingThresholds already generated above
   // detect crossing: previous < threshold <= current
-  const prevHalvingSupplyForCrossing = (window._prevHalvingSupply !== undefined) ? window._prevHalvingSupply : (window._prevCircSupply ?? null);
+  const prevHalvingSupplyForCrossing = (window._prevSupplyForHalving !== undefined && window._prevSupplyForHalving !== null)
+    ? window._prevSupplyForHalving
+    : ((window._prevHalvingSupply !== undefined) ? window._prevHalvingSupply : (window._prevCircSupply ?? null));
   const crossing = prevHalvingSupplyForCrossing !== null && prevHalvingSupplyForCrossing < HALVING_SUPPLY && supplyForHalving >= HALVING_SUPPLY;
   if (crossing) {
+    // record last halving with timestamp (ms)
+    window._lastHalving = { threshold: HALVING_SUPPLY, at: Date.now() };
     window.halvingJustHappened = { threshold: HALVING_SUPPLY, at: new Date() };
     window.halvingDate = new Date();
     // UI: quick animation on pill, if present
@@ -444,8 +459,8 @@ async function updateNetworkStats(data) {
       setTimeout(() => pill.classList.remove('just-halved'), 8000);
     }
   } else if (remaining !== null && emissionPerDay && emissionPerDay > 0 && remaining > 0) {
-    const daysToHalving = remaining / emissionPerDay;
-    window.halvingDate = new Date(Date.now() + daysToHalving * 24 * 60 * 60 * 1000);
+    // Calculate the halving date for the currently active threshold
+    window.halvingDate = rotateToThreshold(thresholds, window._halvingIndex, currentSupplyForHalving, emissionPerDay);
   } else {
     window.halvingDate = null;
   }
@@ -457,17 +472,22 @@ async function updateNetworkStats(data) {
     const halvingSourceLabel = (window._halvingSupplySource === 'on-chain') ? 'On-chain (TotalIssuance)' : 'Taostats (circulating_supply)';
     // Multi-line tooltip for halving similar to price pill
     const halvingLines = [
-      `Next halving: ${formatNumber(HALVING_SUPPLY)} TAO`,
+      `Next threshold: ${formatNumber(HALVING_SUPPLY)} TAO`,
       `Remaining: ${formatNumber(remainingSafe)} TAO`,
       `Source: ${halvingSourceLabel}`
     ];
+    if (window._lastHalving) {
+      const dt = new Date(window._lastHalving.at);
+      halvingLines.push(`Last reached: ${formatNumber(window._lastHalving.threshold)} @ ${dt.toLocaleString()}`);
+    }
     halvingPill.setAttribute('data-tooltip', halvingLines.join('\n'));
   }
   // We intentionally don't add a new stat-card for the halving; keep the pill-only UI.
   // store previous circulating and halving-supply snapshots for next refresh
   window._prevCircSupply = window.circulatingSupply;
   if (supplyForHalving !== null && supplyForHalving !== undefined) {
-    window._prevHalvingSupply = supplyForHalving;
+    window._prevSupplyForHalving = supplyForHalving; // persist the chosen snapshot
+    window._prevHalvingSupply = supplyForHalving; // keep legacy var used elsewhere
     window._prevHalvingTs = nowTs;
   }
 
@@ -913,9 +933,45 @@ function generateHalvingThresholds(maxSupply = 21_000_000, maxEvents = 6) {
   }
   return arr;
 }
+
+// Helper: find next threshold index where currentSupply < thresholds[index]
+function findNextThresholdIndex(thresholds = [], currentSupply = 0) {
+  if (!Array.isArray(thresholds) || thresholds.length === 0) return 0;
+  for (let i = 0; i < thresholds.length; i++) {
+    if (currentSupply < thresholds[i]) return i;
+  }
+  return thresholds.length - 1; // if already past all thresholds, return last index
+}
+
+// Helper: set halvingDate to the given threshold index using emissionPerDay
+function rotateToThreshold(thresholds, index, currentSupply, emissionPerDay) {
+  if (!Array.isArray(thresholds) || thresholds.length === 0) return null;
+  const idx = Math.max(0, Math.min(index, thresholds.length - 1));
+  const threshold = thresholds[idx];
+  if (!emissionPerDay || emissionPerDay <= 0) return null;
+  const remaining = Math.max(0, threshold - (currentSupply || 0));
+  const daysToHalving = remaining / emissionPerDay;
+  if (!Number.isFinite(daysToHalving)) return null;
+  return new Date(Date.now() + daysToHalving * 24 * 60 * 60 * 1000);
+}
 function updateHalvingCountdown() {
   const el = document.getElementById('halvingCountdown');
-  if (!el || !window.halvingDate) {
+  if (!el) return;
+  // If we just had a halving, show 'Halved!' for the brief animation window
+  if (window._lastHalving && (Date.now() - window._lastHalving.at) < 8000) {
+    el.textContent = 'Halved!';
+    return;
+  }
+  // If we recently had a halving and are within the "since" window, show a human-friendly 'since' text
+  if (window._lastHalving && (Date.now() - window._lastHalving.at) < window._showSinceMs) {
+    const diffMs = Date.now() - window._lastHalving.at;
+    const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+    const mins = Math.floor((diffMs / (1000 * 60)) % 60);
+    if (hrs > 0) el.textContent = `Halved ${hrs}h ${mins}m ago`;
+    else el.textContent = `Halved ${mins}m ago`;
+    return;
+  }
+  if (!window.halvingDate) {
     el.textContent = 'Calculating...';
     return;
   }
