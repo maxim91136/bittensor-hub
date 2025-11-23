@@ -87,6 +87,7 @@ def fetch_metrics() -> Dict[str, Any]:
         "_timestamp": datetime.now(timezone.utc).isoformat()
     }
     # Attempt to read existing metrics from Cloudflare KV (if env provided)
+    # existing will be the current issuance_history (as list) from CF KV if present
     existing = None
     kv_read_ok = False
     try:
@@ -94,19 +95,25 @@ def fetch_metrics() -> Dict[str, Any]:
         cf_token = os.getenv('CF_API_TOKEN')
         cf_kv_ns = os.getenv('CF_METRICS_NAMESPACE_ID')
         if cf_account and cf_token and cf_kv_ns:
-            kv_url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account}/storage/kv/namespaces/{cf_kv_ns}/values/metrics"
+            # Read the issuance_history key directly to preserve history across runs
+            kv_url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account}/storage/kv/namespaces/{cf_kv_ns}/values/issuance_history"
             req = urllib.request.Request(kv_url, method='GET', headers={
                 'Authorization': f'Bearer {cf_token}'
             })
             try:
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     if resp.status == 200:
-                        existing = json.loads(resp.read())
+                        # issuance_history is stored as a JSON array of snapshots
+                        try:
+                            existing = json.loads(resp.read())
+                        except Exception:
+                            existing = None
                         kv_read_ok = True
             except urllib.error.HTTPError as e:
                 # 404: the key is not present; that's OK - we can create it
                 if getattr(e, 'code', None) == 404:
-                    existing = None
+                    # never seen before; start a new history
+                    existing = []
                     kv_read_ok = True
                 else:
                     # 403 or others: we cannot read KV - do not attempt to overwrite
@@ -123,7 +130,11 @@ def fetch_metrics() -> Dict[str, Any]:
 
     # Build / update high-frequency issuance history (15min snapshots) based on existing KV if present
     try:
-        history: List[Dict[str, Any]] = existing.get('issuance_history', []) if isinstance(existing, dict) else []
+        # existing is expected to be a list (issuance_history). If it's a dict or malformed, fallback to []
+        if isinstance(existing, list):
+            history: List[Dict[str, Any]] = existing
+        else:
+            history: List[Dict[str, Any]] = []
     except Exception:
         history = []
 

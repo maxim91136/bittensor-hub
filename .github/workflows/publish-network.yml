@@ -39,6 +39,15 @@ jobs:
           URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/metrics"  # fix: key = metrics
           if [ ! -f network.json ]; then
             echo "no network.json"; exit 1; fi
+          # Check issuance_history read permission (fail early if token lacks READ)
+          resp=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $CF_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/issuance_history" || true)
+          echo "KV read status: $resp"
+          if [ "$resp" = "403" ]; then
+            echo "ERROR: CF_API_TOKEN missing Workers KV READ; add Read permission to the token in Cloudflare Dashboard"
+            exit 1
+          fi
+
           curl -fsSL -X PUT \
             "$URL" \
             -H "Authorization: Bearer $CF_API_TOKEN" \

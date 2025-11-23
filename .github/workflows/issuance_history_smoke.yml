@@ -1,0 +1,21 @@
+name: 'Issuance History Smoke Test'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *' # Every 30 minutes
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check network API
+        run: |
+          set -e
+          ISSUANCE_LEN=$(curl -sSf https://bittensor-labs.com/api/issuance_history | jq 'length') || (echo 'Could not fetch issuance_history' && exit 1)
+          echo "issuance_history length: $ISSUANCE_LEN"
+          if [ "$ISSUANCE_LEN" -lt 2 ]; then
+            echo 'issuance_history has less than 2 samples; emission_daily will be null. Failing CI to alert team.'
+            exit 1
+          fi
+          echo "OK: issuance_history has $ISSUANCE_LEN samples"
