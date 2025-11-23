@@ -234,12 +234,15 @@ def fetch_metrics() -> Dict[str, Any]:
     result['emission_samples'] = len(per_interval_deltas)
     result['last_issuance_ts'] = history[-1]['ts'] if history else None
 
-    # Save the full history to a separate file: if KV read failed, we may still want to write locally
-    # when CI sets FORCE_ISSUANCE_ON_KV_FAIL=1 (will create local `issuance_history.json` so CI can push it)
-    # Always write local issuance_history.json only when kv_read_ok is True (fallback write disabled by default)
-    # Write the file if KV read was OK, or we force local write via environment variable
+    # Save the full history to a separate file: normally we only write local `issuance_history.json`
+    # if KV read succeeded (so we can safely append). However, CI can set the environment var
+    # `FORCE_ISSUANCE_ON_KV_FAIL=1` to force local writing even when the KV read failed (useful when
+    # the public API is protected but the CI runner should still push a new snapshot).
+    force_local_write = os.getenv('FORCE_ISSUANCE_ON_KV_FAIL', '0') == '1'
+    if force_local_write and not kv_read_ok:
+        print(f"⚠️  FORCE_ISSUANCE_ON_KV_FAIL set — will write local issuance_history.json even if KV read_failed (kv_read_ok={kv_read_ok})", file=sys.stderr)
     try:
-        if kv_read_ok:
+        if kv_read_ok or force_local_write:
             history_path = os.path.join(os.getcwd(), 'issuance_history.json')
             with open(history_path, 'w') as hf:
                 json.dump(history, hf, indent=2)

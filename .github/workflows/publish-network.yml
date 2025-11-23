@@ -27,6 +27,7 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+          FORCE_ISSUANCE_ON_KV_FAIL: '1'
         run: |
           python .github/scripts/fetch_network.py
       # Push the latest network metrics (network.json) to Cloudflare Workers KV under key 'metrics'
