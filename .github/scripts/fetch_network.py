@@ -88,6 +88,7 @@ def fetch_metrics() -> Dict[str, Any]:
     }
     # Attempt to read existing metrics from Cloudflare KV (if env provided)
     existing = None
+    kv_read_ok = False
     try:
         cf_account = os.getenv('CF_ACCOUNT_ID')
         cf_token = os.getenv('CF_API_TOKEN')
@@ -101,9 +102,20 @@ def fetch_metrics() -> Dict[str, Any]:
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     if resp.status == 200:
                         existing = json.loads(resp.read())
+                        kv_read_ok = True
             except urllib.error.HTTPError as e:
-                # no existing KV or insufficient permissions, ignore
-                pass
+                # 404: the key is not present; that's OK - we can create it
+                if getattr(e, 'code', None) == 404:
+                    existing = None
+                    kv_read_ok = True
+                else:
+                    # 403 or others: we cannot read KV - do not attempt to overwrite
+                    kv_read_ok = False
+                    print(f"⚠️  KV GET failed with HTTP Error {getattr(e,'code', None)}; skipping issuance_history update", file=sys.stderr)
+            except Exception as e:
+                # network or other error when reading kv; do not try to overwrite
+                kv_read_ok = False
+                print(f"⚠️  KV GET failed: {str(e)}; skipping issuance_history update", file=sys.stderr)
             except Exception:
                 pass
     except Exception:
@@ -206,13 +218,21 @@ def fetch_metrics() -> Dict[str, Any]:
     result['emission_samples'] = len(per_interval_deltas)
     result['last_issuance_ts'] = history[-1]['ts'] if history else None
 
-    # Save the full history to a separate file (to be PUT into KV as issuance_history)
+    # Save the full history to a separate file only if KV read was OK
     try:
-        history_path = os.path.join(os.getcwd(), 'issuance_history.json')
-        with open(history_path, 'w') as hf:
-            json.dump(history, hf, indent=2)
-    except Exception:
-        pass
+        if kv_read_ok:
+            history_path = os.path.join(os.getcwd(), 'issuance_history.json')
+            with open(history_path, 'w') as hf:
+                json.dump(history, hf, indent=2)
+        else:
+            # Do not save history file locally; ensure CI doesn't accidentally overwrite KV
+            if os.path.exists(os.path.join(os.getcwd(), 'issuance_history.json')):
+                try:
+                    os.remove(os.path.join(os.getcwd(), 'issuance_history.json'))
+                except Exception:
+                    pass
+    except Exception as e:
+        print(f"⚠️  Failed while trying to save issuance_history: {str(e)}", file=sys.stderr)
     return result
 
 if __name__ == "__main__":
