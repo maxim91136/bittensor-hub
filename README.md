@@ -1,6 +1,6 @@
 # bittensor-labs
 
-Bittensor-Labs ultra-compact Dashboard
+Bittensor-Labs.com ultra-compact Dashboard
 
 ## Overview
 Started: November 3, 2025
