@@ -61,6 +61,25 @@ jobs:
           else
             echo "OK: issuance_history.json downloaded"
           fi
+      - name: Generate network metrics and update issuance_history (run fetch_network.py)
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+        run: |
+          set -euo pipefail
+          # Run the script: it will attempt to read existing issuance_history from KV, append a new snapshot and write local issuance_history.json
+          python .github/scripts/fetch_network.py
+
+      - name: Diagnostic fetch (optional public API read to inspect) 
+        env:
+          SITE_URL: https://bittensor-labs.com
+        run: |
+          set -euo pipefail
+          echo "Trying public endpoints for visibility (may be protected; 403 expected)"
+          curl -I ${SITE_URL}/api/network || true
+          curl -I ${SITE_URL}/api/issuance_history || true
+          # Note: we still keep the CF KV fallback if public API returns 403, but now we actually generated an updated issuance_history.json above
 
       - name: Push Issuance History to Cloudflare KV (if present)
         env:
