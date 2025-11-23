@@ -309,6 +309,19 @@ def fetch_metrics() -> Dict[str, Any]:
         elif days_of_history >= 3:
             projection_confidence = 'medium'
     result['projection_confidence'] = projection_confidence
+    # how many days were effectively used for the projection method
+    projection_days_used = None
+    try:
+        if projection_method == 'emission_7d':
+            projection_days_used = 7
+        elif projection_method in ('emission_daily', 'emission_daily_low_confidence'):
+            # use available days_of_history, at least 1 if present
+            projection_days_used = int(days_of_history) if days_of_history is not None and days_of_history >= 1 else 1 if result.get('emission_daily') is not None else None
+        elif projection_method == 'mean_from_intervals':
+            projection_days_used = int(days_of_history) if days_of_history is not None else None
+    except Exception:
+        projection_days_used = None
+    result['projection_days_used'] = projection_days_used
     result['halving_estimates'] = compute_halving_estimates(cur_iss, result.get('halvingThresholds', []), avg_for_projection, projection_method)
 
     # Save the full history to a separate file: normally we only write local `issuance_history.json`
