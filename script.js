@@ -23,6 +23,8 @@ window._lastHalving = null; // { threshold, at: timestamp }
 window._showSinceMs = 1000 * 60 * 60 * 24; // show "since" text for 24h after a halving
 // Toggle to enable debugging messages in console: set `window._debug = true` at runtime
 window._debug = false;
+// Tooltip auto-hide duration (ms). Increased to double the previous default (2.5s -> 5s)
+const TOOLTIP_AUTO_HIDE_MS = 5000;
 
 // ===== Utility Functions =====
 function animateValue(element, start, end, duration = 1000) {
@@ -537,7 +539,7 @@ function setupDynamicTooltips() {
     badge.addEventListener('click', e => {
       e.stopPropagation();
       showTooltip(e, text);
-      setTimeout(hideTooltip, 2500);
+      setTimeout(hideTooltip, TOOLTIP_AUTO_HIDE_MS);
     });
     // No theme-dependent behavior here; map swap is handled centrally in setLightMode().
   });
@@ -550,7 +552,7 @@ function setupDynamicTooltips() {
     pill.addEventListener('click', e => {
       e.stopPropagation();
       showTooltip(e, pill.getAttribute('data-tooltip') || '');
-      setTimeout(hideTooltip, 2500);
+      setTimeout(hideTooltip, TOOLTIP_AUTO_HIDE_MS);
     });
   });
 
@@ -562,7 +564,7 @@ function setupDynamicTooltips() {
     pill.addEventListener('click', e => {
       e.stopPropagation();
       showTooltip(e, pill.getAttribute('data-tooltip') || '');
-      setTimeout(hideTooltip, 2500);
+      setTimeout(hideTooltip, TOOLTIP_AUTO_HIDE_MS);
     });
   });
 
