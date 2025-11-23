@@ -93,7 +93,10 @@ def fetch_metrics() -> Dict[str, Any]:
     try:
         cf_account = os.getenv('CF_ACCOUNT_ID')
         cf_token = os.getenv('CF_API_TOKEN')
-        cf_kv_ns = os.getenv('CF_METRICS_NAMESPACE_ID')
+        # Accept either `CF_KV_NAMESPACE_ID` (used by workflow) or legacy `CF_METRICS_NAMESPACE_ID`.
+        cf_kv_ns = os.getenv('CF_KV_NAMESPACE_ID') or os.getenv('CF_METRICS_NAMESPACE_ID')
+        # Debug visibility for CI logs
+        print(f"DEBUG: CF_ACCOUNT_ID={'set' if cf_account else 'missing'}, CF_API_TOKEN={'set' if cf_token else 'missing'}, CF_KV_NAMESPACE_ID={'set' if cf_kv_ns else 'missing'}", file=sys.stderr)
         if cf_account and cf_token and cf_kv_ns:
             # Read the issuance_history key directly to preserve history across runs
             kv_url = f"https://api.cloudflare.com/client/v4/accounts/{cf_account}/storage/kv/namespaces/{cf_kv_ns}/values/issuance_history"
@@ -105,12 +108,16 @@ def fetch_metrics() -> Dict[str, Any]:
                     if resp.status == 200:
                         # issuance_history is stored as a JSON array of snapshots
                         try:
-                            existing = json.loads(resp.read())
-                        except Exception:
+                            body = resp.read()
+                            existing = json.loads(body)
+                            # Helpful CI debug: show type and length without printing full body
+                            if isinstance(existing, list):
+                                print(f"✅ KV read OK — {len(existing)} snapshots found", file=sys.stderr)
+                            else:
+                                print(f"✅ KV read OK — payload type={type(existing).__name__}", file=sys.stderr)
+                        except Exception as e:
                             existing = None
-                            # Debug log for CI visibility
-                            if existing is not None:
-                                print(f"✅ KV read OK — {len(existing)} snapshots found")
+                            print(f"⚠️  Failed to parse KV JSON: {e}", file=sys.stderr)
                         kv_read_ok = True
             except urllib.error.HTTPError as e:
                 # 404: the key is not present; that's OK - we can create it
