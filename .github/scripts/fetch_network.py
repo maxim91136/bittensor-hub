@@ -198,7 +198,6 @@ def fetch_metrics() -> Dict[str, Any]:
     per_interval_deltas = compute_per_interval_deltas(history)
     emission_daily = None
     emission_7d = None
-    emission_30d = None
     emission_sd_7d = None
     # emission_daily = mean per_day for last 24h
     deltas_last_24h = [d['per_day'] for d in per_interval_deltas if d['ts'] >= (int(datetime.now(timezone.utc).timestamp()) - 86400)]
@@ -226,14 +225,11 @@ def fetch_metrics() -> Dict[str, Any]:
         mean7 = emission_7d
         sd7 = math.sqrt(sum((v - mean7) ** 2 for v in last7) / len(last7)) if len(last7) > 0 else 0
         emission_sd_7d = sd7
-    if len(daily_means) >= 30:
-        last30 = daily_means[-30:]
-        emission_30d = winsorized_mean(last30, 0.1)
+    # 30-day projection intentionally disabled (not used)
 
     # Attach emission values to result (history is saved separately)
     result['emission_daily'] = round(emission_daily, 2) if emission_daily is not None else None
     result['emission_7d'] = round(emission_7d, 2) if emission_7d is not None else None
-    result['emission_30d'] = round(emission_30d, 2) if emission_30d is not None else None
     result['emission_sd_7d'] = round(emission_sd_7d, 2) if emission_sd_7d is not None else None
     result['emission_samples'] = len(per_interval_deltas)
     result['last_issuance_ts'] = history[-1]['ts'] if history else None
@@ -254,16 +250,13 @@ def fetch_metrics() -> Dict[str, Any]:
     # --- Halving projection: compute average net emission from history and ETA to thresholds ---
     projection_method = None
     avg_for_projection = None
-    # Prefer robust 7d winsorized mean, then daily, then 30d, then fallback to simple mean
+    # Prefer robust 7d winsorized mean, then daily, then fallback to simple mean
     if emission_7d is not None and emission_7d > 0:
         avg_for_projection = emission_7d
         projection_method = 'emission_7d'
     elif emission_daily is not None and emission_daily > 0:
         avg_for_projection = emission_daily
         projection_method = 'emission_daily'
-    elif emission_30d is not None and emission_30d > 0:
-        avg_for_projection = emission_30d
-        projection_method = 'emission_30d'
     else:
         vals = [d['per_day'] for d in per_interval_deltas if isinstance(d.get('per_day'), (int, float))]
         if vals:
