@@ -1,0 +1,48 @@
+name: Fetch and Push Bittensor network data to Cloudflare KV (fixed)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          pip install bittensor
+
+      - name: Generate metrics
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+          FORCE_ISSUANCE_ON_KV_FAIL: '0'
+        run: |
+          python .github/scripts/fetch_network.py
+
+      - name: Push network metrics to Cloudflare KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+        run: |
+          bash .github/scripts/push_network_metrics.sh
+
+      - name: Push issuance_history to Cloudflare KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+          FORCE_ISSUANCE_ON_KV_FAIL: '0'
+        run: |
+          bash .github/scripts/push_issuance_history.sh
