@@ -26,6 +26,7 @@ BITTENSOR_RPC=wss://rpc.mainnet.bittensor.com npm run check-rpc
 ## What they check
 
 - `/api/network` — presence of `circulatingSupply`, `totalIssuance`, `emission_7d`/`emission_30d`, `halvingThresholds`, `supplyUsed`.
+	- Note: `emission_7d` and `emission_30d` are server-side averages (TAO/day) computed from historical `totalIssuance` (TTI) by default. `supplyUsed` indicates whether the API uses `total` (TTI) or `circulating` supply for halving calculations.
 - Taostats candidates: `/api/taostats`, `/api/tokenomics`, `/api/halving`, `/api/v1/tokenomics`.
 - Chain storages and constants like `issuance.totalInCirculation`, `balances.totalIssuance`, `tokenomics.nextHalvingThreshold`, etc.
 
