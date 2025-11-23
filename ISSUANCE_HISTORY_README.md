@@ -9,8 +9,7 @@ This file documents the collection and usage of the `issuance_history` Cloudflar
 - The script computes emission metrics (emission_daily, emission_7d, emission_30d) using normalized per-interval deltas and winsorized mean to smooth spikes.
 
 Testing & Local Tools
-- `.github/scripts/generate_test_issuance_history.py` can be used to generate synthetic history for local testing.
-- `.github/scripts/compute_emission_from_history.py` will compute emission stats from a local `issuance_history.json` file.
+- Local testing is supported via the `fetch_network.py` script and cloud KV reads; helper scripts were removed to keep the repo minimal.
   
 
 Security Notes
