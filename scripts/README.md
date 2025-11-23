@@ -31,3 +31,7 @@ BITTENSOR_RPC=wss://rpc.mainnet.bittensor.com npm run check-rpc
 - Chain storages and constants like `issuance.totalInCirculation`, `balances.totalIssuance`, `tokenomics.nextHalvingThreshold`, etc.
 
 These helps decide whether to use `circulatingSupply` directly or compute it from on-chain storages.
+
+Sampling notes:
+- The backend samples `totalIssuance` on each `gather_metrics` run and computes `emission_7d` and `emission_30d` as per-day averages from the historical TTI time-series.
+- For stable 7d/30d windows, run the metrics service regularly (every 5-15 minutes recommended) or configure it to take hourly snapshots to produce smooth averages.
