@@ -90,7 +90,6 @@ def fetch_metrics() -> Dict[str, Any]:
     # existing will be the current issuance_history (as list) from CF KV if present
     existing = None
     kv_read_ok = False
-    kv_read_err = None
     try:
         cf_account = os.getenv('CF_ACCOUNT_ID')
         cf_token = os.getenv('CF_API_TOKEN')
@@ -123,13 +122,11 @@ def fetch_metrics() -> Dict[str, Any]:
                 else:
                     # 403 or others: we cannot read KV - do not attempt to overwrite
                     kv_read_ok = False
-                    kv_read_err = f"HTTP {getattr(e,'code', None)}"
                     print(f"⚠️  KV GET failed with HTTP Error {getattr(e,'code', None)}; skipping issuance_history update", file=sys.stderr)
                     print(f"⚠️  KV GET failed with HTTP Error {getattr(e,'code', None)}; skipping issuance_history update", file=sys.stderr)
             except Exception as e:
                 # network or other error when reading kv; do not try to overwrite
                 kv_read_ok = False
-                kv_read_err = str(e)
                 print(f"⚠️  KV GET failed: {str(e)}; skipping issuance_history update", file=sys.stderr)
             except Exception:
                 pass
@@ -239,12 +236,10 @@ def fetch_metrics() -> Dict[str, Any]:
 
     # Save the full history to a separate file: if KV read failed, we may still want to write locally
     # when CI sets FORCE_ISSUANCE_ON_KV_FAIL=1 (will create local `issuance_history.json` so CI can push it)
-    force_local_write = os.getenv('FORCE_ISSUANCE_ON_KV_FAIL', '0') == '1'
-    if force_local_write:
-        print(f"⚠️  FORCE_ISSUANCE_ON_KV_FAIL set — will write local issuance_history.json even if KV read failed (kv_read_ok={kv_read_ok}, err={kv_read_err})", file=sys.stderr)
+    # Always write local issuance_history.json only when kv_read_ok is True (fallback write disabled by default)
     # Write the file if KV read was OK, or we force local write via environment variable
     try:
-        if kv_read_ok or force_local_write:
+        if kv_read_ok:
             history_path = os.path.join(os.getcwd(), 'issuance_history.json')
             with open(history_path, 'w') as hf:
                 json.dump(history, hf, indent=2)
