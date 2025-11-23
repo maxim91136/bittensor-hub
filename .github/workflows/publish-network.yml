@@ -95,20 +95,67 @@ jobs:
             # write merged to temp and push the merged file
             printf "%s" "$MERGED_CANONICAL" > /tmp/issuance_history_merged.json
             PUSH_FILE=/tmp/issuance_history_merged.json
-          elif [ "$HTTP_STATUS_KV" = "404" ]; then
-            echo "issuance_history key not present in KV; pushing new value"
-            PUSH_FILE=issuance_history.json
-          else
-            # 403 or other status — cannot read KV; proceed to push local (force) but warn
-            echo "Warning: KV read returned HTTP $HTTP_STATUS_KV; proceeding with push (may overwrite)." >&2
-            PUSH_FILE=issuance_history.json
-          fi
-          # Do the push
-          HTTP_STATUS_PUT=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
-            "$URL" \
-            -H "Authorization: Bearer $CF_API_TOKEN" \
-            -H "Content-Type: application/json" \
+          if [ "$HTTP_STATUS_KV" = "200" ]; then
+            # Try to robustly parse KV JSON (array/object/string) into a canonical array form
+            set +e
+            KV_PARSE_OK=1
+            # First attempt to parse as JSON
+            jq -e '.' /tmp/kv_current.json >/dev/null 2>&1
+            if [ $? -ne 0 ]; then
+              # maybe the value is a JSON-encoded string; try fromjson
+              KV_FROMJSON=$(jq -r '. // empty' /tmp/kv_current.json 2>/dev/null || true)
+              if [ -n "$KV_FROMJSON" ]; then
+                echo "$KV_FROMJSON" | jq -e '.' >/dev/null 2>&1
+                if [ $? -eq 0 ]; then
+                  echo "$KV_FROMJSON" > /tmp/kv_current.json
+                else
+                  KV_PARSE_OK=0
+                fi
+              else
+                KV_PARSE_OK=0
+              fi
+            fi
+            if [ "$KV_PARSE_OK" -ne 1 ]; then
+              echo "Warning: Could not parse KV JSON; skipping merge and proceeding to push local" >&2
+              PUSH_FILE=issuance_history.json
+            else
+              # canonicalize KV to JSON
+              # ensure it's an array: if not, wrap into array
+              is_array=$(jq -e 'type=="array"' /tmp/kv_current.json >/dev/null 2>&1; echo $?)
+              if [ "$is_array" -eq 0 ]; then
+                KV_CANONICAL=$(jq -cS '.' /tmp/kv_current.json)
+              else
+                # wrap object into array
+                is_object=$(jq -e 'type=="object"' /tmp/kv_current.json >/dev/null 2>&1; echo $?)
+                if [ "$is_object" -eq 0 ]; then
+                  KV_CANONICAL=$(jq -cS '[.]' /tmp/kv_current.json)
+                else
+                  KV_CANONICAL=$(jq -cS '.' /tmp/kv_current.json)
+                fi
+              fi
+              # canonicalize local
+              LOCAL_CANONICAL=$(jq -cS '.' issuance_history.json 2>/dev/null || cat issuance_history.json)
+              # if local is not array, wrap
+              echo "$LOCAL_CANONICAL" | jq -e 'type=="array"' >/dev/null 2>&1
+              if [ $? -ne 0 ]; then
+                LOCAL_CANONICAL=$(echo "$LOCAL_CANONICAL" | jq -cS '[.]')
+              fi
+              MERGED_CANONICAL=$(printf '%s
             --data-binary @$PUSH_FILE || true)
+              set -e
+              if [ -z "$MERGED_CANONICAL" ]; then
+                echo "Failed to canonicalize merged JSON; skipping merge and pushing local" >&2
+                PUSH_FILE=issuance_history.json
+              else
+                KV_HASH=$(printf "%s" "$MERGED_CANONICAL" | sha256sum | awk '{print $1}')
+                if [ "$LOCAL_HASH" = "$KV_HASH" ]; then
+                  echo "issuance_history.json unchanged vs KV; skipping push"
+                  exit 0
+                fi
+                printf "%s" "$MERGED_CANONICAL" > /tmp/issuance_history_merged.json
+                PUSH_FILE=/tmp/issuance_history_merged.json
+              fi
+            fi
           if [ "$HTTP_STATUS_PUT" != "200" ] && [ "$HTTP_STATUS_PUT" != "204" ]; then
             echo "Failed to push issuance_history to Cloudflare KV: HTTP $HTTP_STATUS_PUT" >&2
             exit 1
