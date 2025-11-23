@@ -108,16 +108,21 @@ def fetch_metrics() -> Dict[str, Any]:
                             existing = json.loads(resp.read())
                         except Exception:
                             existing = None
+                            # Debug log for CI visibility
+                            if existing is not None:
+                                print(f"✅ KV read OK — {len(existing)} snapshots found")
                         kv_read_ok = True
             except urllib.error.HTTPError as e:
                 # 404: the key is not present; that's OK - we can create it
                 if getattr(e, 'code', None) == 404:
                     # never seen before; start a new history
                     existing = []
+                    print("ℹ️  KV read returned 404 — issuance_history key not found; starting a new history")
                     kv_read_ok = True
                 else:
                     # 403 or others: we cannot read KV - do not attempt to overwrite
                     kv_read_ok = False
+                    print(f"⚠️  KV GET failed with HTTP Error {getattr(e,'code', None)}; skipping issuance_history update", file=sys.stderr)
                     print(f"⚠️  KV GET failed with HTTP Error {getattr(e,'code', None)}; skipping issuance_history update", file=sys.stderr)
             except Exception as e:
                 # network or other error when reading kv; do not try to overwrite
