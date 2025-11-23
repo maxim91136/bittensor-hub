@@ -125,14 +125,85 @@ def gather_metrics(network: str = "finney") -> Dict[str, Any]:
     total_issuance_raw = None
     total_issuance_human = None
 
+  # Build metrics response
+  now_ts = time.time()
+
+  # maintain issuance history for emission computations (per-day deltas)
+  try:
+    history = _cache.get('issuance_history') or []
+    if total_issuance_human is not None:
+      history.append({'ts': now_ts, 'issuance': float(total_issuance_human)})
+      # keep a reasonable number of entries (e.g. 720 entries ~= hourly for 30 days)
+      max_entries = 720
+      if len(history) > max_entries:
+        history = history[-max_entries:]
+    _cache['issuance_history'] = history
+  except Exception:
+    history = _cache.get('issuance_history') or []
+
+  # compute per-day deltas from adjacent history samples
+  def compute_per_day_deltas(hist):
+    deltas = []
+    if not hist or len(hist) < 2:
+      return deltas
+    for a, b in zip(hist, hist[1:]):
+      dt = float(b['ts']) - float(a['ts'])
+      if dt <= 0:
+        continue
+      delta = float(b['issuance']) - float(a['issuance'])
+      per_day = delta * (86400.0 / dt)
+      deltas.append({'ts': b['ts'], 'per_day': per_day})
+    return deltas
+
+  def robust_average(values):
+    if not values:
+      return None
+    vals = sorted(values)
+    n = len(vals)
+    if n == 0:
+      return None
+    # trim top/bottom 10% if possible
+    trim = max(1, int(n * 0.1)) if n > 3 else 0
+    if trim > 0 and n > 2 * trim:
+      trimmed = vals[trim:n - trim]
+    else:
+      trimmed = vals
+    return sum(trimmed) / len(trimmed)
+
+  def avg_for_days(hist, days):
+    now = now_ts
+    cutoff = now - (days * 86400.0)
+    per_day_deltas = compute_per_day_deltas(hist)
+    recent = [d['per_day'] for d in per_day_deltas if d['ts'] >= cutoff]
+    if not recent:
+      # fallback to last N deltas (e.g. last 7)
+      recent = [d['per_day'] for d in per_day_deltas[-min(len(per_day_deltas), days):]]
+    if not recent:
+      return None
+    return robust_average(recent)
+
+  emission_7d = avg_for_days(history, 7)
+  emission_30d = avg_for_days(history, 30)
+
+  # server-side fallback value (legacy) if metrics couldn't compute a value
+  emission_7d_value = round(emission_7d) if emission_7d and emission_7d > 0 else 7200
+  emission_30d_value = round(emission_30d) if emission_30d and emission_30d > 0 else 7200
+
+  # supplyUsed: we use totalIssuance by default since the halving is supply-based on TTI
+  supply_used = 'total'
+
   return {
     "blockHeight": block,
     "validators": total_validators,
     "subnets": total_subnets,
     "emission": 7200,
+    "emission_7d": emission_7d_value,
+    "emission_30d": emission_30d_value,
+    "supplyUsed": supply_used,
     "totalNeurons": total_neurons,
     "totalIssuance": total_issuance_raw,
     "totalIssuanceHuman": total_issuance_human,
+    "circulatingSupply": None,
     "halvingThresholds": generate_halving_thresholds(),
     "_source": "bittensor-sdk"
   }

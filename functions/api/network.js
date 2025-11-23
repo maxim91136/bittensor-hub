@@ -49,12 +49,21 @@ export async function onRequest(context) {
     }
 
     const halvingThresholds = m?.halvingThresholds ?? generateHalvingThresholds();
+    // normalize emission values
+    const emission7 = m?.emission_7d ? Number(m.emission_7d) : (m?.emission ? Number(String(m.emission).replace(/,/g, '')) : 7200);
+    const emission30 = m?.emission_30d ? Number(m.emission_30d) : emission7;
+    const supplyUsed = m?.supplyUsed ?? (m?.circulatingSupply ? 'circulating' : 'total');
+    const circulatingSupply = m?.circulatingSupply ?? null;
 
     return new Response(JSON.stringify({
       blockHeight: m.blockHeight ?? null,
       validators: m.validators ?? 0,
       subnets: m.subnets ?? 0,
       emission: m.emission ?? '7,200',
+      emission_7d: Number.isFinite(emission7) ? emission7 : 7200,
+      emission_30d: Number.isFinite(emission30) ? emission30 : emission7,
+      supplyUsed: supplyUsed,
+      circulatingSupply: circulatingSupply,
       totalNeurons: m.totalNeurons ?? 0,
       halvingThresholds: halvingThresholds,
       totalIssuance: m.totalIssuance ?? null,
