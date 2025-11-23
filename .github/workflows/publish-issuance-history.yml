@@ -61,17 +61,7 @@ jobs:
           else
             echo "OK: issuance_history.json downloaded"
           fi
-      - name: Generate network metrics and update issuance_history (run fetch_network.py)
-        env:
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
-        run: |
-          set -euo pipefail
-          # Run the script: it will attempt to read existing issuance_history from KV, append a new snapshot and write local issuance_history.json
-          python .github/scripts/fetch_network.py
-
-      - name: Diagnostic fetch (optional public API read to inspect) 
+      - name: Diagnostic fetch (public API read)
         env:
           SITE_URL: https://bittensor-labs.com
         run: |
@@ -81,31 +71,4 @@ jobs:
           curl -I ${SITE_URL}/api/issuance_history || true
           # Note: we still keep the CF KV fallback if public API returns 403, but now we actually generated an updated issuance_history.json above
 
-      - name: Push Issuance History to Cloudflare KV (if present)
-        env:
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
-        run: |
-          set -euo pipefail
-          if [ ! -f issuance_history.json ]; then
-            echo "No issuance_history.json present, skipping KV push"
-            exit 0
-          fi
-          if [ -z "${CF_ACCOUNT_ID:-}" ] || [ -z "${CF_API_TOKEN:-}" ] || [ -z "${CF_KV_NAMESPACE_ID:-}" ]; then
-            echo "CF env not configured; skipping KV push"
-            exit 0
-          fi
-          URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/issuance_history"
-          # Attempt PUT but do not verify token by running any separate dedicated verification step; rely on the HTTP status only
-          HTTP_STATUS=$(curl -s -o /dev/stderr -w "%{http_code}" -X PUT \
-            "$URL" \
-            -H "Authorization: Bearer $CF_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            --data-binary @issuance_history.json || true)
-          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "204" ]; then
-            echo "Warning: Cloudflare KV push returned HTTP $HTTP_STATUS" >&2
-            # Do not fail the job on token/permission issues to avoid flaky verification steps
-            exit 0
-          fi
-          echo "OK: issuance_history pushed to Cloudflare KV"
+      # (No KV writes here; issuance_history push is handled by `publish-network.yml` now)
