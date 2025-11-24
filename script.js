@@ -345,10 +345,43 @@ async function updateNetworkStats(data) {
         elements.validators.classList.remove('skeleton-text');
       }
     }
-    if (data.emission !== undefined) {
-      if (elements.emission) {
-        elements.emission.textContent = formatFull(data.emission);
-        elements.emission.classList.remove('skeleton-text');
+    // Show the projection average when available (more accurate for halving)
+    if (elements.emission) {
+      if (data && data.avg_emission_for_projection !== undefined && data.avg_emission_for_projection !== null) {
+        // Show full integer value (no compact format, no decimals)
+        elements.emission.textContent = formatFull(Math.round(Number(data.avg_emission_for_projection)));
+        elements.emission.title = `Avg emission used for projection (${data.projection_method ?? 'unknown'})`;
+      } else if (data && (data.emission !== undefined && data.emission !== null)) {
+        elements.emission.textContent = formatFull(Math.round(Number(data.emission)));
+        elements.emission.title = 'Reported emission (static) from /api/network';
+      } else {
+        elements.emission.textContent = '—';
+        elements.emission.title = '';
+      }
+      elements.emission.classList.remove('skeleton-text');
+
+      // Update the emission card info-badge tooltip with projection metadata (if available)
+      try {
+        const emissionCard = elements.emission.closest ? elements.emission.closest('.stat-card') : null;
+        if (emissionCard) {
+          const badge = emissionCard.querySelector('.info-badge');
+            if (badge) {
+            const parts = [];
+            if (data && data.avg_emission_for_projection !== undefined && data.avg_emission_for_projection !== null) {
+              parts.push(`Avg projection: ${formatFull(Math.round(Number(data.avg_emission_for_projection)))} TAO/day`);
+              parts.push(`Method: ${data.projection_method ?? 'unknown'}`);
+              parts.push(`Confidence: ${data.projection_confidence ?? 'unknown'}`);
+              parts.push(`Days used: ${data.projection_days_used ?? 'n/a'}`);
+            } else if (data && (data.emission !== undefined && data.emission !== null)) {
+              parts.push(`Reported emission: ${formatFull(Math.round(Number(data.emission)))} TAO/day`);
+            } else {
+              parts.push('Emission: unavailable');
+            }
+            badge.setAttribute('data-tooltip', parts.join('\n'));
+          }
+        }
+      } catch (e) {
+        if (window._debug) console.debug('Failed to set emission info-badge tooltip', e);
       }
     }
     if (data.totalNeurons !== undefined) {
@@ -406,14 +439,22 @@ async function updateNetworkStats(data) {
   const currentSupplyForHalving = Number(supplyForHalving ?? 0);
   window._halvingIndex = findNextThresholdIndex(thresholds, currentSupplyForHalving);
   const HALVING_SUPPLY = thresholds.length ? thresholds[window._halvingIndex] : 10_500_000;
-  // parse emission from API (TAO/day) or fallback to supply delta per day
+  // Prefer avg_emission_for_projection returned by /api/network for both
+  // display and halving projection logic. Fall back to `emission` (static)
+  // when projection average is not available.
   let emissionPerDay = null;
-  if (data && (data.emission !== undefined && data.emission !== null)) {
+  let emissionSource = 'unknown';
+  if (data && (data.avg_emission_for_projection !== undefined && data.avg_emission_for_projection !== null)) {
+    emissionPerDay = Number(data.avg_emission_for_projection);
+    emissionSource = 'projection_avg';
+    if (window._debug) console.debug('Using avg_emission_for_projection from /api/network:', emissionPerDay, 'TAO/day');
+  } else if (data && (data.emission !== undefined && data.emission !== null)) {
     emissionPerDay = typeof data.emission === 'string'
       ? parseFloat(data.emission.replace(/,/g, ''))
       : Number(data.emission);
+    emissionSource = 'static_emission';
     if (Number.isFinite(emissionPerDay) && emissionPerDay > 0 && window._debug) {
-      console.debug('Emission from /api/network used:', emissionPerDay, 'TAO/day');
+      console.debug('Emission from /api/network used (static):', emissionPerDay, 'TAO/day');
     }
   }
   // fallback: estimate emission from previous supply snapshot
@@ -467,12 +508,11 @@ async function updateNetworkStats(data) {
     window.halvingDate = null;
   }
 
-  // update pill tooltip only (we intentionally don't add other UI cards)
+  // update pill tooltip and include projection metadata (method, confidence, sample)
   const halvingPill = document.querySelector('.halving-pill');
   if (halvingPill) {
     const remainingSafe = Math.max(0, remaining || 0);
     const halvingSourceLabel = (window._halvingSupplySource === 'on-chain') ? 'On-chain (TotalIssuance)' : 'Taostats (circulating_supply)';
-    // Multi-line tooltip for halving similar to price pill
     const halvingLines = [
       `Next threshold: ${formatNumber(HALVING_SUPPLY)} TAO`,
       `Remaining: ${formatNumber(remainingSafe)} TAO`,
@@ -482,7 +522,44 @@ async function updateNetworkStats(data) {
       const dt = new Date(window._lastHalving.at);
       halvingLines.push(`Last reached: ${formatNumber(window._lastHalving.threshold)} @ ${dt.toLocaleString()}`);
     }
+
+    // Add projection metadata from /api/network if available
+    if (data) {
+      const method = data.projection_method ?? (data.avg_emission_for_projection ? 'projection' : 'unknown');
+      const confidence = data.projection_confidence ?? 'unknown';
+      const avg = (data.avg_emission_for_projection !== undefined && data.avg_emission_for_projection !== null)
+        ? Number(data.avg_emission_for_projection)
+        : (data.emission ?? null);
+      halvingLines.push(`Projection method: ${method}`);
+      halvingLines.push(`Projection confidence: ${confidence}`);
+      if (avg !== null) halvingLines.push(`Avg emission used: ${formatFull(Math.round(Number(avg)))} TAO/day`);
+
+      // Include short list of upcoming halving estimates (step, threshold, eta, emission_used)
+      if (Array.isArray(data.halving_estimates) && data.halving_estimates.length) {
+        halvingLines.push('Projections:');
+        data.halving_estimates.slice(0, 3).forEach(h => {
+          const step = h.step !== undefined ? `#${h.step}` : '';
+          const t = formatNumber(h.threshold);
+          const eta = h.eta ? new Date(h.eta).toLocaleDateString() : 'N/A';
+          const used = h.emission_used !== undefined ? `${formatFull(Math.round(Number(h.emission_used)))} TAO/day` : '';
+          halvingLines.push(`${step} ${t} → ${eta} ${used}`);
+        });
+      }
+    }
+
     halvingPill.setAttribute('data-tooltip', halvingLines.join('\n'));
+    // Apply a confidence CSS class to the halving pill so UX can visually
+    // indicate projection confidence. Keep classes additive and remove
+    // previous ones to avoid class leakage between updates.
+    try {
+      const conf = (data && data.projection_confidence) ? String(data.projection_confidence).toLowerCase() : null;
+      halvingPill.classList.remove('confidence-low', 'confidence-medium', 'confidence-high');
+      if (conf === 'low') halvingPill.classList.add('confidence-low');
+      else if (conf === 'medium') halvingPill.classList.add('confidence-medium');
+      else if (conf === 'high') halvingPill.classList.add('confidence-high');
+    } catch (e) {
+      if (window._debug) console.debug('Failed to apply halving pill confidence class', e);
+    }
   }
   // We intentionally don't add a new stat-card for the halving; keep the pill-only UI.
   // store previous circulating and halving-supply snapshots for next refresh
