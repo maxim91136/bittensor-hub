@@ -71,3 +71,13 @@ This dashboard is an independent, community-run project provided for information
 - All data is provided "as-is" without warranty of any kind; the project maintainer disclaims liability for losses resulting from the use of this site.
 - This site uses Cloudflare for security and performance; personal data is not stored by the project unless explicitly submitted by you.
 - "Bittensor", "TAO" and other asset names are trademarks of their respective owners and are used for identification only.
+
+## Docs
+
+Detailed documentation for issuance history and halving projections lives under the `docs/` folder:
+
+- `docs/README.md` — index of available docs about issuance history and halving projections.
+- `docs/HALVING_ESTIMATES.md` — field-level specification for `halving_estimates`, `emission_used`, `step`, `delta`, and projection metadata.
+- `docs/ISSUANCE_HISTORY_README.md` — operational notes about how issuance snapshots are collected and stored in Cloudflare KV.
+
+Visit the `docs/` directory for more details on using the network API and interpreting projection results.
