@@ -272,8 +272,38 @@ def fetch_metrics() -> Dict[str, Any]:
             projection_method = 'mean_from_intervals'
 
     def compute_halving_estimates(current_issuance: float, thresholds: List[int], avg_emission_per_day: float, method: str):
+        """
+        Compute ETAs for a series of halving thresholds by simulating progression.
+
+        Instead of using the same average emission for all thresholds, this simulation:
+        - progresses thresholds in order,
+        - uses the current avg emission until the next threshold is reached,
+        - then advances time to that threshold, sets current issuance to the threshold,
+          and halves the emission for subsequent thresholds.
+
+        This produces realistic ETAs for the next and subsequent halvings.
+        """
         estimates = []
         now_dt = datetime.now(timezone.utc)
+
+        # validate inputs
+        try:
+            cur = float(current_issuance) if current_issuance is not None else None
+        except Exception:
+            cur = None
+
+        if cur is None or avg_emission_per_day is None:
+            # cannot project: return placeholder entries
+            for th in thresholds:
+                try:
+                    th_val = float(th)
+                except Exception:
+                    th_val = th
+                estimates.append({'threshold': th_val, 'remaining': None, 'days': None, 'eta': None, 'method': method})
+            return estimates
+
+        emission = float(avg_emission_per_day)
+        # iterate thresholds sequentially and simulate
         for th in thresholds:
             try:
                 th_val = float(th)
@@ -282,16 +312,31 @@ def fetch_metrics() -> Dict[str, Any]:
             if th_val is None:
                 estimates.append({'threshold': th, 'remaining': None, 'days': None, 'eta': None, 'method': method})
                 continue
-            if current_issuance is None or avg_emission_per_day is None or avg_emission_per_day <= 0:
-                estimates.append({'threshold': th_val, 'remaining': None, 'days': None, 'eta': None, 'method': method})
-                continue
-            remaining = th_val - float(current_issuance)
-            if remaining <= 0:
+
+            # If we've already passed this threshold, mark zero and halve emission for next
+            if cur >= th_val:
                 estimates.append({'threshold': th_val, 'remaining': 0.0, 'days': 0.0, 'eta': now_dt.isoformat(), 'method': method})
+                if emission > 0:
+                    emission = emission / 2.0
+                # keep current time and issuance at least at threshold
+                cur = th_val
                 continue
-            days = remaining / float(avg_emission_per_day)
+
+            # If emission is not positive, we cannot reach the threshold
+            if emission is None or emission <= 0:
+                estimates.append({'threshold': th_val, 'remaining': round(th_val - cur, 6), 'days': None, 'eta': None, 'method': method})
+                continue
+
+            remaining = th_val - cur
+            days = remaining / emission
             eta = now_dt + timedelta(days=days)
             estimates.append({'threshold': th_val, 'remaining': round(remaining, 6), 'days': round(days, 3), 'eta': eta.isoformat(), 'method': method})
+
+            # advance simulation: jump to threshold time and issuance, then halve emission
+            now_dt = eta
+            cur = th_val
+            emission = emission / 2.0 if emission > 0 else emission
+
         return estimates
 
     try:
