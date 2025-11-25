@@ -115,3 +115,38 @@ curl -sS https://<your-worker>.workers.dev/api/ath-atl/health | jq .
 
 If you prefer fully manual deploys only, run the workflow from the Actions UI; if you want assistance changing triggers, I can update the workflow.
 
+## Automated Backups — `issuance_history`
+
+Brief: The repository runs a scheduled, opt-in job that collects the `issuance_history` value from Cloudflare Workers KV and stores a timestamped copy. This job runs every 6 hours and can optionally upload the snapshot to an R2 bucket.
+
+- What is backed up: the `issuance_history` KV value, written as `issuance_history-YYYYMMDDTHHMMSSZ.json`.
+- Schedule: every 6 hours (GitHub Actions cron). The workflow also supports manual runs via the Actions UI.
+- Upload: uploads to R2 are strictly opt-in. To enable uploading set `ENABLE_R2=true` and provide the following repository secrets (see below).
+
+Required repository secrets for backups
+- `CF_ACCOUNT_ID` — Cloudflare account id (used to read KV)
+- `CF_API_TOKEN` — Cloudflare API token with KV read rights
+- `CF_METRICS_NAMESPACE_ID` — KV namespace id where `issuance_history` lives
+
+Optional (for R2 uploads; only required if `ENABLE_R2=true`)
+- `ENABLE_R2` = `true` to enable uploads (string `true`)
+- `R2_ENDPOINT` — S3-compatible endpoint URL for your R2 account
+- `R2_BUCKET` — R2 bucket name
+- `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` — R2 access credentials
+- `R2_PREFIX` — optional path prefix for uploaded objects
+
+How to test (manual run)
+
+```bash
+# trigger a manual run
+gh workflow run upload-backups-r2.yml --ref main
+
+# then stream logs
+gh run list --workflow upload-backups-r2.yml --limit 5
+gh run view <run-id> --log
+```
+
+Behavior: If R2 secrets are not provided or `ENABLE_R2` is not `true`, the workflow will still fetch `issuance_history` and write a local timestamped file, but it will skip any upload.
+
+If you want me to also back up additional KV keys or other datasets, I can add modular scripts and hook them into the same scheduled job.
+
