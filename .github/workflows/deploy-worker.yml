@@ -20,13 +20,29 @@ jobs:
       - name: Install Wrangler
         run: npm install -g wrangler
 
+      - name: Prepare `wrangler.toml` from secrets
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_METRICS_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+        run: |
+          cat > wrangler.toml <<'TOML'
+          name = "bittensor-ath-atl"
+          main = "./functions"
+          type = "javascript"
+          compatibility_date = "2025-11-25"
+
+          account_id = "${CF_ACCOUNT_ID}"
+
+          [[kv_namespaces]]
+          binding = "METRICS_KV"
+          id = "${CF_METRICS_NAMESPACE_ID}"
+          TOML
+
       - name: Publish with Wrangler
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          # ensure account_id in wrangler.toml is set or provide via env
-          if grep -q "REPLACE_WITH_ACCOUNT_ID" wrangler.toml; then
-            echo "Warning: wrangler.toml account_id placeholder present; ensure it's set in the file or via other means"
-          fi
-          echo "Publishing worker..."
-          wrangler publish
+          echo "Publishing worker using wrangler..."
+          # wrangler will use CF_API_TOKEN from env
+          wrangler publish --account-id "$CF_ACCOUNT_ID"
