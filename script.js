@@ -548,8 +548,8 @@ async function updateNetworkStats(data) {
     const remainingSafe = Math.max(0, remaining || 0);
     const halvingSourceLabel = (window._halvingSupplySource === 'on-chain') ? 'On-chain (TotalIssuance)' : 'Taostats (circulating_supply)';
     const halvingLines = [
-      `Next threshold: ${formatExact(HALVING_SUPPLY)}`,
-      `Remaining: ${formatExact(remainingSafe)}`,
+      `Next threshold: ${formatExact(HALVING_SUPPLY)} TAO`,
+      `Remaining: ${formatExact(remainingSafe)} TAO`,
       `Source: ${halvingSourceLabel}`
     ];
     if (window._lastHalving) {
