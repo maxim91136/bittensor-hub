@@ -72,6 +72,12 @@ function formatPrice(price) {
   return `$${price.toFixed(2)}`;
 }
 
+// Round up to 2 decimal places (ceiling)
+function roundUpTo2(num) {
+  if (num === null || num === undefined || Number.isNaN(Number(num))) return NaN;
+  return Math.ceil(Number(num) * 100) / 100;
+}
+
 function formatPercent(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
   const num = Number(value);
@@ -348,12 +354,16 @@ async function updateNetworkStats(data) {
     // Show the projection average when available (more accurate for halving)
     if (elements.emission) {
       if (data && data.avg_emission_for_projection !== undefined && data.avg_emission_for_projection !== null) {
-        // Show full integer value (no compact format, no decimals)
-        elements.emission.textContent = formatFull(Math.round(Number(data.avg_emission_for_projection)));
-        elements.emission.title = `Avg emission used for projection (${data.projection_method ?? 'unknown'})`;
+        // Show rounded-up value to 2 decimal places for display (user requested accuracy)
+        const avgVal = Number(data.avg_emission_for_projection);
+        const roundedUp = roundUpTo2(avgVal);
+        elements.emission.textContent = roundedUp.toFixed(2);
+        elements.emission.title = `Avg emission used for projection (${data.projection_method ?? 'unknown'}) — exact: ${avgVal.toFixed(2)} TAO/day`;
       } else if (data && (data.emission !== undefined && data.emission !== null)) {
-        elements.emission.textContent = formatFull(Math.round(Number(data.emission)));
-        elements.emission.title = 'Reported emission (static) from /api/network';
+        const emissionVal = Number(data.emission);
+        const roundedUp2 = roundUpTo2(emissionVal);
+        elements.emission.textContent = roundedUp2.toFixed(2);
+        elements.emission.title = `Reported emission (static) from /api/network — exact: ${emissionVal.toFixed(2)} TAO/day`;
       } else {
         elements.emission.textContent = '—';
         elements.emission.title = '';
@@ -391,12 +401,21 @@ async function updateNetworkStats(data) {
   if (supplyEl && circSupply) {
     const current = (circSupply / 1_000_000).toFixed(2);
     supplyEl.textContent = `${current}M / 21M τ`;
-    supplyEl.title = `Source: ${window._circSupplySource || 'unknown'}`;
+    supplyEl.title = `Source: ${window._circSupplySource || 'unknown'} — ${Number(circSupply).toFixed(2)} TAO`;
     window.circulatingSupply = circSupply;
     // Save the timestamp and previous supply for next update
     window._prevSupplyTs = nowTs;
     // debug: mark that we have circ supply from external source
     if (window._circSupplySource && window._debug) console.debug('circ supply source:', window._circSupplySource);
+    try {
+      const supplyCard = supplyEl.closest ? supplyEl.closest('.stat-card') : null;
+      if (supplyCard) {
+        const badge = supplyCard.querySelector('.info-badge');
+        if (badge) badge.setAttribute('data-tooltip', `Current circulating supply of TAO tokens — exact: ${Number(circSupply).toFixed(2)} TAO`);
+      }
+    } catch (e) {
+      if (window._debug) console.debug('Failed to set circulatingsupply info-badge tooltip', e);
+    }
   } else {
     const emissionPerBlock = 1;
     let fallbackSupply = typeof data.blockHeight === 'number' && data.blockHeight > 0
@@ -405,10 +424,19 @@ async function updateNetworkStats(data) {
     if (supplyEl && fallbackSupply) {
       const current = (fallbackSupply / 1_000_000).toFixed(2);
       supplyEl.textContent = `${current}M / 21M τ`;
-      supplyEl.title = 'Source: fallback';
+      supplyEl.title = `Source: fallback — ${Number(fallbackSupply).toFixed(2)} TAO`;
       window.circulatingSupply = fallbackSupply;
       window._prevSupplyTs = nowTs;
       if (window._debug) console.debug('circ supply fallback to block-derived supply');
+      try {
+        const supplyCard = supplyEl.closest ? supplyEl.closest('.stat-card') : null;
+        if (supplyCard) {
+          const badge = supplyCard.querySelector('.info-badge');
+          if (badge) badge.setAttribute('data-tooltip', `Current circulating supply of TAO tokens — exact: ${Number(fallbackSupply).toFixed(2)} TAO`);
+        }
+      } catch (e) {
+        if (window._debug) console.debug('Failed to set circulatingsupply info-badge tooltip (fallback)', e);
+      }
     }
   }
   tryUpdateMarketCapAndFDV();
@@ -509,8 +537,8 @@ async function updateNetworkStats(data) {
     const remainingSafe = Math.max(0, remaining || 0);
     const halvingSourceLabel = (window._halvingSupplySource === 'on-chain') ? 'On-chain (TotalIssuance)' : 'Taostats (circulating_supply)';
     const halvingLines = [
-      `Next threshold: ${formatNumber(HALVING_SUPPLY)} TAO`,
-      `Remaining: ${formatNumber(remainingSafe)} TAO`,
+      `Next threshold: ${formatNumber(HALVING_SUPPLY)} TAO (${Number(HALVING_SUPPLY).toFixed(2)} exact)`,
+      `Remaining: ${formatNumber(remainingSafe)} TAO (${Number(remainingSafe).toFixed(2)} exact)`,
       `Source: ${halvingSourceLabel}`
     ];
     if (window._lastHalving) {
@@ -527,16 +555,16 @@ async function updateNetworkStats(data) {
         : (data.emission ?? null);
       halvingLines.push(`Halving projection method: ${method}`);
       halvingLines.push(`Halving projection confidence: ${confidence}`);
-      if (avg !== null) halvingLines.push(`Avg emission used: ${formatFull(Math.round(Number(avg)))} TAO/day`);
+      if (avg !== null) halvingLines.push(`Avg emission used: ${Number(avg).toFixed(2)} TAO/day`);
 
       // Include short list of upcoming halving estimates (step, threshold, eta, emission_used)
       if (Array.isArray(data.halving_estimates) && data.halving_estimates.length) {
         halvingLines.push('Halving projections:');
-        data.halving_estimates.slice(0, 3).forEach(h => {
+          data.halving_estimates.slice(0, 3).forEach(h => {
           const step = h.step !== undefined ? `#${h.step}` : '';
           const t = formatNumber(h.threshold);
           const eta = h.eta ? new Date(h.eta).toLocaleDateString() : 'N/A';
-          const used = h.emission_used !== undefined ? `${formatFull(Math.round(Number(h.emission_used)))} TAO/day` : '';
+          const used = h.emission_used !== undefined ? `${Number(h.emission_used).toFixed(2)} TAO/day` : '';
           halvingLines.push(`${step} ${t} → ${eta} ${used}`);
         });
       }
