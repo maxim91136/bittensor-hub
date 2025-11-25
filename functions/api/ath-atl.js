@@ -51,7 +51,33 @@ export async function onRequest(context) {
 
     const payload = { ath, ath_date, atl, atl_date, source: 'coingecko', updated: new Date().toISOString() };
     try {
-      await KV.put('tao_ath_atl', JSON.stringify(payload));
+      // Write-if-newer: only overwrite KV if our payload is newer than existing entry.
+      let doWrite = true;
+      try {
+        const existingRaw = await KV.get('tao_ath_atl');
+        if (existingRaw) {
+          try {
+            const existing = JSON.parse(existingRaw);
+            if (existing && existing.updated) {
+              const existingTs = Date.parse(existing.updated);
+              const newTs = Date.parse(payload.updated);
+              if (!isNaN(existingTs) && !isNaN(newTs) && newTs <= existingTs) {
+                doWrite = false;
+              }
+            }
+          } catch (parseErr) {
+            // malformed existing value — fall through and overwrite
+            console.warn && console.warn('ath-atl: existing KV parse error, will overwrite', parseErr?.message || parseErr);
+            doWrite = true;
+          }
+        }
+      } catch (kvReadErr) {
+        // If KV read fails, allow write (best effort)
+        console.warn && console.warn('ath-atl: KV read error before write-if-newer check', kvReadErr?.message || kvReadErr);
+        doWrite = true;
+      }
+      if (doWrite) await KV.put('tao_ath_atl', JSON.stringify(payload));
+      else console.warn && console.warn('ath-atl: skipping KV write; existing entry is newer or equal');
     } catch (kvWriteErr) {
       console.warn && console.warn('ath-atl: KV write error', kvWriteErr?.message || kvWriteErr);
     }
