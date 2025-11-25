@@ -18,17 +18,47 @@ jobs:
       - name: Fetch ATH/ATL data
         run: python .github/scripts/fetch_ath_atl.py
 
+      - name: Validate generated ATH/ATL JSON
+        run: |
+          if [ ! -f tao_ath_atl.json ]; then
+            echo "No tao_ath_atl.json found"
+            exit 1
+          fi
+          # Ensure required fields are present and numeric
+          ATH=$(jq -r '.ath // empty' tao_ath_atl.json)
+          ATL=$(jq -r '.atl // empty' tao_ath_atl.json)
+          if [ -z "$ATH" ] || [ -z "$ATL" ]; then
+            echo "Validation failed: 'ath' or 'atl' missing"
+            jq . tao_ath_atl.json || true
+            exit 2
+          fi
+          echo "Validation passed: ath=$ATH atl=$ATL"
+
+      - name: Upload backup to Cloudflare R2 (optional)
+        if: ${{ secrets.R2_BUCKET != '' && secrets.R2_ACCOUNT_ID != '' && secrets.R2_ACCESS_KEY_ID != '' }}
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          set -euo pipefail
+          pip install --quiet awscli
+          # find the backup file we wrote
+          BACKUP=$(ls tao_ath_atl-*.json | tail -n1)
+          ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          echo "Uploading $BACKUP to R2 bucket ${R2_BUCKET}"
+          aws --endpoint-url "$ENDPOINT" s3 cp "$BACKUP" s3://${R2_BUCKET}/backups/
+
       - name: Push ATH/ATL data to Cloudflare KV
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
         run: |
-          if [ ! -f tao_ath_atl.json ]; then
-            echo "No tao_ath_atl.json found"
-            exit 1
-          fi
+          # Only write to KV if the file validates (previous step exits non-zero otherwise)
           URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/tao_ath_atl"
+          echo "Writing tao_ath_atl.json to Cloudflare KV"
           curl -fsSL -X PUT \
             "$URL" \
             -H "Authorization: Bearer $CF_API_TOKEN" \

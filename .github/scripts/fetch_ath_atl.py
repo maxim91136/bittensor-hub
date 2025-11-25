@@ -24,12 +24,20 @@ def fetch_ath_atl():
             'source': 'coingecko',
             'updated': datetime.utcnow().isoformat() + 'Z'
         }
-        with open('tao_ath_atl.json', 'w') as f:
-            json.dump(result, f, indent=2)
-        print('ATH/ATL data written to tao_ath_atl.json')
-        print(json.dumps(result, indent=2))
+            # Write canonical file
+            with open('tao_ath_atl.json', 'w') as f:
+                json.dump(result, f, indent=2)
+            # Also write a timestamped backup for archives/diagnostics
+            timestamp = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+            backup_name = f'tao_ath_atl-{timestamp}.json'
+            with open(backup_name, 'w') as bf:
+                json.dump(result, bf, indent=2)
+            print('ATH/ATL data written to tao_ath_atl.json')
+            print(f'Backup written to {backup_name}')
+            print(json.dumps(result, indent=2))
     except Exception as e:
         print('Error:', str(e))
+        # Do not write any partial output; exit non-zero so CI alerts.
         exit(1)
 
 if __name__ == '__main__':
