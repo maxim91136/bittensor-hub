@@ -19,6 +19,26 @@ export async function onRequest(context) {
 
   const COINGECKO_API = 'https://api.coingecko.com/api/v3/coins/bittensor';
 
+  // KV-first: prefer the cached value in Cloudflare KV for stability.
+  try {
+    const cached = await KV.get('tao_ath_atl');
+    if (cached) {
+      try {
+        const obj = JSON.parse(cached);
+        return new Response(JSON.stringify({ ...obj, _source: 'kv' }), { status: 200, headers: cors });
+      } catch (parseErr) {
+        // If cached payload is malformed, fall through to live fetch
+        // and overwrite the KV entry with a fresh value when possible.
+        console.warn && console.warn('ath-atl: cached KV parse error', parseErr?.message || parseErr);
+      }
+    }
+  } catch (kvReadErr) {
+    // If KV read fails, ignore and try live fetch — we don't want KV read errors
+    // to block the endpoint entirely.
+    console.warn && console.warn('ath-atl: KV read error', kvReadErr?.message || kvReadErr);
+  }
+
+  // No usable cached value — perform live fetch and store result in KV.
   try {
     const res = await fetch(COINGECKO_API);
     if (!res.ok) throw new Error(`Coingecko API error: ${res.status}`);
@@ -29,13 +49,16 @@ export async function onRequest(context) {
     const atl_date = data?.market_data?.atl_date?.usd ?? null;
     if (!ath && !atl) throw new Error('ATH and ATL not found');
 
-    // Store ATH/ATL in KV
     const payload = { ath, ath_date, atl, atl_date, source: 'coingecko', updated: new Date().toISOString() };
-    await KV.put('tao_ath_atl', JSON.stringify(payload));
+    try {
+      await KV.put('tao_ath_atl', JSON.stringify(payload));
+    } catch (kvWriteErr) {
+      console.warn && console.warn('ath-atl: KV write error', kvWriteErr?.message || kvWriteErr);
+    }
 
     return new Response(JSON.stringify({ ...payload, _source: 'coingecko' }), { status: 200, headers: cors });
   } catch (e) {
-    // Fallback: return last cached value from KV if available
+    // If live fetch fails, try to return last cached value (if any) before erroring.
     try {
       const cached = await KV.get('tao_ath_atl');
       if (cached) {
@@ -43,7 +66,7 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ ...obj, _source: 'coingecko-fallback', error: e.message }), { status: 200, headers: cors });
       }
     } catch (kvErr) {
-      // ignore KV read error and fall through to error response
+      // ignore and fall through
     }
     return new Response(JSON.stringify({ error: 'Failed to fetch ATH/ATL', details: e.message }), { status: 500, headers: cors });
   }
