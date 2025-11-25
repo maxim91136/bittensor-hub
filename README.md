@@ -84,23 +84,34 @@ Visit the `docs/` directory for more details on using the network API and interp
 
 ## Deployment (Cloudflare Worker)
 
-The repository includes a GitHub Actions workflow to deploy the Cloudflare Worker that serves the ATH/ATL API.
+Brief: A small GitHub Actions workflow publishes the Cloudflare Worker that serves the ATH/ATL API.
 
-- When the workflow runs: it is triggered automatically on `push` to `main` **only** when one of the following paths changes:
+- Trigger: the workflow runs on `push` to `main` **only** when one of these paths changes:
 	- `functions/**`
 	- `worker-entry.js`
 	- `.github/workflows/deploy-worker.yml`
 
-- Manual trigger: you can also start the deploy from the Actions UI using the **Run workflow** button (or via `gh workflow run deploy-worker.yml --ref main`).
+- Manual run: you can also start the workflow from the Actions UI (`Run workflow`) or with the GH CLI:
 
-- What the workflow does: it generates a `wrangler.toml` from repository secrets and runs `wrangler deploy` to publish the Worker.
+	```bash
+	gh workflow run deploy-worker.yml --ref main
+	```
 
-- Safety: only worker-related pushes start the workflow (prevents accidental deploys from unrelated edits). If you want full manual-only deploys, run the workflow from the Actions UI.
+- What it does: generates `wrangler.toml` from repository secrets and runs `wrangler deploy` to publish the Worker.
 
-Example quick checks after deploy:
+- Required repo secrets used by the workflow (make sure they exist in Settings → Secrets):
+	- `CF_API_TOKEN` (passed to Wrangler as `CLOUDFLARE_API_TOKEN`)
+	- `CF_ACCOUNT_ID`
+	- `CF_METRICS_NAMESPACE_ID`
+
+- Safety: the workflow is limited to worker-related pushes to avoid accidental deploys from unrelated changes.
+
+Quick smoke checks after a deploy:
 
 ```bash
 curl -sS https://<your-worker>.workers.dev/api/ath-atl | jq .
 curl -sS https://<your-worker>.workers.dev/api/ath-atl/health | jq .
 ```
+
+If you prefer fully manual deploys only, run the workflow from the Actions UI; if you want assistance changing triggers, I can update the workflow.
 
