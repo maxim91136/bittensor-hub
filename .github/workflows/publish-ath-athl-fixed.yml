@@ -1,0 +1,64 @@
+name: Fetch and Push ATH/ATL (fixed)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */3 * * *'
+
+jobs:
+  fetch-ath-atl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run fetch script
+        run: python .github/scripts/fetch_ath_atl.py
+
+      - name: Validate
+        run: |
+          if [ ! -f tao_ath_atl.json ]; then
+            echo "No tao_ath_atl.json"
+            exit 1
+          fi
+          ATH=$(jq -r '.ath // empty' tao_ath_atl.json)
+          ATL=$(jq -r '.atl // empty' tao_ath_atl.json)
+          if [ -z "$ATH" ] || [ -z "$ATL" ]; then
+            echo "Invalid payload"
+            jq . tao_ath_atl.json || true
+            exit 2
+          fi
+
+      - name: Push to KV (write-if-newer)
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+        run: |
+          set -euo pipefail
+          URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/tao_ath_atl"
+          NEW_UPDATED=$(jq -r '.updated // empty' tao_ath_atl.json)
+          if [ -z "$NEW_UPDATED" ]; then
+            curl -fsSL -X PUT "$URL" -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json" --data-binary @tao_ath_atl.json
+            exit 0
+          fi
+          EXISTING_RAW=$(curl -fsS -H "Authorization: Bearer ${CF_API_TOKEN}" "$URL" || echo '')
+          EXISTING_UPDATED=$(echo "$EXISTING_RAW" | jq -r '.updated // empty' || echo '')
+          python -c "import os,sys,datetime; new=os.environ.get('NEW_UPDATED'); ex=os.environ.get('EXISTING_UPDATED'); try: n=(datetime.datetime.fromisoformat(new[:-1]+'+00:00').timestamp() if new and new.endswith('Z') else datetime.datetime.fromisoformat(new).timestamp()); e=(datetime.datetime.fromisoformat(ex[:-1]+'+00:00').timestamp() if ex and ex.endswith('Z') else datetime.datetime.fromisoformat(ex).timestamp()); except Exception: sys.exit(2); sys.exit(0 if n>e else 1)"
+          PY_EXIT=$?
+          if [ "$PY_EXIT" -ne 0 ]; then
+            echo "Skipping KV write (existing newer or parse error)"
+            exit 0
+          fi
+          curl -fsSL -X PUT "$URL" -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json" --data-binary @tao_ath_atl.json
