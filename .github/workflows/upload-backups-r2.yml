@@ -1,4 +1,4 @@
-name: Upload ATH/ATL backups to R2
+name: Upload issuance_history backups to R2
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   upload-backup:
-    name: Upload backup to R2
+    name: Upload issuance_history backup to R2
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

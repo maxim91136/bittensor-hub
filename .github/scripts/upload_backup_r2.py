@@ -17,7 +17,7 @@ Usage:
   python .github/scripts/upload_backup_r2.py [backup-file.json]
 
 If no file argument is provided, the script will look for the latest
-`tao_ath_atl-*.json` file in the current directory.
+`issuance_history-*.json` file in the current directory.
 """
 import os
 import sys
@@ -43,10 +43,10 @@ if missing:
 if len(sys.argv) > 1:
     filepath = sys.argv[1]
 else:
-    # find latest tao_ath_atl-*.json
-    files = glob('tao_ath_atl-*.json')
+    # find latest issuance_history-*.json
+    files = glob('issuance_history-*.json')
     if not files:
-        print('No tao_ath_atl-*.json files found to upload.')
+        print('No issuance_history-*.json files found to upload.')
         sys.exit(0)
     files.sort(reverse=True)
     filepath = files[0]
