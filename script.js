@@ -548,8 +548,8 @@ async function updateNetworkStats(data) {
     const remainingSafe = Math.max(0, remaining || 0);
     const halvingSourceLabel = (window._halvingSupplySource === 'on-chain') ? 'On-chain (TotalIssuance)' : 'Taostats (circulating_supply)';
     const halvingLines = [
-      `Next threshold: ${formatNumber(HALVING_SUPPLY)} TAO → ${formatExact(HALVING_SUPPLY)} exact`,
-      `Remaining: ${formatNumber(remainingSafe)} TAO → ${formatExact(remainingSafe)} exact`,
+      `Next threshold: ${formatExact(HALVING_SUPPLY)}`,
+      `Remaining: ${formatExact(remainingSafe)}`,
       `Source: ${halvingSourceLabel}`
     ];
     if (window._lastHalving) {
@@ -577,8 +577,8 @@ async function updateNetworkStats(data) {
           const step = h.step !== undefined ? `#${h.step}` : '';
           const t = formatNumber(h.threshold);
           const eta = h.eta ? new Date(h.eta).toLocaleDateString() : 'N/A';
-          const used = h.emission_used !== undefined ? `${formatExact(h.emission_used)} TAO/day` : '';
-          halvingLines.push(`${step} ${t} → ${eta} ${used}`);
+          const used = h.emission_used !== undefined ? `${formatExact(h.emission_used)} TAO/day` : 'N/A';
+          halvingLines.push(`${step} ${t} → ${eta} → ${used}`);
         });
       }
     }
