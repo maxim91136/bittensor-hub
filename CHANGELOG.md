@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.4 (Release Candidate)
+### Added
+- Opt-in R2 uploader with Cloudflare API fallback; uploader now prefers S3-compatible credentials when present.
+- Worker health endpoint and KV-first behavior for safer reads/publishes.
+- `issuance_history` fetcher and scheduled backup job (every 6 hours) with opt‑in upload.
+### Changed
+- Backups narrowed to `issuance_history` only; uploads are opt-in and guarded by `ENABLE_R2`.
+- Frontend: exact-number formatting (thousands separators + 2 decimals) and halving tooltip arrow notation.
+### Fixed
+- CI workflow adjustments for Worker deploy; improved stability in publish/deploy steps.
+
 ## v1.0.0-rc.3 (Release Candidate)
 ### Added
 - Backend: sequential halving simulation and per-step projection fields (`emission_used`, `step`, `delta`).
