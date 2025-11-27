@@ -66,12 +66,32 @@ def fetch_top_subnets() -> Dict[str, object]:
     for netuid in subnets:
         try:
             metagraph = subtensor.metagraph(netuid)
-            uids = getattr(metagraph, 'uids', []) or []
-            neurons = len(uids)
+
+            # Normalize `uids` into a plain Python list. Some metagraphs
+            # return numpy arrays or other sequences which are ambiguous
+            # in boolean contexts (e.g. `uids or []`), causing errors like
+            # "The truth value of an array with more than one element is ambiguous".
+            uids_raw = getattr(metagraph, 'uids', [])
+            if uids_raw is None:
+                uids_list = []
+            elif isinstance(uids_raw, (list, tuple)):
+                uids_list = list(uids_raw)
+            else:
+                try:
+                    uids_list = list(uids_raw)
+                except Exception:
+                    uids_list = []
+
+            neurons = len(uids_list)
             total_neurons += neurons
-            validators = 0
-            if hasattr(metagraph, 'validator_permit'):
-                validators = sum(1 for uid in uids if metagraph.validator_permit.get(uid))
+
+            # Safely read validator_permit mapping (may be missing or not a dict)
+            permit = getattr(metagraph, 'validator_permit', {}) or {}
+            try:
+                validators = sum(1 for uid in uids_list if bool(permit.get(uid)))
+            except Exception:
+                validators = 0
+
             results.append({
                 'netuid': int(netuid),
                 'neurons': neurons,
