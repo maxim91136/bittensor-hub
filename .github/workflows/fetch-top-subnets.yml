@@ -1,4 +1,4 @@
-name: Fetch Top Subnets
+name: Fetch Top Subnets to Cloudflare KV
 
 on:
   schedule:
