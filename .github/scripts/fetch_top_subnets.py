@@ -56,6 +56,11 @@ def fetch_top_subnets() -> Dict[str, object]:
     subtensor = bt.subtensor(network=NETWORK)
     try:
         subnets = subtensor.get_subnets()
+        # Normalize subnets into a Python list to avoid numpy/scalar issues
+        try:
+            subnets = list(subnets)
+        except Exception:
+            pass
     except Exception as e:
         print('❌ Failed to fetch subnets:', e, file=sys.stderr)
         subnets = []
@@ -100,6 +105,14 @@ def fetch_top_subnets() -> Dict[str, object]:
         except Exception as e:
             print(f'⚠️ metagraph fetch failed for netuid {netuid}: {e}', file=sys.stderr)
             continue
+
+    # Debug: report how many subnets were iterated and how many results collected
+    try:
+        print(f"DEBUG: subnets_fetched={len(subnets)}, results_collected={len(results)}, total_neurons={total_neurons}")
+        if len(results) > 0:
+            print(f"DEBUG: sample_result={results[:5]}")
+    except Exception:
+        pass
 
     # If no neurons found, return empty
     if total_neurons <= 0:
