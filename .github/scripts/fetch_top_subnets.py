@@ -67,6 +67,63 @@ def fetch_top_subnets() -> Dict[str, object]:
 
     results: List[Dict[str, object]] = []
     total_neurons = 0
+    
+    # Helpers to robustly read permit values and evaluate truthiness
+    def _permit_get(permit, uid):
+        # Try mapping .get variants first
+        try:
+            if hasattr(permit, 'get'):
+                val = permit.get(uid)
+                if val is not None:
+                    return val
+        except Exception:
+            pass
+        # Try integer key
+        try:
+            ival = int(uid)
+            if hasattr(permit, 'get'):
+                val = permit.get(ival)
+                if val is not None:
+                    return val
+        except Exception:
+            pass
+        # Try string key
+        try:
+            sval = str(uid)
+            if hasattr(permit, 'get'):
+                val = permit.get(sval)
+                if val is not None:
+                    return val
+        except Exception:
+            pass
+        # Fallback to indexing
+        try:
+            return permit[uid]
+        except Exception:
+            try:
+                return permit[int(uid)]
+            except Exception:
+                try:
+                    return permit[str(uid)]
+                except Exception:
+                    return None
+
+    def _is_truthy(v):
+        if v is None:
+            return False
+        # strings/bytes: use bool()
+        if isinstance(v, (str, bytes)):
+            return bool(v)
+        # iterables (including numpy arrays): use any()
+        try:
+            if hasattr(v, '__iter__'):
+                return any(v)
+        except Exception:
+            pass
+        try:
+            return bool(v)
+        except Exception:
+            return False
     # First pass: collect neuron counts and validator counts
     for netuid in subnets:
         try:
@@ -93,7 +150,11 @@ def fetch_top_subnets() -> Dict[str, object]:
             # Safely read validator_permit mapping (may be missing or not a dict)
             permit = getattr(metagraph, 'validator_permit', {}) or {}
             try:
-                validators = sum(1 for uid in uids_list if bool(permit.get(uid)))
+                validators = 0
+                for uid in uids_list:
+                    val = _permit_get(permit, uid)
+                    if _is_truthy(val):
+                        validators += 1
             except Exception:
                 validators = 0
 
