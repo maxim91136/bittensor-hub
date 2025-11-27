@@ -2,7 +2,7 @@ name: Fetch Top Subnets to Cloudflare KV
 
 on:
   schedule:
-    - cron: '0 * * * *'    # hourly
+    - cron: '*/30 * * * *'    # every 30 minutes
   workflow_dispatch: {}
 
 jobs:
