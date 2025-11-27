@@ -155,8 +155,11 @@ def fetch_top_subnets() -> Dict[str, object]:
             neurons = len(uids_list)
             total_neurons += neurons
 
-            # Safely read validator_permit mapping (may be missing or not a dict)
-            permit = getattr(metagraph, 'validator_permit', {}) or {}
+            # Safely read validator_permit mapping (may be missing, array-like, or not a dict)
+            # Avoid using `or {}` which triggers a truth-value check on array-like objects.
+            permit = getattr(metagraph, 'validator_permit', None)
+            if permit is None:
+                permit = {}
             try:
                 validators = 0
                 for uid in uids_list:
