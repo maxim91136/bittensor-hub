@@ -15,13 +15,15 @@ from datetime import datetime, timezone
 import urllib.request
 import urllib.error
 import ssl
+import re
 
 NETWORK = os.getenv('NETWORK', 'finney')
 DAILY_EMISSION = float(os.getenv('DAILY_EMISSION', '7200'))
 TAOSTATS_API_KEY = os.getenv('TAOSTATS_API_KEY')
 USE_ONCHAIN_STAKE_FALLBACK = os.getenv('USE_ONCHAIN_STAKE_FALLBACK', '0') == '1'
-# cap how many per-uid queries we'll perform per subnet to avoid heavy CI workloads
-MAX_UID_STAKE_QUERIES_PER_SUBNET = int(os.getenv('MAX_UID_STAKE_QUERIES_PER_SUBNET', '250'))
+# cap how many per-uid queries we'll perform per subnet to avoid heavy CI workloads.
+# Default is a reasonable 50 UID-sample per subnet for the Free Plan
+MAX_UID_STAKE_QUERIES_PER_SUBNET = int(os.getenv('MAX_UID_STAKE_QUERIES_PER_SUBNET', '50'))
 
 
 def write_local(path: str, data: Dict[str, object]):
@@ -102,6 +104,46 @@ def fetch_top_subnets() -> Dict[str, object]:
                             except Exception:
                                 snippet = '<unreadable response>'
                             last_error = f'Non-JSON response from {url}: {snippet[:240]}'
+                            # Try to parse JSON embedded in HTML pages (Next.js / __NEXT_DATA__ or other SSR payloads)
+                            try:
+                                html = data.decode('utf-8', errors='replace') if isinstance(data, (bytes, bytearray)) else str(data)
+                                # look for <script id="__NEXT_DATA__" type="application/json"> ... </script>
+                                m = re.search(r'<script[^>]*id=["\']__NEXT_DATA__["\'][^>]*>(.*?)</script>', html, re.S | re.I)
+                                found = False
+                                if m:
+                                    try:
+                                        nd = json.loads(m.group(1))
+                                        # recursively search for dicts with 'netuid' or 'id'
+                                        def find_items(obj):
+                                            out_items = []
+                                            if isinstance(obj, dict):
+                                                if 'netuid' in obj or 'id' in obj:
+                                                    out_items.append(obj)
+                                                for v in obj.values():
+                                                    out_items.extend(find_items(v))
+                                            elif isinstance(obj, list):
+                                                for v in obj:
+                                                    out_items.extend(find_items(v))
+                                            return out_items
+                                        nd_items = find_items(nd)
+                                        for item in nd_items:
+                                            try:
+                                                netuid = item.get('netuid') if isinstance(item, dict) else None
+                                                if netuid is None and isinstance(item, dict) and 'id' in item:
+                                                    netuid = item.get('id')
+                                                if netuid is None:
+                                                    continue
+                                                out[int(netuid)] = item
+                                                found = True
+                                            except Exception:
+                                                continue
+                                    except Exception:
+                                        pass
+                                if found:
+                                    return out, last_error
+                            except Exception:
+                                pass
+                            # no embedded JSON found — continue to next variant
                             break
                         # taostats typically returns an object with a 'data' key
                         items = j.get('data') if isinstance(j, dict) and 'data' in j else j
@@ -504,16 +546,23 @@ def fetch_top_subnets() -> Dict[str, object]:
                     except Exception:
                         stake = None
                 # fallback to neurons if stake not available
-                # If configured, try an on-chain stake scan for a better stake estimate
-                if stake is None and USE_ONCHAIN_STAKE_FALLBACK:
+                # If configured, or we lack Taostats data and are in Free Plan, use an on-chain stake scan.
+                # Default to use it automatically when taostats_map is empty and no TAOSTATS API key is present.
+                auto_onchain = (not taostats_map and not TAOSTATS_API_KEY)
+                if stake is None and (USE_ONCHAIN_STAKE_FALLBACK or auto_onchain):
                     try:
                         subtensor = subtensor if 'subtensor' in locals() else bt.subtensor(network=NETWORK)
                         uids_to_check = entry.get('_uids') or []
                         # If we stored uids list, restrict it to avoid many queries
                         if isinstance(uids_to_check, list):
-                            # sample or truncate to cap: prefer first N items
+                            # sample randomly up to the cap to avoid bias
+                            import random
                             if len(uids_to_check) > MAX_UID_STAKE_QUERIES_PER_SUBNET:
-                                uids_to_check = uids_to_check[:MAX_UID_STAKE_QUERIES_PER_SUBNET]
+                                try:
+                                    uids_to_check = random.sample(uids_to_check, MAX_UID_STAKE_QUERIES_PER_SUBNET)
+                                except Exception:
+                                    # fallback to truncation if sampling fails
+                                    uids_to_check = uids_to_check[:MAX_UID_STAKE_QUERIES_PER_SUBNET]
                             total_onchain_stake = 0.0
                             for uid in uids_to_check:
                                 try:
