@@ -1,0 +1,62 @@
+name: Fetch Top Subnets to Cloudflare KV
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'    # every 30 minutes
+  workflow_dispatch: {}
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install bittensor
+
+      - name: Run top subnets script
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+        run: |
+          python .github/scripts/fetch_top_subnets.py
+
+      - name: Validate top_subnets output (optional enforcement)
+        env:
+          CI_ENFORCE_NON_EMPTY_TOP_SUBNETS: ${{ secrets.CI_ENFORCE_NON_EMPTY_TOP_SUBNETS }}
+        run: |
+          python3 - <<'PY'
+          import os, json, sys
+          enforce = os.getenv('CI_ENFORCE_NON_EMPTY_TOP_SUBNETS', 'false').lower() == 'true'
+          path = '.github/data/top_subnets.json'
+          if not os.path.exists(path):
+            print('⚠️ top_subnets.json missing')
+            if enforce:
+              sys.exit(1)
+            else:
+              sys.exit(0)
+          with open(path) as f:
+            j = json.load(f)
+          top = j.get('top_subnets') if isinstance(j, dict) else None
+          count = len(top) if isinstance(top, list) else 0
+          print('DEBUG: top_subnets count =', count)
+          if count == 0 and enforce:
+            print('🔴 Fail: top_subnets is empty and enforcement is enabled.')
+            sys.exit(1)
+          print('✅ Validation OK, top_subnets non-empty or enforcement disabled')
+          PY
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: top-subnets-json
+          path: .github/data/top_subnets.json
