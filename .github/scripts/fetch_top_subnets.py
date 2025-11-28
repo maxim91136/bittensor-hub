@@ -18,6 +18,7 @@ import ssl
 
 NETWORK = os.getenv('NETWORK', 'finney')
 DAILY_EMISSION = float(os.getenv('DAILY_EMISSION', '7200'))
+TAOSTATS_API_KEY = os.getenv('TAOSTATS_API_KEY')
 
 
 def write_local(path: str, data: Dict[str, object]):
@@ -81,6 +82,8 @@ def fetch_top_subnets() -> Dict[str, object]:
                         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         'Accept': 'application/json',
                     }
+                    if TAOSTATS_API_KEY:
+                        hdrs['Authorization'] = f'Bearer {TAOSTATS_API_KEY}'
                     req = urllib.request.Request(url, method='GET', headers=hdrs)
                     with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
                         if resp.status and int(resp.status) >= 400:
@@ -114,11 +117,13 @@ def fetch_top_subnets() -> Dict[str, object]:
                                         f"https://taostats.io/api/v1/subnets/{int(netuid)}/emission",
                                     ):
                                         try:
-                                            hdrs = {
+                                            hdrs2 = {
                                                 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                                                 'Accept': 'application/json',
                                             }
-                                            preq = urllib.request.Request(per_endpoint, method='GET', headers=hdrs)
+                                            if TAOSTATS_API_KEY:
+                                                hdrs2['Authorization'] = f'Bearer {TAOSTATS_API_KEY}'
+                                            preq = urllib.request.Request(per_endpoint, method='GET', headers=hdrs2)
                                             with urllib.request.urlopen(preq, timeout=6, context=ssl.create_default_context()) as presp:
                                                 pdata = presp.read()
                                                 try:
@@ -360,8 +365,26 @@ def fetch_top_subnets() -> Dict[str, object]:
         taostats_netuids = set()
 
     if not taostats_netuids:
-        print('❌ Taostats data not available — aborting Top-Subnets emission computation (Taostats-only mode).', file=sys.stderr)
-        return {'generated_at': datetime.now(timezone.utc).isoformat(), 'network': NETWORK, 'daily_emission_assumed': DAILY_EMISSION, 'total_neurons': total_neurons, 'top_n': 0, 'top_subnets': []}
+        # If caller provided an API key we expected authenticated Taostats data
+        # and should fail fast to avoid publishing inaccurate estimates.
+        if TAOSTATS_API_KEY:
+            print('❌ Taostats data not available — aborting Top-Subnets emission computation (Taostats-only mode and API key present).', file=sys.stderr)
+            return {'generated_at': datetime.now(timezone.utc).isoformat(), 'network': NETWORK, 'daily_emission_assumed': DAILY_EMISSION, 'total_neurons': total_neurons, 'top_n': 0, 'top_subnets': []}
+        # Otherwise, fall back to neuron-proportional estimates so we still
+        # produce a usable `top_subnets` payload instead of an empty one.
+        print('⚠️ Taostats data not available and no TAOSTATS_API_KEY — falling back to neuron-proportional estimates', file=sys.stderr)
+        for entry in results:
+            try:
+                est = (entry.get('neuron_share', 0.0) * DAILY_EMISSION) if total_neurons > 0 else 0.0
+                entry['estimated_emission_daily'] = round(float(est), 6)
+            except Exception:
+                entry['estimated_emission_daily'] = 0.0
+            try:
+                entry['emission_share_percent'] = round(float(entry.get('neuron_share', 0.0)) * 100.0, 4)
+            except Exception:
+                entry['emission_share_percent'] = None
+            entry['ema_source'] = 'neurons'
+        # proceed with the neuron-proportional `results`
 
     # Only keep entries that have Taostats data. This ensures we don't fall back
     # to neuron-proportional estimates and strictly follow Taostats as the source.
