@@ -19,6 +19,9 @@ import ssl
 NETWORK = os.getenv('NETWORK', 'finney')
 DAILY_EMISSION = float(os.getenv('DAILY_EMISSION', '7200'))
 TAOSTATS_API_KEY = os.getenv('TAOSTATS_API_KEY')
+USE_ONCHAIN_STAKE_FALLBACK = os.getenv('USE_ONCHAIN_STAKE_FALLBACK', '0') == '1'
+# cap how many per-uid queries we'll perform per subnet to avoid heavy CI workloads
+MAX_UID_STAKE_QUERIES_PER_SUBNET = int(os.getenv('MAX_UID_STAKE_QUERIES_PER_SUBNET', '250'))
 
 
 def write_local(path: str, data: Dict[str, object]):
@@ -315,6 +318,37 @@ def fetch_top_subnets() -> Dict[str, object]:
             return bool(v)
         except Exception:
             return False
+
+    def _get_uid_stake(subtensor, uid):
+        """Attempt several API names to fetch stake for a uid; return float or None."""
+        # Try common shapes: 'get_neuron', 'neuron_info', 'get_uid', 'get_neuron_info'
+        candidates = [
+            'get_neuron', 'neuron', 'neuron_for_uid', 'get_neuron_info', 'get_stake', 'get_balance', 'balance_of'
+        ]
+        for method in candidates:
+            try:
+                fn = getattr(subtensor, method, None)
+                if not callable(fn):
+                    continue
+                res = fn(uid)
+                # res might be an object with 'stake' attribute or a dict
+                if res is None:
+                    continue
+                if hasattr(res, 'stake'):
+                    try:
+                        return float(res.stake)
+                    except Exception:
+                        pass
+                if isinstance(res, dict):
+                    for key in ('stake', 'bond', 'balance', 'stake_total'):
+                        if key in res and isinstance(res[key], (int, float, str)):
+                            try:
+                                return float(res[key])
+                            except Exception:
+                                continue
+            except Exception:
+                continue
+        return None
     # First pass: collect neuron counts and validator counts
     for netuid in subnets:
         try:
@@ -389,13 +423,21 @@ def fetch_top_subnets() -> Dict[str, object]:
             except Exception:
                 validators = 0
 
-            results.append({
+            # If requested, keep a list of uid ints for optional on-chain stake aggregation
+            entry_obj = {
                 'netuid': int(netuid_i) if isinstance(netuid_i, (int,)) or (isinstance(netuid_i, (str,)) and str(netuid_i).isdigit()) else int(netuid),
                 'neurons': neurons,
                 'validators': validators,
                 'subnet_name': subnet_name,
                 'subnet_price': subnet_price
-            })
+            }
+            if USE_ONCHAIN_STAKE_FALLBACK:
+                try:
+                    # store uids as native ints (limit may be applied later)
+                    entry_obj['_uids'] = [int(u) for u in uids_list]
+                except Exception:
+                    entry_obj['_uids'] = uids_list
+            results.append(entry_obj)
         except Exception as e:
             print(f'⚠️ metagraph fetch failed for netuid {netuid}: {e}', file=sys.stderr)
             continue
@@ -462,6 +504,29 @@ def fetch_top_subnets() -> Dict[str, object]:
                     except Exception:
                         stake = None
                 # fallback to neurons if stake not available
+                # If configured, try an on-chain stake scan for a better stake estimate
+                if stake is None and USE_ONCHAIN_STAKE_FALLBACK:
+                    try:
+                        subtensor = subtensor if 'subtensor' in locals() else bt.subtensor(network=NETWORK)
+                        uids_to_check = entry.get('_uids') or []
+                        # If we stored uids list, restrict it to avoid many queries
+                        if isinstance(uids_to_check, list):
+                            # sample or truncate to cap: prefer first N items
+                            if len(uids_to_check) > MAX_UID_STAKE_QUERIES_PER_SUBNET:
+                                uids_to_check = uids_to_check[:MAX_UID_STAKE_QUERIES_PER_SUBNET]
+                            total_onchain_stake = 0.0
+                            for uid in uids_to_check:
+                                try:
+                                    s_val = _get_uid_stake(subtensor, uid)
+                                    if s_val is not None:
+                                        total_onchain_stake += float(s_val)
+                                except Exception:
+                                    continue
+                            if total_onchain_stake > 0:
+                                stake = total_onchain_stake
+                                entry['onchain_total_stake'] = round(float(total_onchain_stake), 6)
+                    except Exception:
+                        stake = None
                 weight = stake if (stake is not None and stake > 0) else float(entry.get('neurons', 0))
                 # ensure minimal non-zero
                 if not weight or weight <= 0:
@@ -469,7 +534,8 @@ def fetch_top_subnets() -> Dict[str, object]:
                 entry['_fallback_weight'] = weight
                 # mark whether the weight came from stake or neurons so we can
                 # derive `ema_source` robustly later without ambiguous truth checks
-                entry['_fallback_source'] = 'stake' if (stake is not None and stake > 0) else 'neurons'
+                # Prefer onchain if we computed it; otherwise use whatever stake/meta we managed to find
+                entry['_fallback_source'] = 'onchain_stake' if (entry.get('onchain_total_stake') is not None and float(entry.get('onchain_total_stake', 0)) > 0) else ('stake' if (stake is not None and stake > 0) else 'neurons')
                 total_weight += weight
             except Exception:
                 entry['_fallback_weight'] = 1.0
@@ -558,6 +624,13 @@ def fetch_top_subnets() -> Dict[str, object]:
 
     # Replace results with filtered_results for downstream sorting
     results = filtered_results
+    # Remove heavy `_uids` list entries from final payload so the JSON stays compact
+    for entry in results:
+        if '_uids' in entry:
+            try:
+                del entry['_uids']
+            except Exception:
+                pass
 
     # Sort and take top N (default 10). Also keep a full-list of all subnets
     # so we can include the entire set of subnets in the JSON for debugging
