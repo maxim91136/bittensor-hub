@@ -292,9 +292,6 @@ function updateTaoPrice(priceData) {
             parts.forEach(p => lines.push(p));
             lines.push(`Source: ${source}`);
             pill.setAttribute('data-tooltip', lines.join('\n'));
-            // update hidden screenreader description if present
-            const priceDesc = pill.querySelector('#price-desc') || document.getElementById('price-desc');
-            if (priceDesc) priceDesc.textContent = lines.join('\n');
       } else {
         pill.removeAttribute('data-tooltip');
       }
@@ -396,9 +393,6 @@ async function updateNetworkStats(data) {
                 ? 'Reported emission rate (static) from the network API.'
                 : 'Emission: unavailable';
             badge.setAttribute('data-tooltip', tooltipText);
-            // Update screenreader-only description if present
-            const emissionDesc = emissionCard.querySelector('#emission-info-desc') || emissionCard.querySelector('.sr-only');
-            if (emissionDesc) emissionDesc.textContent = tooltipText;
           }
         }
       } catch (e) {
@@ -425,12 +419,9 @@ async function updateNetworkStats(data) {
     if (window._circSupplySource && window._debug) console.debug('circ supply source:', window._circSupplySource);
     try {
       const supplyCard = supplyEl.closest ? supplyEl.closest('.stat-card') : null;
-        if (supplyCard) {
+      if (supplyCard) {
         const badge = supplyCard.querySelector('.info-badge');
-        const desc = supplyCard.querySelector('#circ-supply-info-desc') || supplyCard.querySelector('.sr-only');
-        const tooltipStr = `Current circulating supply of TAO tokens — exact: ${formatExact(circSupply)} TAO`;
-        if (badge) badge.setAttribute('data-tooltip', tooltipStr);
-        if (desc) desc.textContent = tooltipStr;
+        if (badge) badge.setAttribute('data-tooltip', `Current circulating supply of TAO tokens — exact: ${formatExact(circSupply)} TAO`);
       }
     } catch (e) {
       if (window._debug) console.debug('Failed to set circulatingsupply info-badge tooltip', e);
@@ -451,10 +442,7 @@ async function updateNetworkStats(data) {
         const supplyCard = supplyEl.closest ? supplyEl.closest('.stat-card') : null;
         if (supplyCard) {
           const badge = supplyCard.querySelector('.info-badge');
-          const desc = supplyCard.querySelector('#circ-supply-info-desc') || supplyCard.querySelector('.sr-only');
-          const tooltipStr = `Current circulating supply of TAO tokens — exact: ${formatExact(fallbackSupply)} TAO`;
-          if (badge) badge.setAttribute('data-tooltip', tooltipStr);
-          if (desc) desc.textContent = tooltipStr;
+          if (badge) badge.setAttribute('data-tooltip', `Current circulating supply of TAO tokens — exact: ${formatExact(fallbackSupply)} TAO`);
         }
       } catch (e) {
         if (window._debug) console.debug('Failed to set circulatingsupply info-badge tooltip (fallback)', e);
@@ -599,8 +587,6 @@ async function updateNetworkStats(data) {
     }
 
     halvingPill.setAttribute('data-tooltip', halvingLines.join('\n'));
-    const halvingDesc = halvingPill.querySelector('#halving-desc') || document.getElementById('halving-desc');
-    if (halvingDesc) halvingDesc.textContent = halvingLines.join('\n');
     // Apply a confidence CSS class to the halving pill so UX can visually
     // indicate projection confidence. Keep classes additive and remove
     // previous ones to avoid class leakage between updates.
@@ -1249,10 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Info badge tooltip for API status card: static text
     const infoBadge = document.querySelector('#apiStatusCard .info-badge');
     if (infoBadge) {
-      const tooltip = 'API status: Network, Taostats, Coingecko';
-      infoBadge.setAttribute('data-tooltip', tooltip);
-      const apiDesc = document.getElementById('api-status-desc');
-      if (apiDesc) apiDesc.textContent = tooltip;
+      infoBadge.setAttribute('data-tooltip', 'API status: Network, Taostats, Coingecko');
     }
   })();
 
