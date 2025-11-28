@@ -237,9 +237,7 @@ def fetch_top_subnets() -> Dict[str, object]:
                 'neurons': neurons,
                 'validators': validators,
                 'subnet_name': subnet_name,
-                'subnet_price': subnet_price,
-                # neuron share will be helpful for later
-                'neuron_share': round((neurons / total_neurons) if total_neurons > 0 else 0.0, 6)
+                'subnet_price': subnet_price
             })
         except Exception as e:
             print(f'⚠️ metagraph fetch failed for netuid {netuid}: {e}', file=sys.stderr)
@@ -257,6 +255,16 @@ def fetch_top_subnets() -> Dict[str, object]:
     if total_neurons <= 0:
         print('⚠️ No neuron data available to compute emissions', file=sys.stderr)
         return {'generated_at': datetime.now(timezone.utc).isoformat(), 'top_subnets': []}
+
+    # Now that we have the full total_neurons, compute a correct neuron_share for each entry
+    try:
+        for entry in results:
+            try:
+                entry['neuron_share'] = round((entry.get('neurons', 0) / total_neurons) if total_neurons > 0 else 0.0, 6)
+            except Exception:
+                entry['neuron_share'] = 0.0
+    except Exception:
+        pass
 
     # Compute estimated emission per subnet. Prefer Taostats if available.
     for entry in results:
