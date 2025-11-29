@@ -54,7 +54,7 @@
         parentCard.classList.add('pulse-down');
         // Force animation with inline style to override any global rules
         parentCard.style.animation = 'halving-pulse 7s ease-in-out infinite';
-        parentCard.style.boxShadow = '0 8px 32px rgba(239,68,68,0.12)';
+        parentCard.style.boxShadow = '0 0 48px rgba(239,68,68,0.35), 0 8px 32px rgba(239,68,68,0.20)';
       } else {
         parentCard.classList.add('neutral');
         parentCard.style.animation = '';
@@ -72,7 +72,7 @@
         } else if (candidate === 'down') {
           icon.classList.add('pulse-down');
           icon.style.animation = 'halving-pulse 7s ease-in-out infinite';
-          icon.style.filter = 'drop-shadow(0 0 16px rgba(239,68,68,0.28))';
+          icon.style.filter = 'drop-shadow(0 0 28px rgba(239,68,68,0.50)) drop-shadow(0 0 14px rgba(239,68,68,0.35))';
         } else {
           icon.style.animation = '';
           icon.style.filter = '';
@@ -126,7 +126,7 @@
       cardEl.classList.add('pulse-down');
       // Force animation with inline style to override any global rules
       cardEl.style.animation = 'halving-pulse 7s ease-in-out infinite';
-      cardEl.style.boxShadow = '0 8px 32px rgba(239,68,68,0.12)';
+      cardEl.style.boxShadow = '0 0 48px rgba(239,68,68,0.35), 0 8px 32px rgba(239,68,68,0.20)';
     } else {
       cardEl.classList.add('neutral');
       cardEl.style.animation = '';
