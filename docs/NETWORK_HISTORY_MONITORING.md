@@ -134,6 +134,13 @@ curl -s https://your-worker.example.com/api/network/history | jq '.[-1]'
 
 ## Workflow Health Checks
 
+### Workflows Overview
+
+| Workflow | Schedule | Purpose |
+|----------|----------|---------|
+| `publish-network.yml` | 15 min | Fetch metrics + push network_history to KV |
+| `backup-network-history-r2.yml` | Every 3 hours | Archive network_history to R2 for long-term storage |
+
 ### Using GitHub CLI
 
 ```bash
@@ -145,6 +152,9 @@ gh run list -w publish-network.yml --limit 1 --json status,conclusion,updatedAt,
 
 # Follow live run
 gh run watch -w publish-network.yml
+
+# Backup workflow status
+gh run list -w backup-network-history-r2.yml --limit 5
 ```
 
 ### Using GitHub Web UI
@@ -164,22 +174,22 @@ gh run watch -w publish-network.yml
 
 ## R2 Archival Monitoring
 
-If `ENABLE_R2` secret is set, per-run snapshots are saved:
+Dedicated workflow `backup-network-history-r2.yml` runs every 3 hours:
 
-```
-network_entry-20251129T120000Z.json
-network_entry-20251129T120100Z.json
-...
-```
+1. **Fetches** complete `network_history` from KV
+2. **Timestamps** the snapshot: `network_history-20251129T120000Z.json`
+3. **Uploads** to R2 using boto3 + existing backup script
+
+This provides long-term, versioned storage separate from KV's 100MB limit.
 
 ### Track Archival
 
 ```bash
 # List R2 files (requires AWS CLI with R2 creds)
-aws s3 ls s3://your-bucket/bittensor/ --recursive | grep network_entry
+aws s3 ls s3://your-bucket/bittensor/ --recursive | grep network_history
 
-# Count archived entries
-aws s3 ls s3://your-bucket/bittensor/ --recursive | grep -c network_entry
+# Count archived backups
+aws s3 ls s3://your-bucket/bittensor/ --recursive | grep -c network_history
 ```
 
 ## Checklist: First Week
