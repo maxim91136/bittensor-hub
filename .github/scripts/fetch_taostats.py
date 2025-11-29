@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import pathlib
 
 TAOSTATS_API_KEY = os.getenv("TAOSTATS_API_KEY")
-TAOSTATS_URL = "https://api.taostats.io/api/price/latest/v1?asset=tao"
+TAOSTATS_URL = os.getenv("TAOSTATS_URL", "https://api.taostats.io/api/price/latest/v1?asset=tao")
 
 def fetch_taostats():
     if not TAOSTATS_API_KEY:
