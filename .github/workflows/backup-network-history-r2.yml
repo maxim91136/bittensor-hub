@@ -2,7 +2,7 @@ name: Backup Network history to R2
 
 on:
   schedule:
-    - cron: '13 */3 * * *'  # every 3 hours at :13
+    - cron: '4 */3 * * *'  # every 3 hours at :04
   workflow_dispatch: {}
 
 jobs:

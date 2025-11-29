@@ -2,7 +2,7 @@ name: Backup Taostats history to R2
 
 on:
   schedule:
-    - cron: '3 */3 * * *'  # every 3 hours at :03
+    - cron: '1 */3 * * *'  # every 3 hours at :01
   workflow_dispatch: {}
 
 jobs:

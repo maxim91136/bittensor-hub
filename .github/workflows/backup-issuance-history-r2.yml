@@ -2,7 +2,7 @@ name: Backup Issuance History to R2
 
 on:
   schedule:
-    - cron: '23 */3 * * *' # every 3 hours at :23
+    - cron: '7 */3 * * *' # every 3 hours at :07
   workflow_dispatch: {}
 
 jobs:
