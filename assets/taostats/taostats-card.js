@@ -90,7 +90,7 @@
     try {
       const info = parentCard && parentCard.querySelector && parentCard.querySelector('.info-badge');
       if (info) {
-        info.title = tt; info.setAttribute('data-tooltip', tt);
+        info.setAttribute('data-tooltip', tt);
       }
     } catch (e) {}
 
@@ -150,7 +150,7 @@
       const tt = `Δ vs MA (100min): ${shortText}\nΔ vs MA (1day): ${medText}\nconfidence: ${confidence}`;
       try {
         const info = cardEl.querySelector && cardEl.querySelector('.info-badge');
-        if (info) { info.title = tt; info.setAttribute('data-tooltip', tt); }
+        if (info) { info.setAttribute('data-tooltip', tt); }
       } catch (e) { /* ignore */ }
     } catch (e) {
       // ignore
