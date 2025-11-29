@@ -141,10 +141,10 @@ How to test (manual run)
 
 ```bash
 # trigger a manual run
-gh workflow run upload-backups-r2.yml --ref main
+gh workflow run backup_issuance_history.yml --ref main
 
 # then stream logs
-gh run list --workflow upload-backups-r2.yml --limit 5
+gh run list --workflow backup_issuance_history.yml --limit 5
 gh run view <run-id> --log
 ```
 

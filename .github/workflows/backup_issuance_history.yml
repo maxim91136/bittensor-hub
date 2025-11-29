@@ -1,4 +1,4 @@
-name: Upload issuance_history backups to R2
+name: Backup Issuance History to R2
 
 on:
   schedule:

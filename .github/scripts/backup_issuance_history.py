@@ -18,7 +18,7 @@ Alternatively, instead of S3 keys you can supply:
     CF_ACCOUNT_ID          Cloudflare Account ID
 
 Usage:
-  python .github/scripts/upload_backup_r2.py [backup-file.json]
+  python .github/scripts/backup_issuance_history.py [backup-file.json]
 
 If no file argument is provided, the script will look for the latest
 `issuance_history-*.json` file in the current directory.
