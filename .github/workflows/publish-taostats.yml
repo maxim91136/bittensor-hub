@@ -89,6 +89,7 @@ jobs:
             echo '[]' > manifest.json
           fi
           # Append the new file to manifest
+          export TS NEW_FILE
           python - <<'PY'
           import json, os
           mf='manifest.json'
