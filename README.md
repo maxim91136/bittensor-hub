@@ -158,6 +158,10 @@ If you want me to also back up additional KV keys or other datasets, I can add m
 - We now collect price and `volume_24h` snapshots into a separate `taostats_history` JSON and store it in Cloudflare Workers KV under the key `taostats_history`.
  - The `publish-taostats` workflow appends to `taostats_history.json` and writes it to KV on every run (defaults to every 10 minutes).
  - Note: The workflow now writes `taostats_history` directly to Cloudflare KV (PUT), so a dedicated write-appending Worker is optional; if you prefer server-side appends, you can deploy the `taostats_history` Worker and configure `CF_WORKER_URL` in secrets.
+ - Note: The workflow will attempt to append via a deployed `taostats_history` Worker (preferred) if `CF_WORKER_URL` is set, otherwise it will fall back to direct KV PUT/merge. If you deploy the Worker and want server-side appends, set these repo secrets:
+	 - `CF_WORKER_URL` (e.g., https://bittensor-taostats.<xxx>.workers.dev)
+	 - `CF_WORKER_WRITE_TOKEN` (optional): The write token if configured in the Worker `HISTORY_WRITE_TOKEN`. If not provided, the workflow will POST without a token (Worker must allow unauthenticated writes).
+	 - `ALLOW_KV_PUT_FALLBACK` (optional): set to `true` to allow client-side PUT fallback if the Worker POST fails (default: false). If you want strict server-only appends, do not set this or set to `false`.
 - A new scheduled workflow `backup-taostats-r2` runs every 3 hours and will fetch `taostats_history` from KV and upload a timestamped copy to R2. To enable the R2 upload set `ENABLE_R2=true` and the R2 credentials mentioned above.
  - A new per-run archival step in the `publish-taostats` workflow optionally uploads a timestamped entry to R2 for each fetch (if `ENABLE_R2=true`), so we can retain as much history as possible in R2 while keeping the recent history compact in KV. This ensures the dashboard can display long-term history later even if KV has size limits.
  - (Previously) A daily consolidation job aggregated `taostats_entry-` files into daily files. Consolidation has now been removed.

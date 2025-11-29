@@ -52,6 +52,9 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+          CF_WORKER_URL: ${{ secrets.CF_WORKER_URL }}
+          CF_WORKER_WRITE_TOKEN: ${{ secrets.CF_WORKER_WRITE_TOKEN }}
+          ALLOW_KV_PUT_FALLBACK: ${{ secrets.ALLOW_KV_PUT_FALLBACK }}
         run: |
           if [ ! -f taostats_history.json ]; then
             echo "No taostats_history.json found - skipping"
@@ -76,12 +79,66 @@ jobs:
             fi
             exit 0
           fi
-          # Write the whole `taostats_history.json` to KV via the Cloudflare API.
-          # This approach mirrors the existing issuance_history behavior (no Worker required).
+          # Prefer to append via the Worker endpoint which merges server-side and avoids race overwrites.
+          # If CF_WORKER_URL is not set, fall back to a direct KV PUT.
+          WORKER_URL="${CF_WORKER_URL:-}"
+          if [ -n "$WORKER_URL" ]; then
+            echo "Posting to Worker at $WORKER_URL"
+            PRE_JSON=$(curl -sS "$WORKER_URL" || echo '')
+            PRE_COUNT=$(echo "$PRE_JSON" | jq 'if type=="array" then length else 1 end' || echo 0)
+            echo "Pre-POST history count: $PRE_COUNT"
+            if [ -n "${CF_WORKER_WRITE_TOKEN:-}" ]; then
+              echo "Using write token to post to worker"
+              STATUS=$(curl -sS -o /tmp/taostats_history_post.json -w "%{http_code}" -X POST "$WORKER_URL" -H "Content-Type: application/json" -H "X-WRITE-TOKEN: ${CF_WORKER_WRITE_TOKEN}" --data-binary @taostats_latest.json || true)
+            else
+              STATUS=$(curl -sS -o /tmp/taostats_history_post.json -w "%{http_code}" -X POST "$WORKER_URL" -H "Content-Type: application/json" --data-binary @taostats_latest.json || true)
+            fi
+            if [ "$STATUS" -eq 200 ]; then
+              if [ -s /tmp/taostats_history_post.json ]; then
+                mv /tmp/taostats_history_post.json taostats_history.json
+                echo "Downloaded merged taostats_history.json from worker"
+              fi
+              POST_JSON=$(curl -sS "$WORKER_URL" || echo '')
+              POST_COUNT=$(echo "$POST_JSON" | jq 'if type=="array" then length else 1 end' || echo 0)
+              echo "Post-POST history count: $POST_COUNT"
+              if [ "$POST_COUNT" -le "$PRE_COUNT" ]; then
+                echo "Warning: worker post did not increase history count (pre=$PRE_COUNT, post=$POST_COUNT)."
+                if [ "${ALLOW_KV_PUT_FALLBACK:-false}" != "true" ]; then
+                  echo "Failing -- Worker did not append. Set ALLOW_KV_PUT_FALLBACK=true to allow fallback PUT if you want to accept merges client-side."
+                  exit 1
+                fi
+                echo "ALLOW_KV_PUT_FALLBACK set; falling back to safe merge PUT"
+              else
+                echo "Worker append finished successfully"
+                exit 0
+              fi
+            else
+              echo "Worker POST failed with status $STATUS"
+              if [ "${ALLOW_KV_PUT_FALLBACK:-false}" != "true" ]; then
+                echo "Failing -- Worker POST failed. Set ALLOW_KV_PUT_FALLBACK=true to allow fallback PUT" 
+                exit 1
+              fi
+              echo "ALLOW_KV_PUT_FALLBACK set; falling back to safe merge PUT"
+            fi
+          else
+            echo "CF_WORKER_URL not set; skipping worker POST append"
+          fi
+
+          # Fallback: perform a safe client-side merge before PUT to avoid overwriting history.
+          # Fetch existing KV value (if any), merge the new entry avoiding duplicates, then PUT the merged array.
           KV_URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/taostats_history"
-          CURL_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "$KV_URL" -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json" --data-binary @taostats_history.json || true)
+          EXISTING_JSON=$(curl -s -H "Authorization: Bearer $CF_API_TOKEN" "$KV_URL" || echo '')
+          if [ -n "$EXISTING_JSON" ]; then
+            echo "$EXISTING_JSON" | jq . > /tmp/taostats_history_existing.json || true
+            # Merge arrays: append new entries not in existing based on _timestamp
+            jq -s '.[0] as $new | (.[1] // []) + ($new | if type=="array" then . else [.] end) | unique_by(._timestamp) | sort_by(._timestamp)' taostats_latest.json /tmp/taostats_history_existing.json > /tmp/taostats_history_merged.json || cat taostats_latest.json > /tmp/taostats_history_merged.json
+          else
+            # No existing KV; use current history file
+            jq 'unique_by(._timestamp) | sort_by(._timestamp)' taostats_history.json > /tmp/taostats_history_merged.json || cp taostats_history.json /tmp/taostats_history_merged.json
+          fi
+          CURL_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "$KV_URL" -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json" --data-binary @/tmp/taostats_history_merged.json || true)
           if [ "$CURL_STATUS" -ne 200 -a "$CURL_STATUS" -ne 204 ]; then
-            echo "Failed to write taostats_history to KV (status=$CURL_STATUS). Ensure CF credentials and KV namespace are correct."
+            echo "Failed to write merged taostats_history to KV (status=$CURL_STATUS). Ensure CF credentials and KV namespace are correct."
             exit 1
           fi
 
