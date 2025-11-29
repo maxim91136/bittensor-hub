@@ -51,12 +51,12 @@
 
 /* Also support pulsing when the site uses `.stat-card` wrappers (legacy layout) */
 .stat-card.pulse-up { 
-  border: 1px solid rgba(16,185,129,0.12) !important; 
+  border: 2px solid rgba(16,185,129,0.40) !important; 
   animation: halving-pulse 7s ease-in-out infinite !important; 
   box-shadow: 0 8px 32px rgba(16,185,129,0.12) !important; 
 }
 .stat-card.pulse-down { 
-  border: 1px solid rgba(239,68,68,0.12) !important; 
+  border: 2px solid rgba(239,68,68,0.40) !important; 
   animation: halving-pulse 7s ease-in-out infinite !important; 
   box-shadow: 0 8px 32px rgba(239,68,68,0.12) !important; 
 }
