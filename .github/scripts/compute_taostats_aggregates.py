@@ -108,6 +108,10 @@ def compute_aggregates(history):
     if ma_med and ma_med != 0:
         pct_change_vs_ma_med = (last_volume - ma_med) / ma_med
 
+    pct_change_vs_ma_short = None
+    if ma_short and ma_short != 0:
+        pct_change_vs_ma_short = (last_volume - ma_short) / ma_short
+
     # confidence: low <5, medium 5-9, high >=10
     if N < 5:
         confidence = 'low'
@@ -115,6 +119,29 @@ def compute_aggregates(history):
         confidence = 'medium'
     else:
         confidence = 'high'
+
+    # Determine trend_direction using short and medium MA percent changes with confidence-scaled thresholds
+    # Base thresholds (enter/exit) — enter at 5%, exit at 3% (used here as simplified rule)
+    base_enter = 0.05
+    if confidence == 'low':
+        scaled_enter = base_enter * 1.5
+    elif confidence == 'high':
+        scaled_enter = base_enter * 0.7
+    else:
+        scaled_enter = base_enter
+
+    trend_direction = 'neutral'
+    try:
+        if pct_change_vs_ma_short is not None and pct_change_vs_ma_med is not None:
+            # require short-term move to be stronger, and medium to support it
+            if pct_change_vs_ma_short >= scaled_enter and pct_change_vs_ma_med >= (scaled_enter / 2):
+                trend_direction = 'up'
+            elif pct_change_vs_ma_short <= -scaled_enter and pct_change_vs_ma_med <= -(scaled_enter / 2):
+                trend_direction = 'down'
+            else:
+                trend_direction = 'neutral'
+    except Exception:
+        trend_direction = 'neutral'
 
     aggregates = {
         '_generated_at': datetime.now(timezone.utc).isoformat(),
@@ -124,6 +151,8 @@ def compute_aggregates(history):
         'ma_med': ma_med,
         'sd_med': sd_med,
         'pct_change_vs_ma_med': pct_change_vs_ma_med,
+        'pct_change_vs_ma_short': pct_change_vs_ma_short,
+        'trend_direction': trend_direction,
         'confidence': confidence,
         'sample_timestamps': [t for (t, _) in vols[-10:]],
     }
