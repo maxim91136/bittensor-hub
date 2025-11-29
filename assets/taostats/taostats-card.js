@@ -91,15 +91,11 @@
     const disp = pctMed ?? pctShort;
     const pctText = (typeof disp === 'number') ? ((disp>0?'+':'') + (disp*100).toFixed(2) + '%') : '—';
     const confidence = data.confidence || 'low';
-    const tt = `Δ vs MA10: ${pctText} — confidence: ${confidence}`;
+    const tt = `Δ vs MA10: ${pctText}\nconfidence: ${confidence}`;
     try {
       const info = parentCard && parentCard.querySelector && parentCard.querySelector('.info-badge');
       if (info) {
         info.title = tt; info.setAttribute('data-tooltip', tt);
-      } else if (parentCard) {
-        parentCard.title = tt; parentCard.setAttribute('data-tooltip', tt);
-      } else {
-        legacyEl.title = tt; legacyEl.setAttribute('data-tooltip', tt);
       }
     } catch (e) {}
 
@@ -162,11 +158,10 @@
       const disp = pctMed ?? pctShort;
       const pctText = (typeof disp === 'number') ? ((disp>0?'+':'') + (disp*100).toFixed(2) + '%') : '—';
       const confidence = data.confidence || 'low';
-      const tt = `Δ vs MA10: ${pctText} — confidence: ${confidence}`;
+      const tt = `Δ vs MA10: ${pctText}\nconfidence: ${confidence}`;
       try {
         const info = cardEl.querySelector && cardEl.querySelector('.info-badge');
         if (info) { info.title = tt; info.setAttribute('data-tooltip', tt); }
-        else { cardEl.title = tt; cardEl.setAttribute('data-tooltip', tt); }
       } catch (e) { /* ignore */ }
     } catch (e) {
       // ignore
