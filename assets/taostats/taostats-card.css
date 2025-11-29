@@ -24,6 +24,14 @@
 .tao-volume-card__meta { margin-left:auto; color:#7f98b0; font-size:12px; display:flex; align-items:center; gap:10px }
 .tao-volume-card__delta { min-width:56px; text-align:center }
 
+/* inline percent styling to match Circ/Max pairing */
+.stat-value { display:flex; align-items:baseline; gap:8px }
+.stat-value-sep { color: #9fb0c8; font-size:14px }
+.stat-value-pct { font-size:14px; font-weight:700; padding:4px 8px; border-radius:999px; background: rgba(255,255,255,0.02); }
+.stat-value-pct.positive { color: #10b981; background: rgba(16,185,129,0.06); }
+.stat-value-pct.negative { color: #ef4444; background: rgba(239,68,68,0.06); }
+.stat-value-pct.neutral { color: #9fb0c8; background: rgba(255,255,255,0.02); }
+
 /* delta badge */
 .tao-volume-card__delta {
   display:inline-block;padding:4px 8px;border-radius:999px;font-weight:600;font-size:12px;

@@ -19,8 +19,8 @@
   function findCards() { return Array.from(document.querySelectorAll('[data-tao-volume-card]')); }
 
   function applyToCard(cardEl, data, lastState) {
-    const valueEl = cardEl.querySelector('[data-tao-volume-last]');
-    const badgeEl = cardEl.querySelector('[data-tao-volume-delta]');
+      const valueEl = cardEl.querySelector('[data-tao-volume-last]');
+      const inlinePctEl = cardEl.querySelector('[data-tao-volume-delta-inline]') || cardEl.querySelector('#volume24h_pct');
 
     const pctShort = typeof data.pct_change_vs_ma_short === 'number' ? data.pct_change_vs_ma_short : null;
     const pctMed = typeof data.pct_change_vs_ma_med === 'number' ? data.pct_change_vs_ma_med : null;
@@ -45,10 +45,19 @@
     else cardEl.classList.add('neutral');
 
     if (valueEl) valueEl.textContent = formatCompact(data.last_volume);
-    if (badgeEl) {
+    if (inlinePctEl) {
       const disp = pctMed ?? pctShort;
-      badgeEl.textContent = (disp === null || disp === undefined) ? '—' : ((disp>0?'+':'') + (disp*100).toFixed(2) + '%');
-      badgeEl.setAttribute('data-confidence', data.confidence || 'low');
+      const text = (disp === null || disp === undefined) ? '—' : ((disp>0?'+':'') + (disp*100).toFixed(2) + '%');
+      inlinePctEl.textContent = text;
+      inlinePctEl.setAttribute('data-confidence', data.confidence || 'low');
+      inlinePctEl.classList.remove('positive','negative','neutral');
+      if (typeof disp === 'number') {
+        if (disp > 0) inlinePctEl.classList.add('positive');
+        else if (disp < 0) inlinePctEl.classList.add('negative');
+        else inlinePctEl.classList.add('neutral');
+      } else {
+        inlinePctEl.classList.add('neutral');
+      }
     }
 
     lastState.direction = candidate;
