@@ -83,6 +83,21 @@ jobs:
           # If CF_WORKER_URL is not set, fall back to a direct KV PUT.
           WORKER_URL="${CF_WORKER_URL:-}"
           if [ -n "$WORKER_URL" ]; then
+            # Derive base host and ensure user didn't set the old `bittensor-ath-atl` worker URL.
+            BASE_URL=$(echo "$WORKER_URL" | sed -E 's#(https?://[^/]+).*#\1#')
+            HOSTNAME=$(echo "$BASE_URL" | awk -F/ '{print $3}')
+            if echo "$HOSTNAME" | grep -q "bittensor-ath-atl"; then
+              echo "ERROR: CF_WORKER_URL points to worker 'bittensor-ath-atl' which is unrelated to taostats."
+              echo "Please set CF_WORKER_URL to the deployed 'bittensor-taostats' worker dev URL or leave it unset to use direct KV writes."
+              exit 1
+            fi
+            # Quick smoke check: verify the worker base URL (API) looks like taostats endpoint
+            API_TEST_URL="$BASE_URL/api/taostats"
+            API_TEST_RAW=$(curl -sS "$API_TEST_URL" || echo '')
+            if [ -z "$API_TEST_RAW" ] || ! echo "$API_TEST_RAW" | jq -e 'has("price") or has("_source")' >/dev/null 2>&1; then
+              echo "ERROR: Worker at $BASE_URL doesn't appear to serve taostats (missing keys). Please verify CF_WORKER_URL points to the correct worker.";
+              exit 1
+            fi
             echo "Posting to Worker at $WORKER_URL"
             PRE_JSON=$(curl -sS "$WORKER_URL" || echo '')
             PRE_COUNT=$(echo "$PRE_JSON" | jq 'if type=="array" then length else 1 end' || echo 0)
