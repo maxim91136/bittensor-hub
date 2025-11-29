@@ -51,7 +51,7 @@ jobs:
           # wrangler v4 uses `deploy` and reads credentials from CLOUDFLARE_API_TOKEN or wrangler.toml
           wrangler deploy
 
-      - name: Post-deploy: validate worker route
+      - name: "Post-deploy: validate worker route"
         env:
           CF_WORKER_URL: ${{ secrets.CF_WORKER_URL }}
         run: |
