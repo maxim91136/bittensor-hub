@@ -30,6 +30,7 @@ jobs:
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_METRICS_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+          CF_WORKER_ROUTE: ${{ secrets.CF_WORKER_ROUTE }}
         run: |
           cat > wrangler.toml <<TOML
           name = "bittensor-ath-atl"
@@ -42,6 +43,10 @@ jobs:
           binding = "METRICS_KV"
           id = "${CF_METRICS_NAMESPACE_ID}"
           TOML
+          if [ -n "${CF_WORKER_ROUTE:-}" ]; then
+            echo "route = \"${CF_WORKER_ROUTE}\"" >> wrangler.toml
+            echo "Added route ${CF_WORKER_ROUTE} to wrangler.toml"
+          fi
 
       - name: Publish with Wrangler
         env:
