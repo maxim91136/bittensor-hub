@@ -53,7 +53,7 @@
       inlinePctEl.setAttribute('data-confidence', confidence);
       // Set tooltip to clarify reference and confidence
       try {
-        inlinePctEl.title = `Δ = last value vs MA10 (10-sample moving average). Confidence: ${confidence}`;
+        inlinePctEl.title = `vs MA10 — confidence: ${confidence}`;
       } catch (e) {
         // ignore DOM errors
       }
