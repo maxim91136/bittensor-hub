@@ -53,3 +53,19 @@ All notable changes to this project will be documented in this file.
 
 ### Notes
 - This is a release candidate. CI workflows and smoke tests should be performed prior to final release.
+
+## v1.0.0-rc.5 (Release Candidate)
+### Added
+- Append-capable Cloudflare Worker `bittensor-taostats` to support server-side appends to `taostats_history` (GET/POST).
+- Per-run archival of Taostats snapshots to R2 (timestamped files) and scheduled R2 backups for long-term retention.
+- `publish-taostats` workflow: worker validation, pre/post append checks, and optional safe fallback merge-to-KV.
+
+### Changed
+- Publish workflow now prefers worker POST append and only performs a KV PUT when explicitly allowed (`ALLOW_KV_PUT_FALLBACK`).
+- Renamed CI scripts/workflows to kebab-case and standardized worker name to `bittensor-taostats`.
+- Improved environment parsing (`_int_env`) across scripts to handle empty strings safely.
+
+### Fixed
+- Prevent accidental writes to the wrong worker (old `bittensor-ath-atl`) by validating `CF_WORKER_URL` before append.
+- Coercion for legacy single-object KV values: the worker treats single-object values as single-element arrays when appending.
+
