@@ -54,12 +54,54 @@ jobs:
             echo "No taostats_history.json found - skipping"
             exit 0
           fi
-          URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/taostats_history"
-          curl -fsSL -X PUT \
-            "$URL" \
-            -H "Authorization: Bearer $CF_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            --data-binary @taostats_history.json
+          # Preflight: ensure the KV namespace exists and is accessible. If not,
+          # skip the KV write to avoid replacing or removing history unintentionally
+          if [ -z "${CF_ACCOUNT_ID:-}" ] || [ -z "${CF_API_TOKEN:-}" ] || [ -z "${CF_KV_NAMESPACE_ID:-}" ]; then
+            echo "CF credentials or namespace not set - skipping KV write"
+            exit 0
+          fi
+          KV_URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}"
+          KV_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${CF_API_TOKEN}" "$KV_URL" || true)
+          if [ "$KV_STATUS" -ne 200 ]; then
+            echo "KV namespace ${CF_KV_NAMESPACE_ID} not accessible (status=$KV_STATUS)."
+            if [ "$KV_STATUS" -eq 404 ]; then
+              echo "404: KV namespace not found. Create a KV namespace and bind it to your Worker (or set proper namespace id)."
+            elif [ "$KV_STATUS" -eq 403 ]; then
+              echo "403: Access denied. Ensure CF_API_TOKEN has proper account-level KV permissions."
+            else
+              echo "Status $KV_STATUS: Could be wrong account id or token. If you see a 7000 response in API, ensure the CF_ACCOUNT_ID is set to the accurate Cloudflare account id and the KV namespace id matches that account."
+            fi
+            exit 0
+          fi
+          # Prefer writing through the Worker endpoint which supports append/merge semantics.
+          WORKER_URL="${CF_WORKER_URL:-https://bittensor-labs.com}/api/taostats_history"
+          if [ -n "${CF_WORKER_WRITE_TOKEN:-}" ]; then
+            echo "Posting to worker with write token..."
+            STATUS=$(curl -sS -o /tmp/taostats_history_post.json -w "%{http_code}" -X POST "$WORKER_URL" -H "Content-Type: application/json" -H "X-WRITE-TOKEN: ${CF_WORKER_WRITE_TOKEN}" --data-binary @taostats_latest.json || true)
+          else
+            echo "Posting to worker without token..."
+            STATUS=$(curl -sS -o /tmp/taostats_history_post.json -w "%{http_code}" -X POST "$WORKER_URL" -H "Content-Type: application/json" --data-binary @taostats_latest.json || true)
+          fi
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Worker POST failed with status $STATUS; ensure the worker is deployed and CF_WORKER_URL points to the correct domain." 
+            # Do not fallback to direct KV PUT to avoid accidental overwrite unless configured
+            if [ "${ENABLE_KV_FALLBACK:-false}" = 'true' ]; then
+              echo "Falling back to direct KV PUT to avoid data loss (ENABLE_KV_FALLBACK=true)."
+              URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/taostats_history"
+              curl -fsSL -X PUT \
+                "$URL" \
+                -H "Authorization: Bearer $CF_API_TOKEN" \
+                -H "Content-Type: application/json" \
+                --data-binary @taostats_history.json
+            else
+              exit 1
+            fi
+          else
+            if [ -s /tmp/taostats_history_post.json ]; then
+              mv /tmp/taostats_history_post.json taostats_history.json
+              echo "Downloaded merged taostats_history.json from worker"
+            fi
+          fi
 
       - name: Archive taostats entry to R2 (per-run)
         env:
