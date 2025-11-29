@@ -152,3 +152,10 @@ Behavior: If R2 secrets are not provided or `ENABLE_R2` is not `true`, the workf
 
 If you want me to also back up additional KV keys or other datasets, I can add modular scripts and hook them into the same scheduled job.
 
+### Taostats (price & volume) history backup
+
+- We now collect price and `volume_24h` snapshots into a separate `taostats_history` JSON and store it in Cloudflare Workers KV under the key `taostats_history`.
+- The `publish-taostats` workflow appends to `taostats_history.json` and writes it to KV on every run (defaults to every 10 minutes).
+- A new scheduled workflow `backup-taostats-r2` runs every 3 hours and will fetch `taostats_history` from KV and upload a timestamped copy to R2. To enable the R2 upload set `ENABLE_R2=true` and the R2 credentials mentioned above.
+- The history file stores a compact array of entries: `{ _timestamp, price, volume_24h }`. The collector keeps a bounded number of entries (default 10,000) which can be adjusted with `HISTORY_MAX_ENTRIES` environment variable.
+

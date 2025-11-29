@@ -3,6 +3,7 @@ import sys
 import json
 import requests
 from datetime import datetime, timezone
+import pathlib
 
 TAOSTATS_API_KEY = os.getenv("TAOSTATS_API_KEY")
 TAOSTATS_URL = "https://api.taostats.io/api/price/latest/v1?asset=tao"
@@ -54,5 +55,32 @@ if __name__ == "__main__":
             json.dump(result, f, indent=2)
         print("✅ Taostats data written to taostats_latest.json", file=sys.stderr)
         print(json.dumps(result, indent=2))
+        # Append price/volume entry to history JSON
+        try:
+            HIST_FILE = pathlib.Path("taostats_history.json")
+            # Keep history size reasonably bounded to avoid KV size issues
+            MAX_ENTRIES = int(os.getenv('HISTORY_MAX_ENTRIES', '10000'))
+            entry = {
+                "_timestamp": result.get("_timestamp"),
+                "price": result.get("price"),
+                "volume_24h": result.get("volume_24h")
+            }
+            history = []
+            if HIST_FILE.exists():
+                try:
+                    with HIST_FILE.open('r') as hf:
+                        history = json.load(hf) or []
+                except Exception:
+                    # If parsing fails, start fresh
+                    history = []
+            history.append(entry)
+            # Trim history to the last MAX_ENTRIES
+            if len(history) > MAX_ENTRIES:
+                history = history[-MAX_ENTRIES:]
+            with HIST_FILE.open('w') as hf:
+                json.dump(history, hf, indent=2)
+            print(f"✅ Taostats history written to {HIST_FILE}", file=sys.stderr)
+        except Exception as e:
+            print(f"⚠️ Failed to update history: {e}", file=sys.stderr)
     else:
         sys.exit(1)

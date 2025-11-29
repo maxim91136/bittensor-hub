@@ -3,6 +3,8 @@ import * as athHealth from './functions/api/ath-atl-health.js';
 import * as network from './functions/api/network.js';
 import * as issuance from './functions/api/issuance_history.js';
 import * as topSubnets from './functions/api/top_subnets.js';
+import * as taostats from './functions/api/taostats.js';
+import * as taostatsHistory from './functions/api/taostats_history.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -32,6 +34,16 @@ export default {
     // Top subnets endpoint
     if (url.pathname === '/api/top_subnets' || url.pathname.startsWith('/api/top_subnets')) {
       if (typeof topSubnets.onRequest === 'function') return topSubnets.onRequest(context);
+    }
+
+    // Taostats history endpoint
+    if (url.pathname === '/api/taostats_history' || url.pathname.startsWith('/api/taostats_history')) {
+      if (typeof taostatsHistory.onRequest === 'function') return taostatsHistory.onRequest(context);
+    }
+
+    // Taostats latest endpoint
+    if (url.pathname === '/api/taostats' || url.pathname.startsWith('/api/taostats')) {
+      if (typeof taostats.onRequest === 'function') return taostats.onRequest(context);
     }
 
     return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
