@@ -45,27 +45,35 @@
     else cardEl.classList.add('neutral');
 
     if (valueEl) valueEl.textContent = formatCompact(data.last_volume);
-    if (inlinePctEl) {
-      const disp = pctMed ?? pctShort;
-      const text = (disp === null || disp === undefined) ? '—' : ((disp>0?'+':'') + (disp*100).toFixed(2) + '%');
-      inlinePctEl.textContent = text;
-      const confidence = data.confidence || 'low';
-      inlinePctEl.setAttribute('data-confidence', confidence);
-      // Set tooltip to clarify reference and confidence
+    // Populate MA10 dollar value into the MA element
+    const maEl = cardEl.querySelector('[data-tao-volume-ma]') || cardEl.querySelector('#volume24h_ma');
+    if (maEl) {
+      const maVal = (typeof data.ma_med === 'number') ? data.ma_med : null;
+      maEl.textContent = maVal ? formatCompact(maVal) : '—';
+
+      // color the MA pill depending on whether last > MA (higher -> green, lower -> red)
+      maEl.classList.remove('higher','lower','neutral');
       try {
-        inlinePctEl.title = `vs MA10 — confidence: ${confidence}`;
-        // also set data-tooltip so the site's tooltip system (touch/mobile) shows the short text
-        inlinePctEl.setAttribute('data-tooltip', `vs MA10 — confidence: ${confidence}`);
+        if (typeof maVal === 'number' && typeof data.last_volume === 'number') {
+          if (data.last_volume > maVal) maEl.classList.add('higher');
+          else if (data.last_volume < maVal) maEl.classList.add('lower');
+          else maEl.classList.add('neutral');
+        } else {
+          maEl.classList.add('neutral');
+        }
       } catch (e) {
-        // ignore DOM errors
+        maEl.classList.add('neutral');
       }
-      inlinePctEl.classList.remove('positive','negative','neutral');
-      if (typeof disp === 'number') {
-        if (disp > 0) inlinePctEl.classList.add('positive');
-        else if (disp < 0) inlinePctEl.classList.add('negative');
-        else inlinePctEl.classList.add('neutral');
-      } else {
-        inlinePctEl.classList.add('neutral');
+
+      // Set tooltip showing MA10 value, percent delta and confidence (short English)
+      const disp = pctMed ?? pctShort;
+      const pctText = (typeof disp === 'number') ? ((disp>0?'+':'') + (disp*100).toFixed(2) + '%') : '—';
+      const confidence = data.confidence || 'low';
+      try {
+        maEl.title = `MA10: ${maEl.textContent} — Δ ${pctText} — confidence: ${confidence}`;
+        maEl.setAttribute('data-tooltip', `MA10: ${maEl.textContent} — Δ ${pctText} — confidence: ${confidence}`);
+      } catch (e) {
+        // ignore
       }
     }
 
