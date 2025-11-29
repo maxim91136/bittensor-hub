@@ -19,10 +19,10 @@
   function findCards() { return Array.from(document.querySelectorAll('[data-tao-volume-card]')); }
 
   function applyToCard(cardEl, data, lastState) {
-      const valueEl = cardEl.querySelector('[data-tao-volume-last]');
-      const inlinePctEl = cardEl.querySelector('[data-tao-volume-delta-inline]') || cardEl.querySelector('#volume24h_pct');
+    const valueEl = cardEl.querySelector('[data-tao-volume-last]');
+    const badgeEl = cardEl.querySelector('[data-tao-volume-delta]');
 
-      const pctShort = typeof data.pct_change_vs_ma_short === 'number' ? data.pct_change_vs_ma_short : null;
+    const pctShort = typeof data.pct_change_vs_ma_short === 'number' ? data.pct_change_vs_ma_short : null;
     const pctMed = typeof data.pct_change_vs_ma_med === 'number' ? data.pct_change_vs_ma_med : null;
 
     let candidate = 'neutral';
@@ -45,39 +45,11 @@
     else cardEl.classList.add('neutral');
 
     if (valueEl) valueEl.textContent = formatCompact(data.last_volume);
-    // Populate MA10 dollar value into the MA element
-    const maEl = cardEl.querySelector('[data-tao-volume-ma]') || cardEl.querySelector('#volume24h_ma');
-    if (maEl) {
-      const maVal = (typeof data.ma_med === 'number') ? data.ma_med : null;
-      maEl.textContent = maVal ? formatCompact(maVal) : '—';
-
-      // color the MA pill depending on whether last > MA (higher -> green, lower -> red)
-      maEl.classList.remove('higher','lower','neutral');
-      try {
-        if (typeof maVal === 'number' && typeof data.last_volume === 'number') {
-          if (data.last_volume > maVal) maEl.classList.add('higher');
-          else if (data.last_volume < maVal) maEl.classList.add('lower');
-          else maEl.classList.add('neutral');
-        } else {
-          maEl.classList.add('neutral');
-        }
-      } catch (e) {
-        maEl.classList.add('neutral');
-      }
-
-      // Set tooltip showing MA10 value, percent delta and confidence (short English)
+    if (badgeEl) {
       const disp = pctMed ?? pctShort;
-      const pctText = (typeof disp === 'number') ? ((disp>0?'+':'') + (disp*100).toFixed(2) + '%') : '—';
-      const confidence = data.confidence || 'low';
-      try {
-        maEl.title = `MA10: ${maEl.textContent} — Δ ${pctText} — confidence: ${confidence}`;
-        maEl.setAttribute('data-tooltip', `MA10: ${maEl.textContent} — Δ ${pctText} — confidence: ${confidence}`);
-      } catch (e) {
-        // ignore
-      }
-      // Percent display removed — we keep MA tooltip only
+      badgeEl.textContent = (disp === null || disp === undefined) ? '—' : ((disp>0?'+':'') + (disp*100).toFixed(2) + '%');
+      badgeEl.setAttribute('data-confidence', data.confidence || 'low');
     }
-    
 
     lastState.direction = candidate;
     lastState.last = data.last_volume;
