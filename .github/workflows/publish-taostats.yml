@@ -1,5 +1,4 @@
 name: Fetch and Push Taostats metrics to Cloudflare KV
-
 on:
   schedule:
     - cron: '*/10 * * * *'  # every 10 minutes
@@ -18,8 +17,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install requests
-        run: pip install requests
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          python -m pip install --upgrade pip
+          pip install requests
 
       - name: Fetch Taostats data
         env:
