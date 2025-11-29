@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.8.2 (Release Candidate)
+### Changed
+- **Workflow Optimization**: Staggered all scheduled workflows with 3-minute intervals to prevent simultaneous execution
+  - `backup-taostats-r2.yml`: `:01 */3` (every 3 hours)
+  - `backup-network-history-r2.yml`: `:04 */3` (every 3 hours)
+  - `backup-issuance-history-r2.yml`: `:07 */3` (every 3 hours)
+  - `publish-ath-athl.yml`: `:10 */3` (every 3 hours)
+  - `publish-taostats.yml`: `:03, :13, :23, :33, :43, :53` (every 10 minutes)
+  - `compute-taostats-aggregates.yml`: `:07, :17, :27, :37, :47, :57` (every 10 minutes)
+  - `publish-network.yml`: `:11, :21, :31, :41, :51` (every 10 minutes, changed from 15-min)
+
+### Benefits
+- Eliminates worker queue collisions and simultaneous execution
+- Reduces peak load on Cloudflare Workers and KV
+- Predictable, distributed execution across the hour
+
 ## v1.0.0-rc.8.1 (Release Candidate)
 ### Added
 - **Network History Collection**: Automated data gathering from Bittensor SDK (15 min intervals)
