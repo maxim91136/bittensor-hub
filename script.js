@@ -1414,9 +1414,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (!infoBadge || !tooltip) return;
 
-  // Position tooltip - just keep it centered (CSS handles it)
+  // Position tooltip: centered but ensure it's fully visible
   function positionTooltip() {
-    // Do nothing - CSS fixed positioning handles centering
+    if (tooltip.style.display === 'none') return;
+    
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Center horizontally
+    let left = (viewportWidth - tooltipRect.width) / 2;
+    
+    // Center vertically, but adjust if it goes off screen
+    let top = (viewportHeight - tooltipRect.height) / 2;
+    
+    // If top goes negative (off top), push it down
+    if (top < 8) {
+      top = 8;
+    }
+    
+    // If bottom goes off screen, push it up
+    if (top + tooltipRect.height > viewportHeight - 8) {
+      top = viewportHeight - tooltipRect.height - 8;
+    }
+    
+    // Ensure left is in bounds
+    if (left < 8) left = 8;
+    if (left + tooltipRect.width > viewportWidth - 8) {
+      left = viewportWidth - tooltipRect.width - 8;
+    }
+    
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
   }
 
   // Load and display top subnets
@@ -1458,9 +1487,12 @@ document.addEventListener('DOMContentLoaded', function() {
   function showSubnetsTooltip() {
     loadTopSubnets();
     tooltip.style.display = 'block';
-    setTimeout(positionTooltip, 0);
-    window.addEventListener('scroll', positionTooltip);
-    window.addEventListener('resize', positionTooltip);
+    // Use requestAnimationFrame to ensure reflow before positioning
+    requestAnimationFrame(() => {
+      positionTooltip();
+      window.addEventListener('scroll', positionTooltip);
+      window.addEventListener('resize', positionTooltip);
+    });
   }
 
   // Hide tooltip
