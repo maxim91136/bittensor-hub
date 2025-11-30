@@ -640,17 +640,23 @@ def fetch_top_subnets() -> Dict[str, object]:
             continue
         taodata = taostats_map.get(netuid_i)
         if taodata:
-            # Use Taostats share for these
+            # Use Taostats data for these
             try:
-                # The API returns 'emission' field which represents the subnet's emission value
-                # We need to normalize it to a share (0.0-1.0) based on total emissions
+                # The Taostats API returns 'emission' field which is the subnet's absolute daily emission in TAO
+                # NOT a share (0.0-1.0), but the actual daily emission amount
                 ts_emission = float(taodata.get('emission', 0.0))
-                # If emission is a percentage-like value (0-100), convert to share
-                # Otherwise treat as raw emission value that will be normalized
-                ts_share = ts_emission / 100.0 if ts_emission > 1.0 else ts_emission
+                # Use it directly as the daily emission
+                if ts_emission > 0:
+                    # Calculate share as: daily_emission / total_daily_emission
+                    ts_share = ts_emission / DAILY_EMISSION
+                    est = ts_emission
+                else:
+                    ts_share = 0.0
+                    est = 0.0
             except Exception:
                 ts_share = 0.0
-            est = ts_share * DAILY_EMISSION
+                est = 0.0
+            
             # Set both our estimate and taostats-based estimate fields so
             # downstream diagnostics can compare them easily.
             entry['taostats_emission_share'] = round(float(ts_share), 8)
