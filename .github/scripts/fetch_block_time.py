@@ -130,7 +130,7 @@ def parse_timestamp(ts_str):
 
 def main():
     # Fetch block time data
-    result = fetch_block_time(100)
+    result = fetch_block_time(500)
     
     if not result:
         print("❌ Failed to fetch block time data", file=sys.stderr)
