@@ -1401,3 +1401,77 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('bgMode', isLight ? 'dark' : 'light');
   });
 });
+
+// ===== Top Subnets Tooltip =====
+document.addEventListener('DOMContentLoaded', function() {
+  const subnetsCard = document.getElementById('subnetsCard');
+  const tooltip = document.getElementById('topSubnetsTooltip');
+  const closeBtn = document.getElementById('topSubnetsClose');
+  const subnetsTable = document.getElementById('topSubnetsList');
+
+  if (!subnetsCard || !tooltip) return;
+
+  // Load and display top subnets
+  async function loadTopSubnets() {
+    try {
+      const response = await fetch('/api/top_subnets');
+      if (!response.ok) throw new Error('Failed to fetch top subnets');
+      const data = await response.json();
+      
+      const topSubnets = data.top_subnets || [];
+      if (topSubnets.length === 0) {
+        subnetsTable.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:12px;">No data available</td></tr>';
+        return;
+      }
+
+      // Build table rows
+      const rows = topSubnets.map((subnet, idx) => {
+        const rank = idx + 1;
+        const name = subnet.subnet_name || `SN${subnet.netuid}`;
+        const share = ((subnet.taostats_emission_share || 0) * 100).toFixed(4);
+        const daily = (subnet.estimated_emission_daily || 0).toFixed(4);
+        
+        return `<tr>
+          <td class="rank">${rank}</td>
+          <td class="subnet-name">${name}</td>
+          <td class="share">${share}%</td>
+          <td class="daily-tao">${daily}</td>
+        </tr>`;
+      }).join('');
+
+      subnetsTable.innerHTML = rows;
+    } catch (err) {
+      console.error('Error loading top subnets:', err);
+      subnetsTable.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:12px;">Error loading data</td></tr>';
+    }
+  }
+
+  // Show tooltip on card click
+  subnetsCard.addEventListener('click', function(e) {
+    // Don't show tooltip if clicking on the link
+    if (e.target.tagName === 'A' || e.target.closest('a')) return;
+    
+    if (tooltip.style.display === 'none') {
+      loadTopSubnets();
+      tooltip.style.display = 'block';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+
+  // Close tooltip with X button
+  closeBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    tooltip.style.display = 'none';
+  });
+
+  // Close tooltip when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!subnetsCard.contains(e.target) && tooltip.style.display !== 'none') {
+      tooltip.style.display = 'none';
+    }
+  });
+
+  // Load top subnets on page load
+  loadTopSubnets();
+});

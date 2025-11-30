@@ -1673,3 +1673,113 @@ body.light-bg .map-preview-card .map-attribution {
   color: #222 !important;
   border: 1px solid #c0c0c0 !important;
 }
+
+/* Top Subnets Tooltip Styles */
+.top-subnets-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 320px;
+  max-width: 420px;
+}
+
+.top-subnets-tooltip.light-bg {
+  background: #f5f5f5;
+  border-color: #ddd;
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tooltip-title {
+  font-weight: 600;
+  font-size: 0.95em;
+  color: var(--text);
+}
+
+.tooltip-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  color: var(--text-muted);
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.tooltip-close:hover {
+  color: var(--text);
+}
+
+.tooltip-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.top-subnets-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+}
+
+.top-subnets-table thead {
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.top-subnets-table th {
+  padding: 8px 6px;
+  text-align: left;
+  font-weight: 600;
+  color: #22c55e;
+  border-bottom: 1px solid var(--border);
+}
+
+.top-subnets-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.top-subnets-table tbody tr:hover {
+  background: rgba(34, 197, 94, 0.04);
+}
+
+.top-subnets-table .rank {
+  font-weight: 600;
+  color: #22c55e;
+}
+
+.top-subnets-table .subnet-name {
+  font-weight: 500;
+}
+
+.top-subnets-table .share {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.top-subnets-table .daily-tao {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+#subnetsCard {
+  position: relative;
+}
