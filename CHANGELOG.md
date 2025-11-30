@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
-## v1.0.0-rc.13 (Release Candidate)
+## v1.0.0-rc.14 (Release Candidate)
 ### Added
 - **Block Time Kachel**: Real-time average block interval metric
   - Shows average seconds between blocks (target: 12.0s)
