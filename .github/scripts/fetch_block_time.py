@@ -16,7 +16,7 @@ BLOCK_URL = "https://api.taostats.io/api/block/v1"
 # Target block time in seconds
 TARGET_BLOCK_TIME = 12.0
 
-def fetch_block_time(num_blocks=100):
+def fetch_block_time(num_blocks=500):
     """Fetch last N blocks and calculate average block time."""
     if not TAOSTATS_API_KEY:
         print("❌ TAOSTATS_API_KEY not set", file=sys.stderr)
@@ -28,20 +28,41 @@ def fetch_block_time(num_blocks=100):
     }
     
     try:
-        # Fetch last N blocks
-        url = f"{BLOCK_URL}?limit={num_blocks}"
-        print(f"⏱️ Fetching last {num_blocks} blocks...", file=sys.stderr)
+        all_blocks = []
+        page = 1
+        per_page = 200  # API limit per request
         
-        resp = requests.get(url, headers=headers, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
+        print(f"⏱️ Fetching {num_blocks} blocks...", file=sys.stderr)
         
-        blocks = data.get("data", [])
+        while len(all_blocks) < num_blocks:
+            url = f"{BLOCK_URL}?limit={per_page}&page={page}"
+            resp = requests.get(url, headers=headers, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+            
+            blocks = data.get("data", [])
+            if not blocks:
+                break
+            
+            all_blocks.extend(blocks)
+            print(f"  Page {page}: fetched {len(blocks)} blocks (total: {len(all_blocks)})", file=sys.stderr)
+            
+            if len(blocks) < per_page:
+                break  # No more pages
+            
+            page += 1
+            
+            # Safety limit
+            if page > 5:
+                break
+        
+        blocks = all_blocks[:num_blocks]
+        
         if len(blocks) < 2:
             print("❌ Not enough blocks returned", file=sys.stderr)
             return None
         
-        print(f"✅ Fetched {len(blocks)} blocks", file=sys.stderr)
+        print(f"✅ Using {len(blocks)} blocks for analysis", file=sys.stderr)
         
         # Parse timestamps and calculate deltas
         deltas = []
