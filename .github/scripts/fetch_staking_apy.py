@@ -41,55 +41,32 @@ def fetch_staking_apy(num_validators=50):
         
         print(f"✅ Fetched {len(validators)} validators", file=sys.stderr)
         
-        # Debug: print first validator's ALL fields
-        if validators:
-            v0 = validators[0]
-            print(f"  All fields: {list(v0.keys())}", file=sys.stderr)
-        
-        # Collect APR values - dTao API uses different field names
+        # Collect APR values - calculate from nominator_return_per_day and stake
         aprs = []
-        apr_7d = []
-        apr_30d = []
         
         for v in validators:
-            # Try multiple field names for APR
-            apr = v.get("apr") or v.get("nominator_return_per_k") or v.get("apy")
-            if apr:
-                try:
-                    apr_val = float(apr)
-                    # nominator_return_per_k is daily return, convert to annual: * 365
-                    if v.get("nominator_return_per_k") and not v.get("apr"):
-                        apr_val = apr_val * 365 / 10  # per 1k TAO, annualized, as %
-                    if 0 < apr_val < 1000:  # Sanity check (0-1000%)
-                        aprs.append(apr_val)
-                except (ValueError, TypeError):
-                    pass
+            # Get daily return and stake (both in rao)
+            daily_return = v.get("nominator_return_per_day")
+            stake = v.get("global_weighted_stake")
             
-            # 7-day average
-            apr_7 = v.get("apr_7_day_average") or v.get("nominator_return_per_k_7_day_average")
-            if apr_7:
+            if daily_return and stake:
                 try:
-                    apr_7_val = float(apr_7)
-                    if v.get("nominator_return_per_k_7_day_average") and not v.get("apr_7_day_average"):
-                        apr_7_val = apr_7_val * 365 / 10
-                    if 0 < apr_7_val < 1000:
-                        apr_7d.append(apr_7_val)
-                except (ValueError, TypeError):
-                    pass
-            
-            # 30-day average
-            apr_30 = v.get("apr_30_day_average") or v.get("nominator_return_per_k_30_day_average")
-            if apr_30:
-                try:
-                    apr_30_val = float(apr_30)
-                    if v.get("nominator_return_per_k_30_day_average") and not v.get("apr_30_day_average"):
-                        apr_30_val = apr_30_val * 365 / 10
-                    if 0 < apr_30_val < 1000:
-                        apr_30d.append(apr_30_val)
+                    daily_return_val = float(daily_return)
+                    stake_val = float(stake)
+                    
+                    if stake_val > 0:
+                        # APR = (daily_return * 365 / stake) * 100
+                        apr_val = (daily_return_val * 365 / stake_val) * 100
+                        
+                        if 0 < apr_val < 1000:  # Sanity check
+                            aprs.append(apr_val)
+                            
                 except (ValueError, TypeError):
                     pass
         
-        print(f"  Collected APRs: {len(aprs)} current, {len(apr_7d)} 7d, {len(apr_30d)} 30d", file=sys.stderr)
+        print(f"  Collected {len(aprs)} APR values", file=sys.stderr)
+        if aprs:
+            print(f"  Sample APRs: {[round(a, 2) for a in aprs[:5]]}", file=sys.stderr)
         
         if not aprs:
             print("❌ No valid APR values found", file=sys.stderr)
@@ -100,9 +77,6 @@ def fetch_staking_apy(num_validators=50):
         min_apr = min(aprs)
         max_apr = max(aprs)
         
-        avg_apr_7d = sum(apr_7d) / len(apr_7d) if apr_7d else None
-        avg_apr_30d = sum(apr_30d) / len(apr_30d) if apr_30d else None
-        
         # Get top validator info
         top_validator = validators[0] if validators else None
         
@@ -110,12 +84,9 @@ def fetch_staking_apy(num_validators=50):
             "avg_apr": round(avg_apr, 2),
             "min_apr": round(min_apr, 2),
             "max_apr": round(max_apr, 2),
-            "avg_apr_7d": round(avg_apr_7d, 2) if avg_apr_7d else None,
-            "avg_apr_30d": round(avg_apr_30d, 2) if avg_apr_30d else None,
             "validators_analyzed": len(aprs),
             "top_validator": {
                 "name": top_validator.get("name") if top_validator else None,
-                "apr": float(top_validator.get("apr", 0)) if top_validator and top_validator.get("apr") else None,
                 "dominance": top_validator.get("dominance") if top_validator else None
             } if top_validator else None,
             "_source": "taostats",
@@ -148,10 +119,6 @@ def main():
     print(f"\n📊 Staking APY Summary:", file=sys.stderr)
     print(f"  Average APR: {result['avg_apr']}%", file=sys.stderr)
     print(f"  Range: {result['min_apr']}% - {result['max_apr']}%", file=sys.stderr)
-    if result['avg_apr_7d']:
-        print(f"  7-Day Avg: {result['avg_apr_7d']}%", file=sys.stderr)
-    if result['avg_apr_30d']:
-        print(f"  30-Day Avg: {result['avg_apr_30d']}%", file=sys.stderr)
     print(f"  Validators: {result['validators_analyzed']}", file=sys.stderr)
     
     # Output JSON to stdout
