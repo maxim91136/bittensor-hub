@@ -299,6 +299,16 @@ def fetch_top_subnets() -> Dict[str, object]:
                 size = 0
             sample_keys = list(taostats_map.keys())[:5]
             print(f"DEBUG: taostats_map_size={size}, sample_keys={sample_keys}")
+            # Check how many have emission data
+            emission_count = sum(1 for item in taostats_map.values() 
+                               if isinstance(item, dict) and (item.get('emission') or item.get('emission_share')))
+            print(f"DEBUG: subnets with emission data: {emission_count}/{size}")
+            if size > 0:
+                first_item = next(iter(taostats_map.values()))
+                if isinstance(first_item, dict):
+                    print(f"DEBUG: first_subnet_keys={list(first_item.keys())[:10]}")
+                    print(f"DEBUG: first_subnet_emission={first_item.get('emission')}")
+                    print(f"DEBUG: first_subnet_emission_share={first_item.get('emission_share')}")
     except Exception:
         pass
     if taostats_error:
