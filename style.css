@@ -1882,7 +1882,7 @@ body.light-bg .map-preview-card .map-attribution {
   border-collapse: collapse;
   font-size: 0.96em;
   color: var(--text);
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .subnets-display-table thead {
@@ -1903,6 +1903,7 @@ body.light-bg .map-preview-card .map-attribution {
   text-transform: uppercase;
   background: transparent;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .subnets-display-table th:nth-child(1) {
@@ -1952,22 +1953,28 @@ body.light-bg .map-preview-card .map-attribution {
 .subnets-display-table td {
   padding: 12px 8px;
   vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .subnets-display-table td:nth-child(1) {
   width: 8%;
+  white-space: nowrap;
 }
 
 .subnets-display-table td:nth-child(2) {
   width: 35%;
+  white-space: normal;
 }
 
 .subnets-display-table td:nth-child(3) {
   width: 28%;
+  white-space: nowrap;
 }
 
 .subnets-display-table td:nth-child(4) {
   width: 29%;
+  white-space: nowrap;
 }
 
 .subnets-display-table .rank-col {
@@ -1986,8 +1993,6 @@ body.light-bg .map-preview-card .map-attribution {
 .subnets-display-table .subnet-col {
   font-weight: 600;
   color: var(--text);
-  word-break: break-word;
-  white-space: normal;
   letter-spacing: -0.005em;
 }
 
