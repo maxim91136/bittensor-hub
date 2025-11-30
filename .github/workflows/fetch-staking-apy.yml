@@ -1,0 +1,52 @@
+name: Fetch Staking APY
+
+on:
+  schedule:
+    # Every hour at :59
+    - cron: '59 * * * *'
+  workflow_dispatch:
+
+jobs:
+  fetch-staking-apy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch staking APY data
+        id: fetch
+        env:
+          TAOSTATS_API_KEY: ${{ secrets.TAOSTATS_API_KEY }}
+        run: |
+          cd .github/scripts
+          python fetch_staking_apy.py > staking_apy_output.json
+          cat staking_apy_output.json
+
+      - name: Upload to Cloudflare KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_METRICS_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          cd .github/scripts
+          
+          # Read the JSON output
+          JSON_DATA=$(cat staking_apy_output.json)
+          
+          # Upload to KV
+          curl -X PUT \
+            "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_METRICS_NAMESPACE_ID}/values/staking_apy" \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data "$JSON_DATA"
+          
+          echo ""
+          echo "✅ Staking APY data uploaded to KV"
