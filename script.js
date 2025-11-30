@@ -1454,4 +1454,57 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 });
 
+// ===== Top Validators Display =====
+document.addEventListener('DOMContentLoaded', function() {
+  const displayTable = document.getElementById('topValidatorsDisplayTable');
+  const displayList = document.getElementById('topValidatorsDisplayList');
+
+  if (!displayTable || !displayList) return;
+
+  async function loadTopValidatorsDisplay() {
+    try {
+      const response = await fetch('/api/top_validators');
+      if (!response.ok) throw new Error('Failed to fetch top validators');
+      const data = await response.json();
+
+      const topValidators = data.top_validators || [];
+      if (topValidators.length === 0) {
+        displayList.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">No validator data available</td></tr>';
+        return;
+      }
+
+      // Display TOP 10
+      const rows = topValidators.slice(0, 10).map((v, idx) => {
+        const rank = idx + 1;
+        const name = v.name || `Validator ${rank}`;
+        const stake = v.stake_formatted || '—';
+        const dominance = v.dominance != null ? `${v.dominance}%` : '—';
+        const nominators = v.nominators != null ? v.nominators.toLocaleString() : '—';
+
+        return `<tr>
+          <td class="rank-col">${rank}</td>
+          <td class="validator-col">${name}</td>
+          <td class="stake-col">${stake}</td>
+          <td class="dominance-col">${dominance}</td>
+          <td class="nominators-col">${nominators}</td>
+        </tr>`;
+      }).join('');
+
+      displayList.innerHTML = rows;
+    } catch (err) {
+      console.error('Error loading top validators:', err);
+      displayList.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">Error loading validator data</td></tr>';
+    }
+  }
+
+  loadTopValidatorsDisplay();
+
+  // Refresh on network data update
+  const origRefresh = window.refreshDashboard;
+  window.refreshDashboard = async function() {
+    await origRefresh.call(this);
+    loadTopValidatorsDisplay();
+  };
+});
+
 // Old Top Subnets Tooltip handler removed - now uses standard data-tooltip

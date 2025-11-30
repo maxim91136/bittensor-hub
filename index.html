@@ -283,6 +283,30 @@
       </div>
     </section>
 
+  <!-- Top Validators Card -->
+    <section class="dashboard-card top-validators-card" aria-labelledby="top-validators-card-heading">
+      <div class="card-header">
+        <h2 id="top-validators-card-heading">Top 10 Validators by Stake</h2>
+        <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Shows the 10 validators with highest stake. Source: taostats.io">i</span>
+      </div>
+      <div class="validators-table-wrapper">
+        <table class="validators-display-table" id="topValidatorsDisplayTable">
+          <thead>
+            <tr>
+              <th class="rank-col">#</th>
+              <th class="validator-col">Validator</th>
+              <th class="stake-col">Stake</th>
+              <th class="dominance-col">Dom %</th>
+              <th class="nominators-col">Noms</th>
+            </tr>
+          </thead>
+          <tbody id="topValidatorsDisplayList">
+            <tr class="loading-row"><td colspan="5" style="text-align:center;padding:20px;">Loading top validators...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   <!-- Only one price chart card is shown -->
     <section class="dashboard-card loading" aria-labelledby="price-heading">
       <div class="card-header">
