@@ -2008,9 +2008,15 @@ body.light-bg .map-preview-card .map-attribution {
   background: rgba(34, 197, 94, 0.06);
 }
 
+/* Champion gold accent - Apple-like subtle elegance */
+.subnets-display-table tbody tr:first-child .rank-col {
+  color: #D4AF37;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
 .subnets-display-table tbody tr:first-child .share-col {
-  color: var(--accent);
-  text-shadow: none;
+  color: #D4AF37;
+  text-shadow: 0 0 6px rgba(212, 175, 55, 0.25);
 }
 
 /* Loading row styling */
@@ -2063,8 +2069,14 @@ body.light-bg .map-preview-card .map-attribution {
   background: transparent;
 }
 
+.top-subnets-card.light-bg .subnets-display-table tbody tr:first-child .rank-col {
+  color: #B8860B;
+  text-shadow: none;
+}
+
 .top-subnets-card.light-bg .subnets-display-table tbody tr:first-child .share-col {
-  color: #15803d;
+  color: #B8860B;
+  text-shadow: none;
 }
 
 .top-subnets-card.light-bg .subnets-display-table .loading-row td {
@@ -2247,6 +2259,17 @@ body.light-bg .map-preview-card .map-attribution {
   font-variant-numeric: tabular-nums;
 }
 
+/* Champion gold accent - #1 Validator */
+.validators-display-table tbody tr:first-child .rank-col {
+  color: #D4AF37;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.validators-display-table tbody tr:first-child .stake-col {
+  color: #D4AF37;
+  text-shadow: 0 0 6px rgba(212, 175, 55, 0.25);
+}
+
 /* Light mode */
 .top-validators-card.light-bg .validators-table-wrapper {
   background: rgba(0, 0, 0, 0.02);
@@ -2279,6 +2302,17 @@ body.light-bg .map-preview-card .map-attribution {
 
 .top-validators-card.light-bg .validators-display-table .nominators-col {
   color: #666;
+}
+
+/* Light mode gold for #1 validator */
+.top-validators-card.light-bg .validators-display-table tbody tr:first-child .rank-col {
+  color: #B8860B;
+  text-shadow: none;
+}
+
+.top-validators-card.light-bg .validators-display-table tbody tr:first-child .stake-col {
+  color: #B8860B;
+  text-shadow: none;
 }
 
 /* Responsive */
@@ -2432,6 +2466,17 @@ body.light-bg .map-preview-card .map-attribution {
   font-variant-numeric: tabular-nums;
 }
 
+/* Champion gold accent - #1 Wallet */
+.wallets-display-table tbody tr:first-child .rank-col {
+  color: #D4AF37;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.wallets-display-table tbody tr:first-child .balance-col {
+  color: #D4AF37;
+  text-shadow: 0 0 6px rgba(212, 175, 55, 0.25);
+}
+
 /* Light mode */
 .top-wallets-card.light-bg .wallets-table-wrapper {
   background: rgba(0, 0, 0, 0.02);
@@ -2476,6 +2521,17 @@ body.light-bg .map-preview-card .map-attribution {
 
 .top-wallets-card.light-bg .wallets-display-table .staked-col {
   color: #1a1a1a;
+}
+
+/* Light mode gold for #1 wallet */
+.top-wallets-card.light-bg .wallets-display-table tbody tr:first-child .rank-col {
+  color: #B8860B;
+  text-shadow: none;
+}
+
+.top-wallets-card.light-bg .wallets-display-table tbody tr:first-child .balance-col {
+  color: #B8860B;
+  text-shadow: none;
 }
 
 /* Responsive */
