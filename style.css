@@ -1882,6 +1882,7 @@ body.light-bg .map-preview-card .map-attribution {
   border-collapse: collapse;
   font-size: 0.96em;
   color: var(--text);
+  table-layout: fixed;
 }
 
 .subnets-display-table thead {
@@ -1893,38 +1894,38 @@ body.light-bg .map-preview-card .map-attribution {
 }
 
 .subnets-display-table th {
-  padding: 16px 20px;
+  padding: 14px 8px;
   text-align: left;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.03em;
-  font-size: 0.85em;
+  font-size: 0.80em;
   text-transform: uppercase;
   background: transparent;
+  word-break: break-word;
 }
 
 .subnets-display-table th.rank-col {
-  width: 70px;
+  width: 12%;
   text-align: center;
-  padding-left: 16px;
+  padding: 14px 4px;
 }
 
 .subnets-display-table th.subnet-col {
-  flex: 1;
-  min-width: 180px;
-  padding-left: 24px;
+  width: 40%;
+  padding-left: 12px;
 }
 
 .subnets-display-table th.share-col {
-  width: 150px;
+  width: 24%;
   text-align: right;
-  padding-right: 24px;
+  padding-right: 8px;
 }
 
 .subnets-display-table th.daily-col {
-  width: 160px;
+  width: 24%;
   text-align: right;
-  padding-right: 20px;
+  padding-right: 8px;
 }
 
 .subnets-display-table tbody tr {
@@ -1956,17 +1957,21 @@ body.light-bg .map-preview-card .map-attribution {
 }
 
 .subnets-display-table td {
-  padding: 14px 20px;
+  padding: 12px 8px;
   vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .subnets-display-table .rank-col {
   text-align: center;
   font-weight: 700;
   color: var(--accent);
-  font-size: 1.1em;
+  font-size: 1.0em;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
+  padding: 12px 4px;
 }
 
 .subnets-display-table tbody tr:hover .rank-col {
@@ -1977,7 +1982,9 @@ body.light-bg .map-preview-card .map-attribution {
   font-weight: 600;
   color: var(--text);
   word-break: break-word;
+  white-space: normal;
   letter-spacing: -0.005em;
+  padding-left: 12px;
 }
 
 .subnets-display-table .share-col {
@@ -1986,6 +1993,7 @@ body.light-bg .map-preview-card .map-attribution {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-size: 0.98em;
+  padding-right: 8px;
 }
 
 .subnets-display-table .daily-col {
@@ -1993,6 +2001,7 @@ body.light-bg .map-preview-card .map-attribution {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   font-size: 0.93em;
+  padding-right: 8px;
 }
 
 /* Gold highlight for first-place subnet */
@@ -2016,7 +2025,7 @@ body.light-bg .map-preview-card .map-attribution {
 
 /* Loading row styling */
 .subnets-display-table .loading-row td {
-  padding: 24px 20px;
+  padding: 24px 8px;
   color: var(--text-muted);
   text-align: center;
 }
@@ -2070,4 +2079,59 @@ body.light-bg .map-preview-card .map-attribution {
 
 .top-subnets-card.light-bg .subnets-display-table .loading-row td {
   color: #888;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .subnets-display-table {
+    font-size: 0.90em;
+  }
+
+  .subnets-display-table th,
+  .subnets-display-table td {
+    padding: 10px 6px;
+  }
+
+  .subnets-display-table th.rank-col {
+    width: 12%;
+    padding: 10px 2px;
+  }
+
+  .subnets-display-table th.subnet-col {
+    width: 40%;
+    padding-left: 8px;
+  }
+
+  .subnets-display-table th.share-col,
+  .subnets-display-table th.daily-col {
+    width: 24%;
+    padding-right: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .subnets-display-table {
+    font-size: 0.84em;
+  }
+
+  .subnets-display-table th,
+  .subnets-display-table td {
+    padding: 8px 4px;
+  }
+
+  .subnets-display-table th.rank-col {
+    width: 12%;
+    padding: 8px 2px;
+  }
+
+  .subnets-display-table th.subnet-col {
+    width: 40%;
+    padding-left: 6px;
+  }
+
+  .subnets-display-table th.share-col,
+  .subnets-display-table th.daily-col {
+    width: 24%;
+    padding-right: 4px;
+  }
 }
