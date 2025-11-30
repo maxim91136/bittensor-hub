@@ -1576,7 +1576,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show identity if available, otherwise just address
         const walletDisplay = identity 
           ? `<span class="wallet-identity">${identity}</span><span class="wallet-address">${addressShort}</span>`
-          : `<span class="wallet-address" style="font-size:1em;color:var(--text);">${addressShort}</span>`;
+          : `<span class="wallet-address wallet-address-only">${addressShort}</span>`;
 
         return `<tr>
           <td class="rank-col">${rank}</td>

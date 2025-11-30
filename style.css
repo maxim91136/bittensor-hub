@@ -2409,6 +2409,11 @@ body.light-bg .map-preview-card .map-attribution {
   font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
 }
 
+.wallets-display-table .wallet-col .wallet-address-only {
+  font-size: 1em;
+  color: var(--text);
+}
+
 .wallets-display-table .balance-col {
   font-weight: 500;
   color: var(--accent);
@@ -2451,6 +2456,10 @@ body.light-bg .map-preview-card .map-attribution {
 
 .top-wallets-card.light-bg .wallets-display-table .wallet-col .wallet-address {
   color: rgba(0, 0, 0, 0.5);
+}
+
+.top-wallets-card.light-bg .wallets-display-table .wallet-col .wallet-address-only {
+  color: #1a1a1a;
 }
 
 .top-wallets-card.light-bg .wallets-display-table .balance-col {
