@@ -1996,7 +1996,7 @@ body.light-bg .map-preview-card .map-attribution {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-size: 0.98em;
-  padding-right: 8px;
+  padding: 12px 8px;
   width: 24%;
 }
 
@@ -2005,7 +2005,7 @@ body.light-bg .map-preview-card .map-attribution {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   font-size: 0.93em;
-  padding-right: 8px;
+  padding: 12px 8px;
   width: 24%;
 }
 
