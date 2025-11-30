@@ -1,0 +1,51 @@
+name: Fetch Price History
+
+on:
+  schedule:
+    # Run every hour at :05 to have fresh chart data
+    - cron: '5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  fetch-price-history:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch price history from Taostats
+        id: fetch
+        env:
+          TAOSTATS_API_KEY: ${{ secrets.TAOSTATS_API_KEY }}
+        run: |
+          python .github/scripts/fetch_price_history.py > /tmp/price_history.json
+          echo "Fetched price history:"
+          cat /tmp/price_history.json | head -c 2000
+          echo ""
+
+      - name: Write to Cloudflare KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          KV_URL="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/price_history"
+          
+          CURL_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "$KV_URL" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @/tmp/price_history.json || true)
+          
+          if [ "$CURL_STATUS" = "200" ]; then
+            echo "✅ Price history written to KV successfully"
+          else
+            echo "❌ Failed to write to KV (HTTP $CURL_STATUS)"
+            exit 1
+          fi

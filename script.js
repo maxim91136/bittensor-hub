@@ -217,20 +217,43 @@ async function fetchPriceHistory(range = '7') {
   const key = normalizeRange(range);
   const cached = getCachedPrice?.(key);
   if (cached) return cached;
-  const endpoint =
-    key === '365'
-      ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=365&interval=daily`
-      : key === '30'
-      ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=30&interval=daily`
-      : `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=7`;
+  
+  // Try Taostats first (preferred source)
   try {
-    const res = await fetch(endpoint, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data?.prices?.length) return null;
-    setCachedPrice?.(key, data.prices);
-    return data.prices;
-  } catch { return null; }
+    const taostatsEndpoint = `${API_BASE}/price_history?range=${key}`;
+    const res = await fetch(taostatsEndpoint, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.prices?.length) {
+        if (window._debug) console.debug(`Price history from Taostats (${key}d):`, data.prices.length, 'points');
+        setCachedPrice?.(key, data.prices);
+        return data.prices;
+      }
+    }
+  } catch (e) {
+    if (window._debug) console.debug('Taostats price history failed, trying CoinGecko:', e);
+  }
+  
+  // Fallback to CoinGecko for 7d, 30d, 365d only
+  if (['7', '30', '365'].includes(key)) {
+    const endpoint =
+      key === '365'
+        ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=365&interval=daily`
+        : key === '30'
+        ? `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=30&interval=daily`
+        : `${COINGECKO_API}/coins/bittensor/market_chart?vs_currency=usd&days=7`;
+    try {
+      const res = await fetch(endpoint, { cache: 'no-store' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data?.prices?.length) return null;
+      if (window._debug) console.debug(`Price history from CoinGecko (${key}d):`, data.prices.length, 'points');
+      setCachedPrice?.(key, data.prices);
+      return data.prices;
+    } catch { return null; }
+  }
+  
+  return null;
 }
 
 async function fetchCirculatingSupply() {
@@ -277,15 +300,19 @@ function updateTaoPrice(priceData) {
     if (pill) {
       const ts = window._taostats ?? null;
       const parts = [];
-      // Always display lines in a consistent order (1h, 24h, 7d, 30d), using placeholders when missing
+      // Always display lines in a consistent order (1h, 24h, 7d, 30d, 60d, 90d), using placeholders when missing
       const p1h = readPercentValue(ts, ['percent_change_1h','percent_change_1hr','pct_change_1h','percent_1h_change','percent_change_1Hour','percent_change_1hr']);
       const p24 = readPercentValue(ts, ['percent_change_24h','percent_change_24hr','pct_change_24h','percent_24h_change','percent_change_24hr']) ?? priceData.change24h ?? null;
       const p7d = readPercentValue(ts, ['percent_change_7d','percent_change_7day','pct_change_7d','percent_change_7day']);
       const p30d = readPercentValue(ts, ['percent_change_30d','percent_change_30day','pct_change_30d','percent_change_30day']);
+      const p60d = readPercentValue(ts, ['percent_change_60d','percent_change_60day','pct_change_60d']);
+      const p90d = readPercentValue(ts, ['percent_change_90d','percent_change_90day','pct_change_90d']);
       parts.push(`1h: ${formatPercent(p1h)}`);
       parts.push(`24h: ${formatPercent(p24)}`);
       parts.push(`7d: ${formatPercent(p7d)}`);
       parts.push(`30d: ${formatPercent(p30d)}`);
+      parts.push(`60d: ${formatPercent(p60d)}`);
+      parts.push(`90d: ${formatPercent(p90d)}`);
           if (parts.length) {
             const source = (window._taostats && window._taostats._source) ? window._taostats._source : 'Taostats';
             const lines = ['Price changes:'];

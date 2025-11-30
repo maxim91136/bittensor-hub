@@ -49,10 +49,13 @@ def fetch_taostats():
             "market_cap": float(item.get("market_cap")) if item.get("market_cap") else None,
             "fully_diluted_market_cap": float(item.get("fully_diluted_market_cap")) if item.get("fully_diluted_market_cap") else None,
             "volume_24h": float(item.get("volume_24h")) if item.get("volume_24h") else None,
+            "market_cap_dominance": float(item.get("market_cap_dominance")) if item.get("market_cap_dominance") else None,
             "percent_change_1h": float(item.get("percent_change_1h")) if item.get("percent_change_1h") else None,
             "percent_change_24h": float(item.get("percent_change_24h")) if item.get("percent_change_24h") else None,
             "percent_change_7d": float(item.get("percent_change_7d")) if item.get("percent_change_7d") else None,
             "percent_change_30d": float(item.get("percent_change_30d")) if item.get("percent_change_30d") else None,
+            "percent_change_60d": float(item.get("percent_change_60d")) if item.get("percent_change_60d") else None,
+            "percent_change_90d": float(item.get("percent_change_90d")) if item.get("percent_change_90d") else None,
             "_source": "taostats",
             "_timestamp": datetime.now(timezone.utc).isoformat()
         }
