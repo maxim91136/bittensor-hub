@@ -1925,29 +1925,12 @@ body.light-bg .map-preview-card .map-attribution {
 .subnets-display-table tbody tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
   background: transparent;
-}
-
-.subnets-display-table tbody tr::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: transparent;
-  transition: background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .subnets-display-table tbody tr:hover {
   background: rgba(34, 197, 94, 0.06);
   border-bottom: 1px solid rgba(34, 197, 94, 0.15);
-}
-
-.subnets-display-table tbody tr:hover::before {
-  background: var(--accent);
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
 }
 
 .subnets-display-table td {
