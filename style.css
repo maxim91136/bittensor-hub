@@ -1907,24 +1907,25 @@ body.light-bg .map-preview-card .map-attribution {
 
 .subnets-display-table th.rank-col {
   width: 12%;
-  text-align: center;
+  text-align: left;
   padding: 14px 4px;
 }
 
 .subnets-display-table th.subnet-col {
   width: 40%;
   padding-left: 12px;
+  text-align: left;
 }
 
 .subnets-display-table th.share-col {
   width: 24%;
-  text-align: right;
+  text-align: left;
   padding-right: 8px;
 }
 
 .subnets-display-table th.daily-col {
   width: 24%;
-  text-align: right;
+  text-align: left;
   padding-right: 8px;
 }
 
@@ -2006,21 +2007,21 @@ body.light-bg .map-preview-card .map-attribution {
 
 /* Gold highlight for first-place subnet */
 .subnets-display-table tbody tr:first-child {
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08) 0%, transparent 100%);
+  background: transparent;
 }
 
 .subnets-display-table tbody tr:first-child::before {
-  background: linear-gradient(180deg, #ffd700, rgba(255, 215, 0, 0.7));
-  box-shadow: 0 0 16px rgba(255, 215, 0, 0.5);
+  background: transparent;
+  box-shadow: none;
 }
 
 .subnets-display-table tbody tr:first-child:hover {
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.12) 0%, transparent 100%);
+  background: rgba(34, 197, 94, 0.06);
 }
 
 .subnets-display-table tbody tr:first-child .share-col {
-  color: #ffd700;
-  text-shadow: 0 0 6px rgba(255, 215, 0, 0.3);
+  color: var(--accent);
+  text-shadow: none;
 }
 
 /* Loading row styling */
@@ -2070,11 +2071,11 @@ body.light-bg .map-preview-card .map-attribution {
 }
 
 .top-subnets-card.light-bg .subnets-display-table tbody tr:first-child {
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.08) 0%, transparent 100%);
+  background: transparent;
 }
 
 .top-subnets-card.light-bg .subnets-display-table tbody tr:first-child .share-col {
-  color: #d4a000;
+  color: #15803d;
 }
 
 .top-subnets-card.light-bg .subnets-display-table .loading-row td {
