@@ -41,6 +41,12 @@ def fetch_staking_apy(num_validators=50):
         
         print(f"✅ Fetched {len(validators)} validators", file=sys.stderr)
         
+        # Debug: print first validator's fields
+        if validators:
+            v0 = validators[0]
+            print(f"  First validator fields: {list(v0.keys())[:15]}...", file=sys.stderr)
+            print(f"  Sample apr fields: apr={v0.get('apr')}, apr_7d={v0.get('apr_7_day_average')}", file=sys.stderr)
+        
         # Collect APR values
         aprs = []
         apr_7d = []
@@ -52,7 +58,7 @@ def fetch_staking_apy(num_validators=50):
             if apr:
                 try:
                     apr_val = float(apr)
-                    if 0 < apr_val < 100:  # Sanity check (0-100%)
+                    if 0 < apr_val < 1000:  # Sanity check (0-1000% - Bittensor can have high APRs)
                         aprs.append(apr_val)
                 except (ValueError, TypeError):
                     pass
@@ -62,7 +68,7 @@ def fetch_staking_apy(num_validators=50):
             if apr_7:
                 try:
                     apr_7_val = float(apr_7)
-                    if 0 < apr_7_val < 100:
+                    if 0 < apr_7_val < 1000:
                         apr_7d.append(apr_7_val)
                 except (ValueError, TypeError):
                     pass
@@ -72,10 +78,12 @@ def fetch_staking_apy(num_validators=50):
             if apr_30:
                 try:
                     apr_30_val = float(apr_30)
-                    if 0 < apr_30_val < 100:
+                    if 0 < apr_30_val < 1000:
                         apr_30d.append(apr_30_val)
                 except (ValueError, TypeError):
                     pass
+        
+        print(f"  Collected APRs: {len(aprs)} current, {len(apr_7d)} 7d, {len(apr_30d)} 30d", file=sys.stderr)
         
         if not aprs:
             print("❌ No valid APR values found", file=sys.stderr)
