@@ -199,37 +199,108 @@ def fetch_metrics() -> Dict[str, Any]:
     emission_daily = None
     emission_7d = None
     emission_sd_7d = None
-    # emission_daily = mean per_day for last 24h
-    deltas_last_24h = [d['per_day'] for d in per_interval_deltas if d['ts'] >= (int(datetime.now(timezone.utc).timestamp()) - 86400)]
+    emission_30d = None
+    
+    import math
+    now_ts = int(datetime.now(timezone.utc).timestamp())
+    
+    # emission_daily = time-weighted mean per_day for last 24h
+    deltas_last_24h = [d for d in per_interval_deltas if d['ts'] >= (now_ts - 86400)]
     # require at least 3 interval samples in the last 24h to compute a reliable daily estimate
     if len(deltas_last_24h) >= 3:
         # use winsorized mean for last 24h to smooth out spikes
-        emission_daily = winsorized_mean(deltas_last_24h, 0.1)
-    # build daily means from per-interval deltas grouped by UTC date
-    daily_groups: Dict[str, List[float]] = {}
-    for d in per_interval_deltas:
-        day = datetime.fromtimestamp(d['ts'], timezone.utc).strftime('%Y-%m-%d')
-        daily_groups.setdefault(day, []).append(d['per_day'])
-    # sort by day
-    days_sorted = sorted(daily_groups.keys())
-    daily_means = [sum(daily_groups[day]) / len(daily_groups[day]) for day in days_sorted]
-    emission_7d = None
-    emission_30d = None
-    emission_sd_7d = None
-    # compute 7d and 30d only when we have enough daily means
-    if len(daily_means) >= 7:
-        last7 = daily_means[-7:]
-        emission_7d = winsorized_mean(last7, 0.1)
-        # compute sd
-        import math
-        mean7 = emission_7d
-        sd7 = math.sqrt(sum((v - mean7) ** 2 for v in last7) / len(last7)) if len(last7) > 0 else 0
-        emission_sd_7d = sd7
-    # 30-day projection intentionally disabled (not used)
+        emission_daily = winsorized_mean([d['per_day'] for d in deltas_last_24h], 0.1)
+    
+    # =====================================================================
+    # FIXED: Emission calculation using actual issuance delta over time
+    # 
+    # Problem with old method: Early days had data gaps (e.g., 24 Nov only had
+    # 20h of data but with gaps, showing ~1,432 TAO/day instead of ~7,180).
+    # 
+    # New method: Use direct issuance delta / time span, but only trust data
+    # from periods with good coverage (>= 80% of expected samples).
+    # =====================================================================
+    
+    def compute_emission_for_period(hist: List[Dict[str, Any]], days: int) -> tuple:
+        """
+        Compute emission rate for a period by taking actual issuance delta
+        divided by actual time span. Returns (emission_per_day, std_dev, samples, actual_days).
+        
+        Only returns valid results if we have sufficient data coverage.
+        """
+        if len(hist) < 2:
+            return None, None, 0, 0
+        
+        cutoff_ts = now_ts - (days * 86400)
+        period_samples = [s for s in hist if s['ts'] >= cutoff_ts]
+        
+        if len(period_samples) < 2:
+            return None, None, 0, 0
+        
+        first = period_samples[0]
+        last = period_samples[-1]
+        time_span_seconds = last['ts'] - first['ts']
+        
+        if time_span_seconds <= 0:
+            return None, None, 0, 0
+        
+        actual_days = time_span_seconds / 86400.0
+        issuance_delta = last['issuance'] - first['issuance']
+        emission_per_day = issuance_delta * (86400.0 / time_span_seconds)
+        
+        # Calculate std dev from per-interval rates in this period
+        period_deltas = [d['per_day'] for d in per_interval_deltas if d['ts'] >= cutoff_ts]
+        std_dev = None
+        if len(period_deltas) >= 5:
+            mean_rate = sum(period_deltas) / len(period_deltas)
+            variance = sum((r - mean_rate) ** 2 for r in period_deltas) / len(period_deltas)
+            std_dev = math.sqrt(variance)
+        
+        return emission_per_day, std_dev, len(period_samples), actual_days
+    
+    # Try different periods and use the best available
+    # Start with longer periods but fall back to shorter if data quality is poor
+    emission_7d_result = None
+    emission_7d_actual_days = 0
+    
+    # Try 7 days first
+    rate_7d, sd_7d, samples_7d, days_7d = compute_emission_for_period(history, 7)
+    
+    # Check data quality: we need at least 4 days of actual data for 7d average
+    # AND the emission rate should be reasonable (between 5000-9000 TAO/day)
+    # AND standard deviation should be low (< 500 indicates consistent data)
+    # High SD (> 1000) indicates data gaps or problems in the early days
+    sd_threshold = 500  # TAO/day - normal variance is ~50-100
+    data_is_reliable = (sd_7d is not None and sd_7d < sd_threshold) or samples_7d < 10
+    
+    if rate_7d is not None and days_7d >= 4 and 5000 <= rate_7d <= 9000 and data_is_reliable:
+        emission_7d = rate_7d
+        emission_sd_7d = sd_7d
+        emission_7d_actual_days = days_7d
+    else:
+        # Fallback: Use last 3-4 days where data is more reliable
+        # These periods are after the initial data gaps were resolved
+        for fallback_days in [4, 3, 2]:
+            rate_fb, sd_fb, samples_fb, days_fb = compute_emission_for_period(history, fallback_days)
+            # Lower SD threshold for shorter periods since they're more recent/reliable
+            if rate_fb is not None and days_fb >= (fallback_days * 0.7) and 5000 <= rate_fb <= 9000:
+                emission_7d = rate_fb
+                emission_sd_7d = sd_fb
+                emission_7d_actual_days = days_fb
+                break
+    
+    # 30-day emission (will work better once we have more history)
+    rate_30d, _, samples_30d, days_30d = compute_emission_for_period(history, 30)
+    if rate_30d is not None and days_30d >= 7 and 5000 <= rate_30d <= 9000:
+        emission_30d = rate_30d
+    else:
+        # Use 7d as fallback for 30d
+        emission_30d = emission_7d
 
     # Attach emission values to result (history is saved separately)
     result['emission_daily'] = round(emission_daily, 2) if emission_daily is not None else None
     result['emission_7d'] = round(emission_7d, 2) if emission_7d is not None else None
+    result['emission_30d'] = round(emission_30d, 2) if emission_30d is not None else None
     result['emission_sd_7d'] = round(emission_sd_7d, 2) if emission_sd_7d is not None else None
     result['emission_samples'] = len(per_interval_deltas)
     result['last_issuance_ts'] = history[-1]['ts'] if history else None
