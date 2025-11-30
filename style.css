@@ -1865,11 +1865,210 @@ body.light-bg .map-preview-card .map-attribution {
   color: #15803d;
 }
 
-.top-subnets-table .daily-tao {
-  color: #bbb;
-  font-size: 0.92em;
+/* ===== Top Subnets Display Card ===== */
+.top-subnets-card {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
-.top-subnets-table.light-bg .daily-tao {
+.subnets-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.subnets-display-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+  color: var(--text);
+}
+
+.subnets-display-table thead {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.08) 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.subnets-display-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--accent);
+  border-bottom: 2px solid rgba(34, 197, 94, 0.2);
+  letter-spacing: 0.02em;
+  font-size: 0.9em;
+  text-transform: uppercase;
+  background: inherit;
+}
+
+.subnets-display-table th.rank-col {
+  width: 50px;
+  text-align: center;
+}
+
+.subnets-display-table th.subnet-col {
+  flex: 1;
+  min-width: 120px;
+}
+
+.subnets-display-table th.share-col {
+  width: 140px;
+  text-align: right;
+}
+
+.subnets-display-table th.daily-col {
+  width: 140px;
+  text-align: right;
+}
+
+.subnets-display-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.subnets-display-table tbody tr::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.subnets-display-table tbody tr:hover {
+  background: rgba(34, 197, 94, 0.08);
+  border-bottom-color: rgba(34, 197, 94, 0.2);
+}
+
+.subnets-display-table tbody tr:hover::before {
+  background: var(--accent);
+}
+
+.subnets-display-table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+.subnets-display-table .rank-col {
+  text-align: center;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 1.05em;
+}
+
+.subnets-display-table tbody tr:hover .rank-col {
+  transform: scale(1.1);
+}
+
+.subnets-display-table .subnet-col {
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.subnets-display-table .share-col {
+  text-align: right;
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.subnets-display-table .daily-col {
+  text-align: right;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.94em;
+}
+
+.subnets-display-table tbody tr:first-child .rank-col {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), transparent);
+  border-radius: 4px;
+  padding: 12px 12px;
+}
+
+/* Loading row styling */
+.subnets-display-table .loading-row td {
+  padding: 20px;
+  color: var(--text-muted);
+}
+
+/* ===== Light Mode Overrides for Top Subnets Table ===== */
+.top-subnets-card.light-bg .subnets-display-table thead {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.04) 100%);
+}
+
+.top-subnets-card.light-bg .subnets-display-table th {
+  border-bottom: 2px solid rgba(34, 197, 94, 0.15);
+  color: #15803d;
+}
+
+.top-subnets-card.light-bg .subnets-display-table tbody tr {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.top-subnets-card.light-bg .subnets-display-table tbody tr:hover {
+  background: rgba(34, 197, 94, 0.05);
+  border-bottom-color: rgba(34, 197, 94, 0.15);
+}
+
+.top-subnets-card.light-bg .subnets-display-table .rank-col,
+.top-subnets-card.light-bg .subnets-display-table .share-col {
+  color: #15803d;
+}
+
+.top-subnets-card.light-bg .subnets-display-table .subnet-col {
+  color: #222;
+}
+
+.top-subnets-card.light-bg .subnets-display-table .daily-col {
   color: #666;
+}
+
+.top-subnets-card.light-bg .subnets-display-table tbody tr:first-child .rank-col {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .subnets-display-table {
+    font-size: 0.88em;
+  }
+
+  .subnets-display-table th,
+  .subnets-display-table td {
+    padding: 10px 12px;
+  }
+
+  .subnets-display-table th.rank-col {
+    width: 40px;
+  }
+
+  .subnets-display-table th.share-col,
+  .subnets-display-table th.daily-col {
+    width: 110px;
+  }
+}
+
+@media (max-width: 480px) {
+  .subnets-display-table {
+    font-size: 0.82em;
+  }
+
+  .subnets-display-table th,
+  .subnets-display-table td {
+    padding: 8px 10px;
+  }
+
+  .subnets-display-table th.subnet-col {
+    min-width: 80px;
+  }
+
+  .subnets-display-table th.share-col,
+  .subnets-display-table th.daily-col {
+    width: 90px;
+  }
 }

@@ -1404,6 +1404,58 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// ===== Top Subnets Display Card (Main Grid) =====
+document.addEventListener('DOMContentLoaded', function() {
+  const displayTable = document.getElementById('topSubnetsDisplayTable');
+  const displayList = document.getElementById('topSubnetsDisplayList');
+
+  if (!displayTable || !displayList) return;
+
+  // Load and display top 10 subnets on page load
+  async function loadTopSubnetsDisplay() {
+    try {
+      const response = await fetch('/api/top_subnets');
+      if (!response.ok) throw new Error('Failed to fetch top subnets');
+      const data = await response.json();
+
+      const topSubnets = data.top_subnets || [];
+      if (topSubnets.length === 0) {
+        displayList.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;">No subnet data available</td></tr>';
+        return;
+      }
+
+      // Display TOP 10 (all of them)
+      const rows = topSubnets.slice(0, 10).map((subnet, idx) => {
+        const rank = idx + 1;
+        const name = subnet.subnet_name || `SN${subnet.netuid}`;
+        const share = ((subnet.taostats_emission_share || 0) * 100).toFixed(4);
+        const daily = (subnet.estimated_emission_daily || 0).toFixed(4);
+
+        return `<tr>
+          <td class="rank-col">${rank}</td>
+          <td class="subnet-col">${name}</td>
+          <td class="share-col">${share}%</td>
+          <td class="daily-col">${daily} τ</td>
+        </tr>`;
+      }).join('');
+
+      displayList.innerHTML = rows;
+    } catch (err) {
+      console.error('Error loading top subnets for display:', err);
+      displayList.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;">Error loading subnet data</td></tr>';
+    }
+  }
+
+  loadTopSubnetsDisplay();
+
+  // Refresh on network data update
+  const originalRefreshDashboard = window.refreshDashboard;
+  window.refreshDashboard = async function() {
+    await originalRefreshDashboard.call(this);
+    loadTopSubnetsDisplay();
+  };
+});
+
 // ===== Top Subnets Tooltip =====
 document.addEventListener('DOMContentLoaded', function() {
   const subnetsCard = document.getElementById('subnetsCard');

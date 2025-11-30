@@ -282,6 +282,29 @@
   </div>
 
   <div class="dashboard-grid">
+  <!-- Top Subnets Card -->
+    <section class="dashboard-card top-subnets-card" aria-labelledby="top-subnets-card-heading">
+      <div class="card-header">
+        <h2 id="top-subnets-card-heading">Top 10 Subnets by Emissions</h2>
+        <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Shows the 10 subnets with highest emission share in the network">i</span>
+      </div>
+      <div class="subnets-table-wrapper">
+        <table class="subnets-display-table" id="topSubnetsDisplayTable">
+          <thead>
+            <tr>
+              <th class="rank-col">#</th>
+              <th class="subnet-col">Subnet</th>
+              <th class="share-col">Emission %</th>
+              <th class="daily-col">Daily TAO</th>
+            </tr>
+          </thead>
+          <tbody id="topSubnetsDisplayList">
+            <tr class="loading-row"><td colspan="4" style="text-align:center;padding:20px;">Loading top subnets...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   <!-- Only one price chart card is shown -->
     <section class="dashboard-card loading" aria-labelledby="price-heading">
       <div class="card-header">
