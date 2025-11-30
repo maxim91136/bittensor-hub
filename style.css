@@ -1882,7 +1882,7 @@ body.light-bg .map-preview-card .map-attribution {
   border-collapse: collapse;
   font-size: 0.96em;
   color: var(--text);
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .subnets-display-table thead {
@@ -1905,28 +1905,20 @@ body.light-bg .map-preview-card .map-attribution {
   word-break: break-word;
 }
 
-.subnets-display-table th.rank-col {
-  width: 12%;
-  text-align: left;
-  padding: 14px 4px;
+.subnets-display-table th:nth-child(1) {
+  width: 10%;
 }
 
-.subnets-display-table th.subnet-col {
-  width: 40%;
-  padding-left: 12px;
-  text-align: left;
+.subnets-display-table th:nth-child(2) {
+  width: 50%;
 }
 
-.subnets-display-table th.share-col {
-  width: 24%;
-  text-align: left;
-  padding-right: 8px;
+.subnets-display-table th:nth-child(3) {
+  width: 20%;
 }
 
-.subnets-display-table th.daily-col {
-  width: 24%;
-  text-align: left;
-  padding-right: 8px;
+.subnets-display-table th:nth-child(4) {
+  width: 20%;
 }
 
 .subnets-display-table tbody tr {
@@ -1960,9 +1952,22 @@ body.light-bg .map-preview-card .map-attribution {
 .subnets-display-table td {
   padding: 12px 8px;
   vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.subnets-display-table td:nth-child(1) {
+  width: 10%;
+}
+
+.subnets-display-table td:nth-child(2) {
+  width: 50%;
+}
+
+.subnets-display-table td:nth-child(3) {
+  width: 20%;
+}
+
+.subnets-display-table td:nth-child(4) {
+  width: 20%;
 }
 
 .subnets-display-table .rank-col {
@@ -1972,8 +1977,6 @@ body.light-bg .map-preview-card .map-attribution {
   font-size: 1.0em;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
-  padding: 12px 4px;
-  width: 12%;
 }
 
 .subnets-display-table tbody tr:hover .rank-col {
@@ -1986,8 +1989,6 @@ body.light-bg .map-preview-card .map-attribution {
   word-break: break-word;
   white-space: normal;
   letter-spacing: -0.005em;
-  padding-left: 12px;
-  width: 40%;
 }
 
 .subnets-display-table .share-col {
@@ -1996,8 +1997,6 @@ body.light-bg .map-preview-card .map-attribution {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-size: 0.98em;
-  padding: 12px 8px;
-  width: 24%;
 }
 
 .subnets-display-table .daily-col {
@@ -2005,8 +2004,6 @@ body.light-bg .map-preview-card .map-attribution {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   font-size: 0.93em;
-  padding: 12px 8px;
-  width: 24%;
 }
 
 /* Gold highlight for first-place subnet */
