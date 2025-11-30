@@ -1679,7 +1679,7 @@ body.light-bg .map-preview-card .map-attribution {
   z-index: 10;
 }
 
-/* Top Subnets Tooltip - Centered Modal Style */
+/* Top Subnets Tooltip - Simple centered modal */
 .top-subnets-tooltip {
   position: fixed;
   top: 50%;
@@ -1695,18 +1695,7 @@ body.light-bg .map-preview-card .map-attribution {
   max-width: 520px;
   max-height: 500px;
   overflow: hidden;
-  animation: tooltipFadeIn 0.2s ease-out;
-}
-
-@keyframes tooltipFadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
+  display: none;
 }
 
 .top-subnets-tooltip[style*="display: block"] {

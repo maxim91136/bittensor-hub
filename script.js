@@ -1414,20 +1414,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (!infoBadge || !tooltip) return;
 
-  // Position tooltip in CENTER of screen (like dynamic-tooltip)
+  // Position tooltip - just keep it centered (CSS handles it)
   function positionTooltip() {
-    if (tooltip.style.display === 'none') return;
-    
-    // Center the tooltip on screen
-    const tooltipRect = tooltip.getBoundingClientRect();
-    const viewportCenterX = window.innerWidth / 2;
-    const viewportCenterY = window.innerHeight / 2;
-    
-    const left = viewportCenterX - (tooltipRect.width / 2);
-    const top = viewportCenterY - (tooltipRect.height / 2);
-    
-    tooltip.style.left = Math.max(8, left) + 'px';
-    tooltip.style.top = Math.max(8, top) + 'px';
+    // Do nothing - CSS fixed positioning handles centering
   }
 
   // Load and display top subnets
