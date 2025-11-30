@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.11.1 (Release Candidate)
+### Fixed
+- **Smart Chart Labels**: X-axis now shows appropriate time formats per timeframe
+  - 1D: Hours only (e.g., "14:00", "15:00")
+  - 3D: Day + time (e.g., "Nov 29 14:00")
+  - 7D+: Date only (e.g., "11/29")
+
+## v1.0.0-rc.11 (Release Candidate)
+### Added
+- **Enhanced Price Chart with 7 Timeframes**: 1D, 3D, 7D, 30D, 60D, 90D, 1Y
+  - 1D/3D use hourly data for detailed intraday analysis
+  - 7D-90D use daily OHLC candles
+  - 1Y uses CoinGecko fallback for full historical coverage
+- **Taostats as Primary Data Source**: All chart data now fetched from Taostats API first
+- **CoinGecko Fallback**: Automatic fallback when Taostats data unavailable
+- **Extended Price Tooltip**: Now shows 6 timeframes (1h, 24h, 7d, 30d, 60d, 90d)
+- **New Backend Infrastructure**:
+  - `fetch_price_history.py`: Dedicated script for chart data collection
+  - `/api/price_history`: New API endpoint with `?range=` parameter
+  - `fetch-price-history.yml`: Hourly workflow for fresh chart data
+
+### Changed
+- Price chart now prioritizes Taostats over CoinGecko for better data quality
+- Intelligent data fetching: hourly granularity for short timeframes, daily for longer ones
+
 ## v1.0.0-rc.10 (Release Candidate)
 ### Added
 - **Top 10 Validators Card**: New dashboard section displaying the 10 validators with highest stake
