@@ -1545,4 +1545,63 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 });
 
+// ===== Top Wallets Display =====
+document.addEventListener('DOMContentLoaded', function() {
+  const displayTable = document.getElementById('topWalletsDisplayTable');
+  const displayList = document.getElementById('topWalletsDisplayList');
+
+  if (!displayTable || !displayList) return;
+
+  async function loadTopWalletsDisplay() {
+    try {
+      const response = await fetch('/api/top_wallets');
+      if (!response.ok) throw new Error('Failed to fetch top wallets');
+      const data = await response.json();
+
+      const wallets = data.wallets || [];
+      if (wallets.length === 0) {
+        displayList.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">No wallet data available</td></tr>';
+        return;
+      }
+
+      // Display TOP 10
+      const rows = wallets.slice(0, 10).map((w) => {
+        const rank = w.rank || '—';
+        const identity = w.identity || null;
+        const addressShort = w.address_short || 'Unknown';
+        const balance = w.balance_total != null ? `${w.balance_total.toLocaleString(undefined, {maximumFractionDigits: 0})} τ` : '—';
+        const dominance = w.dominance != null ? `${w.dominance.toFixed(2)}%` : '—';
+        const stakedPercent = w.staked_percent != null ? `${w.staked_percent.toFixed(1)}%` : '—';
+
+        // Show identity if available, otherwise just address
+        const walletDisplay = identity 
+          ? `<span class="wallet-identity">${identity}</span><span class="wallet-address">${addressShort}</span>`
+          : `<span class="wallet-address" style="font-size:1em;color:var(--text);">${addressShort}</span>`;
+
+        return `<tr>
+          <td class="rank-col">${rank}</td>
+          <td class="wallet-col">${walletDisplay}</td>
+          <td class="balance-col">${balance}</td>
+          <td class="dominance-col">${dominance}</td>
+          <td class="staked-col">${stakedPercent}</td>
+        </tr>`;
+      }).join('');
+
+      displayList.innerHTML = rows;
+    } catch (err) {
+      console.error('Error loading top wallets:', err);
+      displayList.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">Error loading wallet data</td></tr>';
+    }
+  }
+
+  loadTopWalletsDisplay();
+
+  // Also refresh when refreshDashboard is called
+  const currentRefresh = window.refreshDashboard;
+  window.refreshDashboard = async function() {
+    await currentRefresh.call(this);
+    loadTopWalletsDisplay();
+  };
+});
+
 // Old Top Subnets Tooltip handler removed - now uses standard data-tooltip

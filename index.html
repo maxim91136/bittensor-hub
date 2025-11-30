@@ -307,6 +307,30 @@
       </div>
     </section>
 
+  <!-- Top Wallets Card -->
+    <section class="dashboard-card top-wallets-card" aria-labelledby="top-wallets-card-heading">
+      <div class="card-header">
+        <h2 id="top-wallets-card-heading">Top 10 Wallets by Balance</h2>
+        <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Shows the 10 wallets with highest total balance. Source: taostats.io">i</span>
+      </div>
+      <div class="wallets-table-wrapper">
+        <table class="wallets-display-table" id="topWalletsDisplayTable">
+          <thead>
+            <tr>
+              <th class="rank-col">#</th>
+              <th class="wallet-col">Wallet</th>
+              <th class="balance-col">Balance</th>
+              <th class="dominance-col">Dom %</th>
+              <th class="staked-col">Staked</th>
+            </tr>
+          </thead>
+          <tbody id="topWalletsDisplayList">
+            <tr class="loading-row"><td colspan="5" style="text-align:center;padding:20px;">Loading top wallets...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
   <!-- Only one price chart card is shown -->
     <section class="dashboard-card loading" aria-labelledby="price-heading">
       <div class="card-header">

@@ -2293,6 +2293,190 @@ body.light-bg .map-preview-card .map-attribution {
   }
 }
 
+/* ===== Top Wallets Card ===== */
+.top-wallets-card {
+  animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+
+.wallets-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(34, 197, 94, 0.1);
+}
+
+.wallets-display-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.96em;
+  color: var(--text);
+  table-layout: fixed;
+}
+
+.wallets-display-table thead {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.06) 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.wallets-display-table th {
+  padding: 14px 8px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.03em;
+  font-size: 0.80em;
+  text-transform: uppercase;
+  background: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* 5 columns: #(6%), Wallet(34%), Balance(24%), Dom%(18%), Staked%(18%) */
+.wallets-display-table th:nth-child(1),
+.wallets-display-table td:nth-child(1) {
+  width: 6%;
+}
+
+.wallets-display-table th:nth-child(2),
+.wallets-display-table td:nth-child(2) {
+  width: 34%;
+}
+
+.wallets-display-table th:nth-child(3),
+.wallets-display-table td:nth-child(3) {
+  width: 24%;
+}
+
+.wallets-display-table th:nth-child(4),
+.wallets-display-table td:nth-child(4) {
+  width: 18%;
+}
+
+.wallets-display-table th:nth-child(5),
+.wallets-display-table td:nth-child(5) {
+  width: 18%;
+}
+
+.wallets-display-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+}
+
+.wallets-display-table tbody tr:hover {
+  background: rgba(34, 197, 94, 0.06);
+  border-bottom: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.wallets-display-table td {
+  padding: 12px 8px;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wallets-display-table td:nth-child(2) {
+  white-space: normal;
+}
+
+.wallets-display-table .rank-col {
+  text-align: left;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 1.0em;
+  font-variant-numeric: tabular-nums;
+}
+
+.wallets-display-table .wallet-col {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.wallets-display-table .wallet-col .wallet-identity {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.wallets-display-table .wallet-col .wallet-address {
+  display: block;
+  font-size: 0.82em;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+}
+
+.wallets-display-table .balance-col {
+  font-weight: 500;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.wallets-display-table .dominance-col {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  font-variant-numeric: tabular-nums;
+}
+
+.wallets-display-table .staked-col {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Light mode */
+.top-wallets-card.light-bg .wallets-table-wrapper {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.top-wallets-card.light-bg .wallets-display-table thead {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.04) 100%);
+}
+
+.top-wallets-card.light-bg .wallets-display-table tbody tr {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.top-wallets-card.light-bg .wallets-display-table tbody tr:hover {
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.top-wallets-card.light-bg .wallets-display-table .wallet-col {
+  color: #1a1a1a;
+}
+
+.top-wallets-card.light-bg .wallets-display-table .wallet-col .wallet-address {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.top-wallets-card.light-bg .wallets-display-table .balance-col {
+  color: #15803d;
+}
+
+.top-wallets-card.light-bg .wallets-display-table .dominance-col {
+  color: #444;
+}
+
+.top-wallets-card.light-bg .wallets-display-table .staked-col {
+  color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .wallets-display-table {
+    font-size: 0.88em;
+  }
+
+  .wallets-display-table th,
+  .wallets-display-table td {
+    padding: 10px 5px;
+  }
+}
+
 @media (max-width: 480px) {
   .validators-display-table {
     font-size: 0.82em;
