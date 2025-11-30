@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.13 (Release Candidate)
+### Added
+- **Block Time Kachel**: Real-time average block interval metric
+  - Shows average seconds between blocks (target: 12.0s)
+  - Status indicator: normal / slow / congested based on deviation
+  - Tooltip with calculation formula and data source
+- **Avg. Staking APR Kachel**: Stake-weighted average staking yield
+  - Weighted formula: `Σ(APR × stake) / Σ(stake)` across top 50 validators
+  - Tooltip shows simple avg, min/max range, validator count
+  - More accurate than simple average for network-wide yield
+- **Backend Infrastructure**:
+  - `fetch_block_time.py`: Calculates avg block time from 200 blocks
+  - `fetch_staking_apy.py`: Calculates stake-weighted APR from validators
+  - `fetch-block-time.yml`: Hourly workflow at :49
+  - `fetch-staking-apy.yml`: Hourly workflow at :19
+  - `/api/block_time`: API endpoint serving block time data
+  - `/api/staking_apy`: API endpoint serving APR data
+
+### Changed
+- **Renamed**: "Block" → "Block Height" for clarity
+- **Workflow Schedule**: Optimized timing to avoid conflicts (all hourly workflows have 10-min spacing)
+
+### Fixed
+- **APR Calculation**: Fixed to use `nominator_return_per_day` field (dTao API doesn't expose direct APR)
+- **Workflow Conflict**: Resolved `:59` collision between staking APY and top subnets workflows
+
 ## v1.0.0-rc.12 (Release Candidate)
 ### Added
 - **Top 10 Wallets by Balance Card**: New dashboard section displaying the 10 addresses with highest total balance
