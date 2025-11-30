@@ -140,6 +140,8 @@ def main():
     
     # Define timeframes to fetch
     timeframes = {
+        "1": 1,
+        "3": 3,
         "7": 7,
         "30": 30,
         "60": 60,
@@ -156,8 +158,13 @@ def main():
     for key, days in timeframes.items():
         print(f"📊 Fetching {days}d price history...", file=sys.stderr)
         
-        # Use OHLC for all timeframes (daily candles are good enough)
-        data = fetch_price_history_ohlc(days)
+        # Use detailed history for short timeframes, OHLC for longer ones
+        if days <= 3:
+            # For 1-3 days, use hourly data from detailed endpoint
+            data = fetch_price_history_detailed(days, limit=days * 24 + 10)
+        else:
+            # For longer timeframes, daily OHLC is sufficient
+            data = fetch_price_history_ohlc(days)
         
         if data:
             result["data"][key] = data
