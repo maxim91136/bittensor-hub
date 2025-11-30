@@ -206,7 +206,7 @@ def fetch_top_subnets() -> Dict[str, object]:
                                 continue
                         # Successfully parsed something — return it
                         if len(out) > 0:
-                            return out
+                            return out, last_error
                 except Exception as e:
                     # wait a bit and retry this variant
                     backoff = 0.5 * (2 ** attempt)
