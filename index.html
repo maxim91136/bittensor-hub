@@ -238,26 +238,6 @@
         </div>
       </div>
 
-  <!-- API Status Card -->
-    <div class="stat-card" id="apiStatusCard">
-      <span 
-        class="info-badge" translate="no" aria-hidden="true"
-        data-tooltip="Status of all data sources powering the dashboard&#10;Taostats: OK&#10;CoinGecko: OK&#10;Bittensor SDK: OK">
-        i
-      </span>
-      <div class="stat-icon" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <title>API Status</title>
-          <circle cx="12" cy="12" r="9" stroke="#22c55e" stroke-width="1.2" fill="none"/>
-          <polyline points="5,13 8,13 9,9 11,17 13,7 15,13 19,13" stroke="#22c55e" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="stat-content">
-        <div class="stat-label">API Status</div>
-        <div class="stat-value" id="apiStatus">Checking…</div>
-      </div>
-    </div>
-
   <!-- Block Time Card -->
     <div class="stat-card" id="blockTimeCard">
       <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Average time between blocks (last 200 blocks).&#10;Target: 12.0s&#10;&#10;Calculation: (newest_timestamp - oldest_timestamp) / (blocks - 1)&#10;Source: Taostats Block API">i</span>
@@ -286,6 +266,26 @@
       <div class="stat-content">
         <div class="stat-label">Avg. Staking APR</div>
         <div class="stat-value" id="stakingApr">—</div>
+      </div>
+    </div>
+
+  <!-- API Status Card -->
+    <div class="stat-card" id="apiStatusCard">
+      <span 
+        class="info-badge" translate="no" aria-hidden="true"
+        data-tooltip="Status of all data sources powering the dashboard&#10;Taostats: OK&#10;CoinGecko: OK&#10;Bittensor SDK: OK">
+        i
+      </span>
+      <div class="stat-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <title>API Status</title>
+          <circle cx="12" cy="12" r="9" stroke="#22c55e" stroke-width="1.2" fill="none"/>
+          <polyline points="5,13 8,13 9,9 11,17 13,7 15,13 19,13" stroke="#22c55e" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">API Status</div>
+        <div class="stat-value" id="apiStatus">Checking…</div>
       </div>
     </div>
   </div>
