@@ -70,10 +70,10 @@ def fetch_from_taostats(network: str, limit: int = 100) -> Tuple[List[Dict], str
     validators = []
     last_error = ''
     
-    # Taostats validator endpoints to try
+    # Taostats validator endpoints to try - dTao endpoint has names!
     endpoints = [
+        f"https://api.taostats.io/api/dtao/validator/latest/v1?limit={limit}",  # dTao endpoint with names
         f"https://api.taostats.io/api/validator/latest/v1?network={network}&limit={limit}",
-        f"https://api.taostats.io/api/v1/validators?network={network}&limit={limit}",
     ]
     
     ctx = ssl.create_default_context()
@@ -150,35 +150,73 @@ def fetch_top_validators() -> Dict[str, object]:
     processed = []
     for v in validators:
         try:
+            # Handle hotkey - can be string or object with ss58
+            hotkey_raw = v.get('hotkey') or v.get('address') or v.get('validator_hotkey')
+            if isinstance(hotkey_raw, dict):
+                hotkey = hotkey_raw.get('ss58') or hotkey_raw.get('hex')
+            else:
+                hotkey = hotkey_raw
+            
+            # Handle coldkey similarly
+            coldkey_raw = v.get('coldkey') or v.get('owner')
+            if isinstance(coldkey_raw, dict):
+                coldkey = coldkey_raw.get('ss58') or coldkey_raw.get('hex')
+            else:
+                coldkey = coldkey_raw
+            
+            # Get stake - dTao uses global_weighted_stake (in rao), old API uses stake
+            stake_raw = v.get('global_weighted_stake') or v.get('stake') or v.get('total_stake') or v.get('root_stake') or 0
+            # Convert from rao to TAO if it's a large number (rao = 10^9 TAO)
+            stake = float(stake_raw) if stake_raw else 0
+            if stake > 1_000_000_000_000:  # Likely in rao
+                stake = stake / 1_000_000_000  # Convert to TAO
+            
+            # Get nominators - dTao uses global_nominators
+            nominators = int(v.get('global_nominators') or v.get('nominators') or v.get('nominator_count') or 0)
+            
+            # Get take - may be string in dTao API
+            take_raw = v.get('take') or v.get('delegate_take') or 0
+            take = float(take_raw) if take_raw else 0
+            
+            # Get active subnets count
+            active_subnets = int(v.get('active_subnets') or v.get('vpermit_count') or 0)
+            
+            # Get dominance
+            dominance = v.get('dominance')
+            if isinstance(dominance, str):
+                try:
+                    dominance = float(dominance)
+                except:
+                    dominance = None
+            
             entry = {
-                'hotkey': v.get('hotkey') or v.get('address') or v.get('validator_hotkey'),
-                'coldkey': v.get('coldkey') or v.get('owner'),
+                'hotkey': hotkey,
+                'coldkey': coldkey,
                 'name': v.get('name') or v.get('validator_name') or v.get('display_name'),
-                'stake': float(v.get('stake', 0) or v.get('total_stake', 0) or 0),
+                'stake': stake,
                 'stake_formatted': None,
-                'nominators': int(v.get('nominators', 0) or v.get('nominator_count', 0) or 0),
-                'vpermit_count': int(v.get('vpermit_count', 0) or v.get('validator_permits', 0) or 0),
-                'take': float(v.get('take', 0) or v.get('delegate_take', 0) or 0),
-                'total_daily_return': float(v.get('total_daily_return', 0) or 0),
-                'apr': float(v.get('apr', 0) or v.get('annual_return', 0) or 0),
+                'nominators': nominators,
+                'active_subnets': active_subnets,
+                'take': take,
+                'dominance': dominance,
+                'nominator_return_per_day': v.get('nominator_return_per_day'),
+                'validator_return_per_day': v.get('validator_return_per_day'),
                 'rank': v.get('rank'),
-                'raw': v  # Keep original data for debugging
             }
             
             # Format stake for display (e.g., "1.23M τ")
-            stake = entry['stake']
             if stake >= 1_000_000:
                 entry['stake_formatted'] = f"{stake/1_000_000:.2f}M τ"
             elif stake >= 1_000:
-                entry['stake_formatted'] = f"{stake/1_000:.2f}K τ"
+                entry['stake_formatted'] = f"{stake/1_000:.1f}K τ"
             else:
                 entry['stake_formatted'] = f"{stake:.2f} τ"
             
             # Format take as percentage
-            if entry['take'] > 0 and entry['take'] < 1:
-                entry['take_percent'] = f"{entry['take'] * 100:.1f}%"
-            elif entry['take'] >= 1:
-                entry['take_percent'] = f"{entry['take']:.1f}%"
+            if take > 0 and take < 1:
+                entry['take_percent'] = f"{take * 100:.1f}%"
+            elif take >= 1:
+                entry['take_percent'] = f"{take:.1f}%"
             else:
                 entry['take_percent'] = "0%"
             
