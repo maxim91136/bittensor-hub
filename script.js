@@ -926,9 +926,22 @@ function createPriceChart(priceHistory, range) {
   const canvas = document.getElementById('priceChart');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
+  
+  // Format labels based on timeframe
+  const rangeNum = parseInt(range, 10) || 7;
   const labels = priceHistory.map(([timestamp]) => {
     const date = new Date(timestamp);
-    return `${date.getMonth()+1}/${date.getDate()}`;
+    if (rangeNum <= 1) {
+      // 1D: Show hours only (e.g., "14:00")
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    } else if (rangeNum <= 3) {
+      // 3D: Show day + time (e.g., "Nov 29 14:00")
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + 
+             date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    } else {
+      // 7D+: Show month/day (e.g., "11/29")
+      return `${date.getMonth()+1}/${date.getDate()}`;
+    }
   });
   const data = priceHistory.map(([_, price]) => price);
 
