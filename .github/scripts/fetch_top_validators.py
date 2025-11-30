@@ -189,10 +189,16 @@ def fetch_top_validators() -> Dict[str, object]:
                 except:
                     dominance = None
             
+            # Get name, fallback to truncated hotkey if no name
+            name = v.get('name') or v.get('validator_name') or v.get('display_name')
+            if not name and hotkey:
+                # Show truncated hotkey: "5Dd8...rWv"
+                name = f"{hotkey[:4]}...{hotkey[-3:]}"
+            
             entry = {
                 'hotkey': hotkey,
                 'coldkey': coldkey,
-                'name': v.get('name') or v.get('validator_name') or v.get('display_name'),
+                'name': name,
                 'stake': stake,
                 'stake_formatted': None,
                 'nominators': nominators,
