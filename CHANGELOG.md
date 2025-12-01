@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.16.9 (2025-12-01)
+### Fixed
+- **TaoStats Widget Conflict**: Fixed green border override on Volume signal card
+- TaoStats CSS and JS now respect signal classes (blink-*) and don't override borders
+- Removed duplicate CSS overrides and inline style workarounds (45 lines cleaned up)
+- Signal cards now maintain gray border with colored glow as intended
+
 ## v1.0.0-rc.16.8 (2025-12-01)
 ### Improved
 - **Signal Glow Intensity**: Increased glow opacity and radius for better visibility in dark mode
