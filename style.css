@@ -1551,34 +1551,34 @@ body.light-bg .embed-overlay-mobile {
 .price-pill.light-bg,
 .halving-pill.light-bg {
   /* higher contrast for pills in Light Mode: cleaner white background, stronger shadow and border */
-  background: linear-gradient(135deg, #ffffff 0%, #fbfbfb 100%) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%) !important;
   color: #000 !important;
-  border-color: #dcdcdc !important;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08) !important; /* lifts the pill above the page */
+  border-color: #c1c1c1 !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.09) !important; /* lifts the pill above the page */
   transform: translateZ(0);
 }
 .price-pill.light-bg .price-icon {
   color: var(--accent) !important;
 }
 .price-pill.light-bg {
-  border-left: 4px solid var(--accent) !important; /* green accent for price */
+  border-left: 4px solid #16a34a !important; /* stronger green accent for price */
 }
 .halving-pill.light-bg:not(.confidence-low):not(.confidence-medium):not(.confidence-high) {
-  border-left: 4px solid var(--brand) !important; /* orange accent for halving when no confidence class present */
+  border-left: 4px solid #ff6b35 !important; /* orange accent for halving when no confidence class present */
 }
 
 /* Ensure confidence accents survive Light Mode overrides */
 .halving-pill.light-bg.confidence-low {
-  border-left: 4px solid #ef4444 !important;
-  box-shadow: inset 0 0 20px rgba(239,68,68,0.04) !important;
+  border-left: 4px solid #ff5c5c !important;
+  box-shadow: inset 0 0 24px rgba(255,92,92,0.12) !important;
 }
 .halving-pill.light-bg.confidence-medium {
-  border-left: 4px solid #eab308 !important;
-  box-shadow: inset 0 0 20px rgba(234,179,8,0.04) !important;
+  border-left: 4px solid #f6c743 !important;
+  box-shadow: inset 0 0 24px rgba(246,199,67,0.12) !important;
 }
 .halving-pill.light-bg.confidence-high {
-  border-left: 4px solid var(--accent) !important;
-  box-shadow: inset 0 0 20px rgba(34,197,94,0.04) !important;
+  border-left: 4px solid #0ea5ff !important;
+  box-shadow: inset 0 0 24px rgba(14,165,255,0.12) !important;
 }
 .price-pill.light-bg .pill-value,
 .halving-pill.light-bg .pill-value,
