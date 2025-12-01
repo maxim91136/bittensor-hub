@@ -176,13 +176,6 @@ function applyVolumeSignal(signal, tooltip) {
   const volumeCard = document.getElementById('volume24h')?.closest('.stat-card');
   if (!volumeCard) return;
   
-  // FORCE gray border via inline style - ALL sides explicitly
-  volumeCard.style.borderColor = 'rgba(255,255,255,0.1)';
-  volumeCard.style.borderTopColor = 'rgba(255,255,255,0.1)';
-  volumeCard.style.borderRightColor = 'rgba(255,255,255,0.1)';
-  volumeCard.style.borderBottomColor = 'rgba(255,255,255,0.1)';
-  volumeCard.style.borderLeftColor = 'rgba(255,255,255,0.1)';
-  
   // If new signal is neutral, ALWAYS keep the last colored signal (if any)
   if (signal === 'neutral' && _lastVolumeSignal && _lastVolumeSignal !== 'neutral') {
     if (window._debug) console.log(`📊 Volume Signal: keeping previous signal (${_lastVolumeSignal}) - neutral ignored`);
