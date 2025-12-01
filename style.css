@@ -209,7 +209,7 @@ body {
   border-radius: 22px;
   /* AGGRESSIV: 3.5vw wächst viel schneller als Cards (2vw) */
   font-size: clamp(1.4rem, 3.5vw, 2.5rem);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
   transition: box-shadow 0.3s ease;
   white-space: nowrap;
@@ -380,7 +380,7 @@ body {
   padding: clamp(12px, 3vw, 16px) clamp(24px, 6vw, 32px);
   animation: halving-pulse 7s infinite;
   font-family: 'Segoe UI', Arial, sans-serif;
-  font-weight: 700;
+  font-weight: 800;
   background: linear-gradient(135deg, rgba(255,107,53,0.08), rgba(255,107,53,0.03));
   border: 1px solid rgba(255,107,53,0.2);
   border-radius: 22px;
