@@ -672,7 +672,7 @@ async function updateNetworkStats(data) {
   const supplyEl = document.getElementById('circulatingSupply');
   if (supplyEl && circSupply) {
     const current = (circSupply / 1_000_000).toFixed(2);
-    supplyEl.textContent = `${current}M / 21M τ`;
+    supplyEl.textContent = `${current}M τ`;
     supplyEl.title = `Source: ${window._circSupplySource || 'unknown'} — ${formatExact(circSupply)} TAO`;
     window.circulatingSupply = circSupply;
     // Save the timestamp and previous supply for next update
@@ -695,7 +695,7 @@ async function updateNetworkStats(data) {
       : null;
     if (supplyEl && fallbackSupply) {
       const current = (fallbackSupply / 1_000_000).toFixed(2);
-      supplyEl.textContent = `${current}M / 21M τ`;
+      supplyEl.textContent = `${current}M τ`;
       supplyEl.title = `Source: fallback — ${formatExact(fallbackSupply)} TAO`;
       window.circulatingSupply = fallbackSupply;
       window._prevSupplyTs = nowTs;

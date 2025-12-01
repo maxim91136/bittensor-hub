@@ -16,12 +16,18 @@
   <link rel="preload" href="assets/miner-map-thumb-light.png" as="image" />
   <link rel="stylesheet" href="style.css?v=16.13" />
   <link rel="stylesheet" href="assets/taostats/taostats-card.css" />
+  <!-- Handwritten header note font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
   <script src="script.js" defer></script>
   <script src="assets/taostats/taostats-card.js" defer></script>
 </head>
 <body>
 <header class="site-header">
+  <!-- Decorative handwritten note: top-left, diagonal -->
+  <div id="maxSupplyScribble" aria-hidden="true">only 21 Mio.</div>
   <div class="header-content">
     <button id="bgToggleBtn" aria-label="Toggle dark/light mode" style="position:absolute;top:18px;right:18px;padding:0;border-radius:50%;background:rgba(34,34,34,0.92);color:#fff;border:none;cursor:pointer;z-index:10;width:40px;height:40px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #0002;">
       <span id="bgToggleIcon">
@@ -156,7 +162,7 @@
         </svg>
       </div>
       <div class="stat-content">
-    <div class="stat-label">Circ / Max Supply</div>
+    <div class="stat-label">Circulating Supply</div>
   <div class="stat-value" id="circulatingSupply">—</div>
       </div>
    </div>

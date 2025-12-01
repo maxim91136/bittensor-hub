@@ -132,6 +132,37 @@ body {
   animation: fadeInUp 0.6s ease-out;
 }
 
+/* Handwritten "only 21 Mio." note in header */
+#maxSupplyScribble {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  z-index: 150;
+  pointer-events: none;
+  user-select: none;
+  font-family: 'Caveat', 'Segoe Script', 'Bradley Hand', cursive;
+  font-weight: 700;
+  font-size: clamp(16px, 3.2vw, 28px);
+  color: #fff;
+  transform: rotate(5deg);
+  letter-spacing: 0.02em;
+  text-shadow:
+    0 0 1px rgba(255,255,255,0.35),
+    0 1px 0 rgba(0,0,0,0.25),
+    0 2px 6px rgba(0,0,0,0.35);
+  opacity: 0.95;
+}
+@media (max-width: 700px) {
+  #maxSupplyScribble { left: 10px; top: 8px; font-size: clamp(14px, 4vw, 22px); }
+}
+body.light-bg #maxSupplyScribble {
+  color: #000;
+  text-shadow:
+    0 0 1px rgba(0,0,0,0.35),
+    0 1px 0 rgba(255,255,255,0.6),
+    0 2px 6px rgba(0,0,0,0.1);
+}
+
 .header-content {
   max-width: 1200px;
   margin: 0 auto;
