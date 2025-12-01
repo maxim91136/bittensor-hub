@@ -293,78 +293,62 @@ body {
   }
 }
 
-.blink-green {
+/* Volume Signal Blink Animations */
+.stat-card.blink-green {
   animation: blink-green 6s ease-in-out infinite;
+  border-color: rgba(34, 197, 94, 0.5);
 }
 
-.blink-red {
+.stat-card.blink-red {
   animation: blink-red 6s ease-in-out infinite;
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.stat-card.blink-yellow {
+  animation: blink-yellow 6s ease-in-out infinite;
+  border-color: rgba(234, 179, 8, 0.5);
+}
+
+.stat-card.blink-orange {
+  animation: blink-orange 6s ease-in-out infinite;
+  border-color: rgba(249, 115, 22, 0.5);
 }
 
 @keyframes blink-green {
-  0%, 100% { border-color: rgba(34, 197, 94, 0.2) !important; }
-  50% { border-color: rgba(34, 197, 94, 0.9) !important; }
+  0%, 100% { border-color: rgba(34, 197, 94, 0.2); }
+  50% { border-color: rgba(34, 197, 94, 0.9); }
 }
 
 @keyframes blink-red {
-  0%, 100% { border-color: rgba(239, 68, 68, 0.2) !important; }
-  50% { border-color: rgba(239, 68, 68, 0.9) !important; }
-}
-
-/* Volume Signal: Yellow (Caution) */
-.blink-yellow {
-  animation: blink-yellow 6s ease-in-out infinite;
+  0%, 100% { border-color: rgba(239, 68, 68, 0.2); }
+  50% { border-color: rgba(239, 68, 68, 0.9); }
 }
 
 @keyframes blink-yellow {
-  0%, 100% { border-color: rgba(234, 179, 8, 0.2) !important; }
-  50% { border-color: rgba(234, 179, 8, 0.9) !important; }
-}
-
-/* Volume Signal: Orange (Warning - potential breakout) */
-.blink-orange {
-  animation: blink-orange 6s ease-in-out infinite;
+  0%, 100% { border-color: rgba(234, 179, 8, 0.2); }
+  50% { border-color: rgba(234, 179, 8, 0.9); }
 }
 
 @keyframes blink-orange {
-  0%, 100% { border-color: rgba(249, 115, 22, 0.2) !important; }
-  50% { border-color: rgba(249, 115, 22, 0.9) !important; }
+  0%, 100% { border-color: rgba(249, 115, 22, 0.2); }
+  50% { border-color: rgba(249, 115, 22, 0.9); }
 }
 
-/* Ensure blink animations persist - override default hover and transitions */
-.stat-card.blink-green,
-.stat-card.blink-red,
-.stat-card.blink-yellow,
-.stat-card.blink-orange {
-  transition: transform 0.3s, background 0.3s, box-shadow 0.3s; /* exclude border-color from transition */
-}
-
+/* Override hover styles for blinking cards */
 .stat-card.blink-green:hover,
 .stat-card.blink-red:hover,
 .stat-card.blink-yellow:hover,
 .stat-card.blink-orange:hover {
-  border-color: inherit !important; /* don't override animation border-color */
+  /* Keep transform and other hover effects, but not border-color */
+  background: rgba(17, 19, 24, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
 }
 
-.stat-card.blink-green,
-.stat-card.blink-green:hover {
-  animation: blink-green 6s ease-in-out infinite !important;
-}
-
-.stat-card.blink-red,
-.stat-card.blink-red:hover {
-  animation: blink-red 6s ease-in-out infinite !important;
-}
-
-.stat-card.blink-yellow,
-.stat-card.blink-yellow:hover {
-  animation: blink-yellow 6s ease-in-out infinite !important;
-}
-
-.stat-card.blink-orange,
-.stat-card.blink-orange:hover {
-  animation: blink-orange 6s ease-in-out infinite !important;
-}
+.stat-card.blink-green:hover { border-color: rgba(34, 197, 94, 0.5); }
+.stat-card.blink-red:hover { border-color: rgba(239, 68, 68, 0.5); }
+.stat-card.blink-yellow:hover { border-color: rgba(234, 179, 8, 0.5); }
+.stat-card.blink-orange:hover { border-color: rgba(249, 115, 22, 0.5); }
 
 /* ---- Halving Pill ---- */
 .halving-pill {
