@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.16.6 (2025-12-01)
+### Debug
+- Added console.log output to track signal calculation during auto-refresh
+- Logs volume change %, price change %, and resulting signal color
+
 ## v1.0.0-rc.16.5 (2025-12-01)
 ### Fixed
 - **Signal Persistence**: Colored signals now persist until a DIFFERENT color is detected
