@@ -164,12 +164,21 @@ function getVolumeSignal(volumeChange, priceChange) {
   };
 }
 
+// Track last valid signal to preserve animation on API errors
+let _lastVolumeSignal = null;
+
 /**
  * Apply volume signal to the Volume card
  */
 function applyVolumeSignal(signal, tooltip) {
   const volumeCard = document.getElementById('volume24h')?.closest('.stat-card');
   if (!volumeCard) return;
+  
+  // If signal is neutral due to missing data, keep the last valid signal
+  if (signal === 'neutral' && _lastVolumeSignal && _lastVolumeSignal !== 'neutral') {
+    if (window._debug) console.log(`📊 Volume Signal: keeping previous signal (${_lastVolumeSignal}) - current data insufficient`);
+    return; // Don't change anything, keep current animation
+  }
   
   // Remove all blink classes first
   volumeCard.classList.remove('blink-green', 'blink-red', 'blink-yellow', 'blink-orange');
@@ -179,6 +188,9 @@ function applyVolumeSignal(signal, tooltip) {
     // Force reflow to restart animation
     void volumeCard.offsetWidth;
     volumeCard.classList.add(`blink-${signal}`);
+    _lastVolumeSignal = signal; // Remember this valid signal
+  } else {
+    _lastVolumeSignal = null; // Clear if truly neutral
   }
   
   // Update tooltip on the info badge
