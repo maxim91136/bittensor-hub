@@ -37,26 +37,38 @@
 
     if (parentCard) {
       parentCard.classList.remove('pulse-up','pulse-down','neutral');
+      // Check if card has signal animation - if yes, don't override border
+      const hasSignal = parentCard.classList.contains('blink-green') || 
+                        parentCard.classList.contains('blink-red') || 
+                        parentCard.classList.contains('blink-yellow') || 
+                        parentCard.classList.contains('blink-orange');
+      
       if (candidate === 'up') {
         parentCard.classList.add('pulse-up');
         // Green tint for positive change
         parentCard.style.animation = '';
         parentCard.style.boxShadow = '';
-        parentCard.style.border = '2px solid rgba(16,185,129,0.40)';
-        parentCard.style.backgroundColor = 'rgba(16,185,129,0.08)';
+        if (!hasSignal) {
+          parentCard.style.border = '2px solid rgba(16,185,129,0.40)';
+          parentCard.style.backgroundColor = 'rgba(16,185,129,0.08)';
+        }
       } else if (candidate === 'down') {
         parentCard.classList.add('pulse-down');
         // Red tint for negative change
         parentCard.style.animation = '';
         parentCard.style.boxShadow = '';
-        parentCard.style.border = '2px solid rgba(239,68,68,0.40)';
-        parentCard.style.backgroundColor = 'rgba(239,68,68,0.08)';
+        if (!hasSignal) {
+          parentCard.style.border = '2px solid rgba(239,68,68,0.40)';
+          parentCard.style.backgroundColor = 'rgba(239,68,68,0.08)';
+        }
       } else {
         parentCard.classList.add('neutral');
         parentCard.style.animation = '';
         parentCard.style.boxShadow = '';
-        parentCard.style.border = '';
-        parentCard.style.backgroundColor = '';
+        if (!hasSignal) {
+          parentCard.style.border = '';
+          parentCard.style.backgroundColor = '';
+        }
       }
       
       // Also set inline styles on stat-icon for glow effect
@@ -112,21 +124,31 @@
     // Use trend_direction from backend (dual-MA confirmation)
     const candidate = data.trend_direction || 'neutral';
 
+    // Check if card has signal animation - if yes, don't override border
+    const hasSignal = cardEl.classList.contains('blink-green') || 
+                      cardEl.classList.contains('blink-red') || 
+                      cardEl.classList.contains('blink-yellow') || 
+                      cardEl.classList.contains('blink-orange');
+    
     cardEl.classList.remove('pulse-up','pulse-down','neutral');
     if (candidate === 'up') {
       cardEl.classList.add('pulse-up');
       // Green tint for positive change
       cardEl.style.animation = '';
       cardEl.style.boxShadow = '';
-      cardEl.style.border = '2px solid rgba(16,185,129,0.40)';
-      cardEl.style.backgroundColor = 'rgba(16,185,129,0.08)';
+      if (!hasSignal) {
+        cardEl.style.border = '2px solid rgba(16,185,129,0.40)';
+        cardEl.style.backgroundColor = 'rgba(16,185,129,0.08)';
+      }
     } else if (candidate === 'down') {
       cardEl.classList.add('pulse-down');
       // Red tint for negative change
       cardEl.style.animation = '';
       cardEl.style.boxShadow = '';
-      cardEl.style.border = '2px solid rgba(239,68,68,0.40)';
-      cardEl.style.backgroundColor = 'rgba(239,68,68,0.08)';
+      if (!hasSignal) {
+        cardEl.style.border = '2px solid rgba(239,68,68,0.40)';
+        cardEl.style.backgroundColor = 'rgba(239,68,68,0.08)';
+      }
     } else {
       cardEl.classList.add('neutral');
       cardEl.style.animation = '';
