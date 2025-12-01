@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.18.1 (2025-12-01)
+### Fixed
+- CSS cleanup: removed duplicate rules (tooltip, skeleton, chart container) to prevent drift and reduce CSS weight.
+- Unified Light Mode pill value styling and added `prefers-reduced-motion` support to disable pulses/glows for sensitive users.
+- No visual changes compared to RC18; behavior is identical.
+
 ## v1.0.0-rc.18 (2025-12-01)
 ### Improved
 - **Halving Pill Palette**: Base gradient and default border now use brighter corals, and the light-mode accent stripe is softened so the pill remains readable on pale backgrounds.
