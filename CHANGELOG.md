@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.18.2 (2025-12-01)
+### Added
+- Decorative "only 21 Mio." handwritten note in header (Caveat font, diagonal, light/dark auto-switch).
+- Circ Supply card: shortened label, removed "/ 21M" from value.
+
+### Fixed
+- Mobile layout and toggle button alignment polished for iPhone and iPad.
+
 ## v1.0.0-rc.18.1 (2025-12-01)
 ### Fixed
 - CSS cleanup: removed duplicate rules (tooltip, skeleton, chart container) to prevent drift and reduce CSS weight.
