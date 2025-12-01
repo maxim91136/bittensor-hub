@@ -295,23 +295,23 @@ body {
 
 /* Volume Signal Blink Animations */
 .stat-card.blink-green {
-  animation: blink-green 6s ease-in-out infinite;
-  border-color: rgba(34, 197, 94, 0.5);
+  animation: blink-green 6s ease-in-out infinite !important;
+  border-color: rgba(34, 197, 94, 0.5) !important;
 }
 
 .stat-card.blink-red {
-  animation: blink-red 6s ease-in-out infinite;
-  border-color: rgba(239, 68, 68, 0.5);
+  animation: blink-red 6s ease-in-out infinite !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
 }
 
 .stat-card.blink-yellow {
-  animation: blink-yellow 6s ease-in-out infinite;
-  border-color: rgba(234, 179, 8, 0.5);
+  animation: blink-yellow 6s ease-in-out infinite !important;
+  border-color: rgba(234, 179, 8, 0.5) !important;
 }
 
 .stat-card.blink-orange {
-  animation: blink-orange 6s ease-in-out infinite;
-  border-color: rgba(249, 115, 22, 0.5);
+  animation: blink-orange 6s ease-in-out infinite !important;
+  border-color: rgba(249, 115, 22, 0.5) !important;
 }
 
 @keyframes blink-green {
@@ -345,10 +345,10 @@ body {
   box-shadow: 0 8px 24px rgba(0,0,0,0.3);
 }
 
-.stat-card.blink-green:hover { border-color: rgba(34, 197, 94, 0.5); }
-.stat-card.blink-red:hover { border-color: rgba(239, 68, 68, 0.5); }
-.stat-card.blink-yellow:hover { border-color: rgba(234, 179, 8, 0.5); }
-.stat-card.blink-orange:hover { border-color: rgba(249, 115, 22, 0.5); }
+.stat-card.blink-green:hover { border-color: rgba(34, 197, 94, 0.5) !important; }
+.stat-card.blink-red:hover { border-color: rgba(239, 68, 68, 0.5) !important; }
+.stat-card.blink-yellow:hover { border-color: rgba(234, 179, 8, 0.5) !important; }
+.stat-card.blink-orange:hover { border-color: rgba(249, 115, 22, 0.5) !important; }
 
 /* ---- Halving Pill ---- */
 .halving-pill {
