@@ -416,8 +416,8 @@ body {
   animation: halving-pulse 7s infinite;
   font-family: 'Segoe UI', Arial, sans-serif;
   font-weight: 800;
-  background: linear-gradient(135deg, rgba(255,125,75,0.14), rgba(255,81,44,0.06));
-  border: 1px solid rgba(255,128,90,0.4);
+  background: linear-gradient(135deg, rgba(255,148,118,0.18), rgba(255,92,60,0.08));
+  border: 1px solid rgba(255,148,118,0.55);
   border-radius: 22px;
   color: var(--text);
   transition: all 0.3s ease;
@@ -1561,16 +1561,28 @@ body.light-bg .embed-overlay-mobile {
   color: var(--accent) !important;
 }
 .price-pill.light-bg {
-  border-left: 4px solid #16a34a !important; /* stronger green accent for price */
+  border: 1px solid #c1c1c1 !important;
+  border-left-width: 1px !important;
+  border-top-width: 1px !important;
+  border-bottom-width: 1px !important;
+  border-right: 4px solid rgba(14,165,255,0.55) !important; /* default brand stripe until change status arrives */
+}
+.price-pill.light-bg.price-up {
+  border-right: 4px solid #16a34a !important; /* stay green when 24h change is positive */
+  box-shadow: inset 0 0 18px rgba(22,163,74,0.16) !important;
+}
+.price-pill.light-bg.price-down {
+  border-right: 4px solid #dc2626 !important; /* flip to red when 24h change is negative */
+  box-shadow: inset 0 0 18px rgba(220,38,38,0.16) !important;
 }
 .halving-pill.light-bg:not(.confidence-low):not(.confidence-medium):not(.confidence-high) {
-  border-left: 4px solid #ff6b35 !important; /* orange accent for halving when no confidence class present */
+  border-left: 4px solid #ff9770 !important; /* softened orange accent for halving when no confidence class present */
 }
 
 /* Ensure confidence accents survive Light Mode overrides */
 .halving-pill.light-bg.confidence-low {
-  border-left: 4px solid #ff5c5c !important;
-  box-shadow: inset 0 0 24px rgba(255,92,92,0.12) !important;
+  border-left: 4px solid #ff7a7a !important;
+  box-shadow: inset 0 0 28px rgba(255,122,122,0.12) !important;
 }
 .halving-pill.light-bg.confidence-medium {
   border-left: 4px solid #f6c743 !important;
