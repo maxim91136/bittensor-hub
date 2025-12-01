@@ -330,23 +330,23 @@ body {
 }
 
 @keyframes glow-green {
-  0%, 100% { box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15), 0 4px 12px rgba(0,0,0,0.2); }
-  50% { box-shadow: 0 4px 35px rgba(34, 197, 94, 0.4), 0 4px 12px rgba(0,0,0,0.2); }
+  0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.25), 0 0 30px rgba(34, 197, 94, 0.1), 0 4px 12px rgba(0,0,0,0.2); }
+  50% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.6), 0 0 50px rgba(34, 197, 94, 0.25), 0 4px 12px rgba(0,0,0,0.2); }
 }
 
 @keyframes glow-red {
-  0%, 100% { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.15), 0 4px 12px rgba(0,0,0,0.2); }
-  50% { box-shadow: 0 4px 35px rgba(239, 68, 68, 0.4), 0 4px 12px rgba(0,0,0,0.2); }
+  0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.25), 0 0 30px rgba(239, 68, 68, 0.1), 0 4px 12px rgba(0,0,0,0.2); }
+  50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.6), 0 0 50px rgba(239, 68, 68, 0.25), 0 4px 12px rgba(0,0,0,0.2); }
 }
 
 @keyframes glow-yellow {
-  0%, 100% { box-shadow: 0 4px 20px rgba(234, 179, 8, 0.15), 0 4px 12px rgba(0,0,0,0.2); }
-  50% { box-shadow: 0 4px 35px rgba(234, 179, 8, 0.4), 0 4px 12px rgba(0,0,0,0.2); }
+  0%, 100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.25), 0 0 30px rgba(234, 179, 8, 0.1), 0 4px 12px rgba(0,0,0,0.2); }
+  50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.6), 0 0 50px rgba(234, 179, 8, 0.25), 0 4px 12px rgba(0,0,0,0.2); }
 }
 
 @keyframes glow-orange {
-  0%, 100% { box-shadow: 0 4px 20px rgba(249, 115, 22, 0.15), 0 4px 12px rgba(0,0,0,0.2); }
-  50% { box-shadow: 0 4px 35px rgba(249, 115, 22, 0.4), 0 4px 12px rgba(0,0,0,0.2); }
+  0%, 100% { box-shadow: 0 0 15px rgba(249, 115, 22, 0.25), 0 0 30px rgba(249, 115, 22, 0.1), 0 4px 12px rgba(0,0,0,0.2); }
+  50% { box-shadow: 0 0 30px rgba(249, 115, 22, 0.6), 0 0 50px rgba(249, 115, 22, 0.25), 0 4px 12px rgba(0,0,0,0.2); }
 }
 
 /* Ensure signal cards keep normal border on hover (no green tint) */
