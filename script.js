@@ -176,11 +176,13 @@ function applyVolumeSignal(signal, tooltip) {
   
   // Apply signal blink (only if not neutral)
   if (signal !== 'neutral') {
+    // Force reflow to restart animation
+    void volumeCard.offsetWidth;
     volumeCard.classList.add(`blink-${signal}`);
-    // Remove blink class after animation
+    // Remove blink class after animation completes (3 cycles × 1s = 3s)
     setTimeout(() => {
       volumeCard.classList.remove(`blink-${signal}`);
-    }, 600);
+    }, 3000);
   }
   
   // Update tooltip on the info badge
