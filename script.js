@@ -517,7 +517,7 @@ function updateTaoPrice(priceData) {
         if (pricePill) {
           pricePill.classList.remove('price-up', 'price-down');
           if (Math.abs(change) > 0.5) { // Only pulse if change > 0.5%
-            pricePill.classList.add(change > 0 ? 'price-up' : 'price-down');
+            pricePill.classList.add(change > 0 ? 'price-down' : 'price-up');
           }
         }
       }
