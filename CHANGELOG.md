@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.17.1 (2025-12-01)
+### Improved
+- **Price Pill Visuals**: Default pill now mirrors the halving pill with a cool blue shell plus slim right-edge stripe that turns green (price up) or red (price down).
+- **Breathing Animation**: Reintroduced a subtle 6.5s breathing pulse applied to the entire price pill, keeping motion in sync with the halving countdown without the distracting stripe glow.
+
+### Fixed
+- **Indicator Logic + Specificity**: CSS and JS classes now stay aligned so the stripe color reflects 24h performance even after rapid data refreshes.
+- **Code Cleanup**: Removed leftover German comments and unused keyframes to keep the stylesheet readable.
+
 ## v1.0.0-rc.16.9 (2025-12-01)
 ### Fixed
 - **TaoStats Widget Conflict**: Fixed green border override on Volume signal card
