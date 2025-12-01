@@ -221,6 +221,10 @@ async function updateVolumeSignal(currentVolume, priceChange24h) {
   const history = await fetchVolumeHistory();
   const volumeChange = calculateVolumeChange(history, currentVolume);
   const { signal, tooltip } = getVolumeSignal(volumeChange, priceChange24h);
+  
+  // Always log signal calculation for debugging
+  console.log(`📊 Signal calc: vol=${volumeChange?.toFixed(1)}%, price=${priceChange24h?.toFixed(1)}% → ${signal}`);
+  
   applyVolumeSignal(signal, tooltip);
 }
 
