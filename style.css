@@ -294,11 +294,11 @@ body {
 }
 
 .blink-green {
-  animation: blink-green 2s ease-in-out infinite;
+  animation: blink-green 6s ease-in-out infinite;
 }
 
 .blink-red {
-  animation: blink-red 2s ease-in-out infinite;
+  animation: blink-red 6s ease-in-out infinite;
 }
 
 @keyframes blink-green {
@@ -313,7 +313,7 @@ body {
 
 /* Volume Signal: Yellow (Caution) */
 .blink-yellow {
-  animation: blink-yellow 2s ease-in-out infinite;
+  animation: blink-yellow 6s ease-in-out infinite;
 }
 
 @keyframes blink-yellow {
@@ -323,7 +323,7 @@ body {
 
 /* Volume Signal: Orange (Warning - potential breakout) */
 .blink-orange {
-  animation: blink-orange 2s ease-in-out infinite;
+  animation: blink-orange 6s ease-in-out infinite;
 }
 
 @keyframes blink-orange {
