@@ -217,22 +217,20 @@ body {
 }
 
 .price-pill#taoPricePill {
-  background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.03));
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
   border-color: var(--border);
   gap: clamp(8px, 2vw, 10px);
 }
 
 /* Price pill confidence-style accent based on 24h change */
 .price-pill.price-up {
-  border-color: rgba(16,185,129,0.35);
   border-right: 4px solid #10b981;
-  box-shadow: inset 0 0 20px rgba(16,185,129,0.05);
+  box-shadow: inset 0 0 20px rgba(16,185,129,0.08);
 }
 
 .price-pill.price-down {
-  border-color: rgba(244,63,94,0.35);
   border-right: 4px solid #f43f5e;
-  box-shadow: inset 0 0 20px rgba(244,63,94,0.05);
+  box-shadow: inset 0 0 20px rgba(244,63,94,0.08);
 }
 
 .price-change {
