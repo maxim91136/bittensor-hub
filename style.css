@@ -331,6 +331,30 @@ body {
   50% { border-color: rgba(249, 115, 22, 0.9); }
 }
 
+/* Ensure blink animations persist on hover */
+.stat-card.blink-green:hover,
+.stat-card.blink-red:hover,
+.stat-card.blink-yellow:hover,
+.stat-card.blink-orange:hover {
+  animation: inherit;
+}
+
+.stat-card.blink-green:hover {
+  animation: blink-green 6s ease-in-out infinite;
+}
+
+.stat-card.blink-red:hover {
+  animation: blink-red 6s ease-in-out infinite;
+}
+
+.stat-card.blink-yellow:hover {
+  animation: blink-yellow 6s ease-in-out infinite;
+}
+
+.stat-card.blink-orange:hover {
+  animation: blink-orange 6s ease-in-out infinite;
+}
+
 /* ---- Halving Pill ---- */
 .halving-pill {
   color: var(--brand);
