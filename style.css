@@ -208,6 +208,8 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 22px;
+  position: relative;
+  overflow: hidden;
   /* Moderately larger than cards but not excessive */
   font-size: clamp(0.8rem, 2vw, 0.95rem);
   font-weight: 800;
@@ -231,6 +233,30 @@ body {
 .price-pill.price-down {
   border-right: 4px solid #f43f5e;
   box-shadow: inset 0 0 20px rgba(244,63,94,0.08);
+}
+
+.price-pill::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  right: 4px;
+  width: 8px;
+  border-radius: 6px;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.price-pill.price-up::after {
+  background: #10b981;
+  opacity: 1;
+}
+
+.price-pill.price-down::after {
+  background: #f43f5e;
+  opacity: 1;
 }
 
 .price-change {
