@@ -232,11 +232,11 @@ body {
 }
 
 #taoPricePill.price-up {
-  border-right: 6px solid #10b981;
+  border-right: 4px solid #10b981;
 }
 
 #taoPricePill.price-down {
-  border-right: 6px solid #f43f5e;
+  border-right: 4px solid #f43f5e;
 }
 
 .price-change {
