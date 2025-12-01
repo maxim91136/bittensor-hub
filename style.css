@@ -205,8 +205,8 @@ body {
   gap: clamp(8px, 2vw, 10px);
   /* EIGENSTÄNDIG: Komplett getrennt von stat-card CSS-Variablen */
   padding: clamp(6px, 1.5vw, 8px) clamp(14px, 3.5vw, 18px);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(14,165,255,0.08), rgba(14,165,255,0.02));
+  border: 1px solid rgba(14,165,255,0.45);
   border-radius: 22px;
   /* Moderately larger than cards but not excessive */
   font-size: clamp(0.8rem, 2vw, 0.95rem);
@@ -217,21 +217,19 @@ body {
 }
 
 .price-pill#taoPricePill {
-  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
-  border-color: var(--border);
+  background: linear-gradient(135deg, rgba(14,165,255,0.1), rgba(14,165,255,0.02));
+  border-color: rgba(14,165,255,0.5);
   gap: clamp(8px, 2vw, 10px);
 }
 
 /* Price pill confidence-style accent based on 24h change */
 .price-pill.price-up {
-  border-color: rgba(16,185,129,0.35);
-  border-right: 6px solid #10b981;
+  border-right: 5px solid #10b981;
   box-shadow: inset 0 0 18px rgba(16,185,129,0.09);
 }
 
 .price-pill.price-down {
-  border-color: rgba(244,63,94,0.35);
-  border-right: 6px solid #f43f5e;
+  border-right: 5px solid #f43f5e;
   box-shadow: inset 0 0 18px rgba(244,63,94,0.09);
 }
 
