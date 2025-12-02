@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.18.3 (2025-12-02)
+### Fixed
+- **Emission Calculation**: Fixed incorrect AVG. EMISSION / DAY showing ~5,781 instead of ~7,185 TAO/day
+  - Added `sanitize_history()` to correct issuance drops (data anomalies)
+  - Switched to winsorized mean of interval rates for robust statistics
+  - Filters anomalous rates and trims outliers
+- **Volume Signal Ampelsystem**: Added missing case for `Volume ↓ + Price stable` → Yellow
+  - Previously fell through to neutral, keeping old signal color
+  - Now correctly shows yellow glow per Readme specification
+
 ## v1.0.0-rc.18.2 (2025-12-01)
 ### Added
 - Decorative "only 21 Mio." handwritten note in header (Caveat font, diagonal, light/dark auto-switch).
