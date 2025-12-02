@@ -251,12 +251,66 @@ function applyVolumeSignal(signal, tooltip) {
 }
 
 /**
+ * Format compact dollar amount for MA display
+ */
+function formatMADollar(num) {
+  if (num === null || num === undefined) return '—';
+  if (Math.abs(num) >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
+  if (Math.abs(num) >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
+  if (Math.abs(num) >= 1e3) return '$' + (num / 1e3).toFixed(1) + 'k';
+  return '$' + Number(num).toLocaleString();
+}
+
+/**
+ * Format percentage for MA display
+ */
+function formatMAPct(num) {
+  if (num === null || num === undefined) return '—';
+  const pct = (num * 100).toFixed(1);
+  return num >= 0 ? `+${pct}%` : `${pct}%`;
+}
+
+/**
+ * Fetch taostats aggregates (for MA data)
+ */
+async function fetchTaostatsAggregates() {
+  try {
+    const res = await fetch('/api/taostats_aggregates', { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    console.warn('📊 Failed to fetch taostats aggregates:', e);
+    return null;
+  }
+}
+
+/**
  * Update volume signal - call this when refreshing data
  */
 async function updateVolumeSignal(currentVolume, priceChange24h) {
   const history = await fetchVolumeHistory();
   const volumeData = calculateVolumeChange(history, currentVolume);
-  const { signal, tooltip } = getVolumeSignal(volumeData, priceChange24h);
+  let { signal, tooltip } = getVolumeSignal(volumeData, priceChange24h);
+  
+  // Fetch MA data and append to tooltip
+  const aggregates = await fetchTaostatsAggregates();
+  if (aggregates && aggregates.ma_short) {
+    const maLines = [];
+    maLines.push('\n\n📈 Moving Averages:');
+    if (aggregates.ma_short) {
+      maLines.push(`MA-2h: ${formatMADollar(aggregates.ma_short)} (${formatMAPct(aggregates.pct_change_vs_ma_short)})`);
+    }
+    if (aggregates.ma_med) {
+      maLines.push(`MA-4h: ${formatMADollar(aggregates.ma_med)} (${formatMAPct(aggregates.pct_change_vs_ma_med)})`);
+    }
+    if (aggregates.ma_3d) {
+      maLines.push(`MA-3d: ${formatMADollar(aggregates.ma_3d)} (${formatMAPct(aggregates.pct_change_vs_ma_3d)})`);
+    }
+    if (aggregates.ma_7d) {
+      maLines.push(`MA-7d: ${formatMADollar(aggregates.ma_7d)} (${formatMAPct(aggregates.pct_change_vs_ma_7d)})`);
+    }
+    tooltip += maLines.join('\n');
+  }
   
   // Always log signal calculation for debugging
   const volPct = volumeData?.change?.toFixed(1) ?? 'null';

@@ -92,30 +92,7 @@
 
     legacyEl.textContent = formatCompact(data.last_volume);
 
-    // Build MA tooltip section (will be appended to existing Ampelsystem tooltip)
-    const pctShort = typeof data.pct_change_vs_ma_short === 'number' ? data.pct_change_vs_ma_short : null;
-    const pctMed = typeof data.pct_change_vs_ma_med === 'number' ? data.pct_change_vs_ma_med : null;
-    const pct3d = typeof data.pct_change_vs_ma_3d === 'number' ? data.pct_change_vs_ma_3d : null;
-    const pct7d = typeof data.pct_change_vs_ma_7d === 'number' ? data.pct_change_vs_ma_7d : null;
-    const shortText = (pctShort !== null) ? ((pctShort>0?'+':'') + (pctShort*100).toFixed(2) + '%') : '—';
-    const medText = (pctMed !== null) ? ((pctMed>0?'+':'') + (pctMed*100).toFixed(2) + '%') : '—';
-    const text3d = (pct3d !== null) ? ((pct3d>0?'+':'') + (pct3d*100).toFixed(2) + '%') : '—';
-    const text7d = (pct7d !== null) ? ((pct7d>0?'+':'') + (pct7d*100).toFixed(2) + '%') : '—';
-    // Build MA section
-    let maSection = `\n\n📊 Moving Averages:\nΔ vs MA (100min): ${shortText}\nΔ vs MA (1day): ${medText}`;
-    if (text3d !== '—') maSection += `\nΔ vs MA (3day): ${text3d}`;
-    if (text7d !== '—') maSection += `\nΔ vs MA (7day): ${text7d}`;
-    try {
-      const info = parentCard && parentCard.querySelector && parentCard.querySelector('.info-badge');
-      if (info) {
-        // Get existing tooltip (from Ampelsystem) and append MA data
-        const existingTooltip = info.getAttribute('data-tooltip') || '';
-        // Only append if MA section not already present
-        if (!existingTooltip.includes('Moving Averages')) {
-          info.setAttribute('data-tooltip', existingTooltip + maSection);
-        }
-      }
-    } catch (e) {}
+    // Tooltip is handled by Ampelsystem in script.js - don't set here
 
     lastState.direction = candidate;
     lastState.last = data.last_volume;
@@ -173,34 +150,7 @@
     try { badgeEl && badgeEl.removeAttribute && badgeEl.removeAttribute('title'); } catch (e) {}
     try { valueEl && valueEl.removeAttribute && valueEl.removeAttribute('title'); } catch (e) {}
 
-    // Build MA tooltip section (will be appended to existing Ampelsystem tooltip)
-    try {
-      const pctShort = typeof data.pct_change_vs_ma_short === 'number' ? data.pct_change_vs_ma_short : null;
-      const pctMed = typeof data.pct_change_vs_ma_med === 'number' ? data.pct_change_vs_ma_med : null;
-      const pct3d = typeof data.pct_change_vs_ma_3d === 'number' ? data.pct_change_vs_ma_3d : null;
-      const pct7d = typeof data.pct_change_vs_ma_7d === 'number' ? data.pct_change_vs_ma_7d : null;
-      const shortText = (pctShort !== null) ? ((pctShort>0?'+':'') + (pctShort*100).toFixed(2) + '%') : '—';
-      const medText = (pctMed !== null) ? ((pctMed>0?'+':'') + (pctMed*100).toFixed(2) + '%') : '—';
-      const text3d = (pct3d !== null) ? ((pct3d>0?'+':'') + (pct3d*100).toFixed(2) + '%') : '—';
-      const text7d = (pct7d !== null) ? ((pct7d>0?'+':'') + (pct7d*100).toFixed(2) + '%') : '—';
-      // Build MA section
-      let maSection = `\n\n📊 Moving Averages:\nΔ vs MA (100min): ${shortText}\nΔ vs MA (1day): ${medText}`;
-      if (text3d !== '—') maSection += `\nΔ vs MA (3day): ${text3d}`;
-      if (text7d !== '—') maSection += `\nΔ vs MA (7day): ${text7d}`;
-      try {
-        const info = cardEl.querySelector && cardEl.querySelector('.info-badge');
-        if (info) {
-          // Get existing tooltip (from Ampelsystem) and append MA data
-          const existingTooltip = info.getAttribute('data-tooltip') || '';
-          // Only append if MA section not already present
-          if (!existingTooltip.includes('Moving Averages')) {
-            info.setAttribute('data-tooltip', existingTooltip + maSection);
-          }
-        }
-      } catch (e) { /* ignore */ }
-    } catch (e) {
-      // ignore
-    }
+    // Tooltip is handled by Ampelsystem in script.js - don't set here
 
     // Also add glow to stat-icon for visibility
     try {
