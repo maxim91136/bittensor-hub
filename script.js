@@ -89,15 +89,20 @@ function calculateVolumeChange(history, currentVolume) {
   
   const change = ((currentVolume - oldVolume) / oldVolume) * 100;
   
-  // Calculate confidence based on history coverage
+  // Calculate confidence based on history coverage for 24h comparison
+  // We need good data coverage over the 24h period for reliable signals
   const oldestTime = new Date(sorted[0]._timestamp).getTime();
   const hoursOfData = (now - oldestTime) / (60 * 60 * 1000);
   const samples = sorted.length;
   
+  // Confidence levels for 24h volume change:
+  // - High: ≥22h coverage with ≥50 samples (near-complete 24h data)
+  // - Medium: ≥16h coverage with ≥30 samples (decent coverage)
+  // - Low: less data, signal may be unreliable
   let confidence = 'low';
-  if (hoursOfData >= 20 && samples >= 15) {
+  if (hoursOfData >= 22 && samples >= 50) {
     confidence = 'high';
-  } else if (hoursOfData >= 12 && samples >= 8) {
+  } else if (hoursOfData >= 16 && samples >= 30) {
     confidence = 'medium';
   }
   
