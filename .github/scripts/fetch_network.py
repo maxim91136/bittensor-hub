@@ -167,6 +167,41 @@ def fetch_metrics() -> Dict[str, Any]:
     except Exception:
         history = history
 
+    # =====================================================================
+    # SANITIZE HISTORY: Fix samples where issuance dropped (data anomalies)
+    # The total issuance can NEVER decrease - any drops are API/data errors.
+    # Strategy: When a drop is detected, add the drop amount to all subsequent
+    # samples to restore the correct values.
+    # =====================================================================
+    def sanitize_history(hist: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        if len(hist) < 2:
+            return hist
+        
+        sanitized = [dict(h) for h in hist]  # deep copy
+        cumulative_correction = 0.0
+        drops_fixed = 0
+        
+        for i in range(1, len(sanitized)):
+            # Apply cumulative correction from previous drops
+            sanitized[i]['issuance'] += cumulative_correction
+            
+            # Check if there's still a drop after correction
+            delta = sanitized[i]['issuance'] - sanitized[i-1]['issuance']
+            if delta < 0:
+                # This is a drop - add the drop amount to correction
+                drop_amount = abs(delta)
+                cumulative_correction += drop_amount
+                sanitized[i]['issuance'] += drop_amount
+                drops_fixed += 1
+                print(f"⚠️  Fixed issuance drop of {drop_amount:.2f} TAO at index {i}", file=sys.stderr)
+        
+        if drops_fixed > 0:
+            print(f"✅ Sanitized {drops_fixed} issuance drops, total correction: {cumulative_correction:.2f} TAO", file=sys.stderr)
+        
+        return sanitized
+    
+    history = sanitize_history(history)
+
     # Compute per-interval normalized (TAO/day) deltas from the 15m-ish history
     def compute_per_interval_deltas(hist: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         out: List[float] = []
@@ -177,6 +212,9 @@ def fetch_metrics() -> Dict[str, Any]:
             if dt <= 0:
                 continue
             delta = b['issuance'] - a['issuance']
+            # Skip negative deltas (should not happen after sanitization, but be safe)
+            if delta < 0:
+                continue
             per_day = delta * (86400.0 / dt)
             out.append({'ts': b['ts'], 'per_day': per_day})
         return out
@@ -205,58 +243,61 @@ def fetch_metrics() -> Dict[str, Any]:
     now_ts = int(datetime.now(timezone.utc).timestamp())
     
     # emission_daily = time-weighted mean per_day for last 24h
-    deltas_last_24h = [d for d in per_interval_deltas if d['ts'] >= (now_ts - 86400)]
+    # Only use positive deltas (negative = data anomaly)
+    deltas_last_24h = [d for d in per_interval_deltas if d['ts'] >= (now_ts - 86400) and d['per_day'] > 0]
     # require at least 3 interval samples in the last 24h to compute a reliable daily estimate
     if len(deltas_last_24h) >= 3:
         # use winsorized mean for last 24h to smooth out spikes
         emission_daily = winsorized_mean([d['per_day'] for d in deltas_last_24h], 0.1)
     
     # =====================================================================
-    # FIXED: Emission calculation using actual issuance delta over time
+    # FIXED: Emission calculation using winsorized mean of interval rates
     # 
-    # Problem with old method: Early days had data gaps (e.g., 24 Nov only had
-    # 20h of data but with gaps, showing ~1,432 TAO/day instead of ~7,180).
+    # Problem with first/last method: Data anomalies (drops, gaps) cause
+    # incorrect averages even after sanitization.
     # 
-    # New method: Use direct issuance delta / time span, but only trust data
-    # from periods with good coverage (>= 80% of expected samples).
+    # New method: Use winsorized mean of per-interval rates, filtering out
+    # anomalous values (< 5000 or > 9000 TAO/day).
     # =====================================================================
     
     def compute_emission_for_period(hist: List[Dict[str, Any]], days: int) -> tuple:
         """
-        Compute emission rate for a period by taking actual issuance delta
-        divided by actual time span. Returns (emission_per_day, std_dev, samples, actual_days).
+        Compute emission rate for a period using winsorized mean of interval rates.
+        Returns (emission_per_day, std_dev, samples, actual_days).
         
-        Only returns valid results if we have sufficient data coverage.
+        Filters out anomalous intervals and uses robust statistics.
         """
         if len(hist) < 2:
             return None, None, 0, 0
         
         cutoff_ts = now_ts - (days * 86400)
-        period_samples = [s for s in hist if s['ts'] >= cutoff_ts]
         
+        # Get per-interval rates for this period, filtering anomalies
+        period_rates = [d['per_day'] for d in per_interval_deltas 
+                       if d['ts'] >= cutoff_ts and 5000 <= d['per_day'] <= 9000]
+        
+        if len(period_rates) < 3:
+            return None, None, 0, 0
+        
+        # Calculate actual time span from samples in period
+        period_samples = [s for s in hist if s['ts'] >= cutoff_ts]
         if len(period_samples) < 2:
             return None, None, 0, 0
         
-        first = period_samples[0]
-        last = period_samples[-1]
-        time_span_seconds = last['ts'] - first['ts']
+        time_span_seconds = period_samples[-1]['ts'] - period_samples[0]['ts']
+        actual_days = time_span_seconds / 86400.0 if time_span_seconds > 0 else 0
         
-        if time_span_seconds <= 0:
-            return None, None, 0, 0
+        # Use winsorized mean for robust average (trim 10% from each end)
+        emission_per_day = winsorized_mean(period_rates, 0.1)
         
-        actual_days = time_span_seconds / 86400.0
-        issuance_delta = last['issuance'] - first['issuance']
-        emission_per_day = issuance_delta * (86400.0 / time_span_seconds)
-        
-        # Calculate std dev from per-interval rates in this period
-        period_deltas = [d['per_day'] for d in per_interval_deltas if d['ts'] >= cutoff_ts]
+        # Calculate std dev
         std_dev = None
-        if len(period_deltas) >= 5:
-            mean_rate = sum(period_deltas) / len(period_deltas)
-            variance = sum((r - mean_rate) ** 2 for r in period_deltas) / len(period_deltas)
+        if len(period_rates) >= 5:
+            mean_rate = sum(period_rates) / len(period_rates)
+            variance = sum((r - mean_rate) ** 2 for r in period_rates) / len(period_rates)
             std_dev = math.sqrt(variance)
         
-        return emission_per_day, std_dev, len(period_samples), actual_days
+        return emission_per_day, std_dev, len(period_rates), actual_days
     
     # Try different periods and use the best available
     # Start with longer periods but fall back to shorter if data quality is poor
