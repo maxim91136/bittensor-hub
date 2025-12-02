@@ -157,6 +157,14 @@ function getVolumeSignal(volumeChange, priceChange) {
     };
   }
   
+  // 🟡 YELLOW: Volume down + Price stable = Waning interest (per Readme: vol↓ + any = yellow)
+  if (volDown && priceStable) {
+    return {
+      signal: 'yellow',
+      tooltip: `🟡 Stable\nVolume: ${volStr}\nPrice: ${priceStr}\nStable market conditions`
+    };
+  }
+  
   // ⚪ NEUTRAL: No significant movement
   return {
     signal: 'neutral',
