@@ -59,6 +59,7 @@ async function fetchVolumeHistory() {
 /**
  * Calculate volume change percentage from history
  * Compares current volume with volume from ~24h ago (or oldest available)
+ * Returns: { change: number, confidence: 'high'|'medium'|'low', samples: number }
  */
 function calculateVolumeChange(history, currentVolume) {
   if (!Array.isArray(history) || history.length < 2 || !currentVolume) return null;
@@ -86,7 +87,21 @@ function calculateVolumeChange(history, currentVolume) {
   const oldVolume = oldEntry?.volume_24h;
   if (!oldVolume || oldVolume <= 0) return null;
   
-  return ((currentVolume - oldVolume) / oldVolume) * 100;
+  const change = ((currentVolume - oldVolume) / oldVolume) * 100;
+  
+  // Calculate confidence based on history coverage
+  const oldestTime = new Date(sorted[0]._timestamp).getTime();
+  const hoursOfData = (now - oldestTime) / (60 * 60 * 1000);
+  const samples = sorted.length;
+  
+  let confidence = 'low';
+  if (hoursOfData >= 20 && samples >= 15) {
+    confidence = 'high';
+  } else if (hoursOfData >= 12 && samples >= 8) {
+    confidence = 'medium';
+  }
+  
+  return { change, confidence, samples, hoursOfData: Math.round(hoursOfData) };
 }
 
 /**
@@ -101,11 +116,17 @@ function calculateVolumeChange(history, currentVolume) {
  * 🟠 ORANGE: Volume ↑ + Price stable = Potential breakout incoming
  * ⚪ NEUTRAL: No significant change
  */
-function getVolumeSignal(volumeChange, priceChange) {
+function getVolumeSignal(volumeData, priceChange) {
   // Handle missing data
-  if (volumeChange === null || priceChange === null) {
+  if (volumeData === null || priceChange === null) {
     return { signal: 'neutral', tooltip: 'Insufficient data for signal' };
   }
+  
+  // Support both old format (number) and new format (object with change, confidence)
+  const volumeChange = typeof volumeData === 'object' ? volumeData.change : volumeData;
+  const confidence = typeof volumeData === 'object' ? volumeData.confidence : null;
+  const samples = typeof volumeData === 'object' ? volumeData.samples : null;
+  const hoursOfData = typeof volumeData === 'object' ? volumeData.hoursOfData : null;
   
   const threshold = VOLUME_SIGNAL_THRESHOLD;
   const volUp = volumeChange > threshold;
@@ -117,11 +138,18 @@ function getVolumeSignal(volumeChange, priceChange) {
   const volStr = volumeChange >= 0 ? `+${volumeChange.toFixed(1)}%` : `${volumeChange.toFixed(1)}%`;
   const priceStr = priceChange >= 0 ? `+${priceChange.toFixed(1)}%` : `${priceChange.toFixed(1)}%`;
   
+  // Build confidence line
+  let confidenceLine = '';
+  if (confidence) {
+    const confEmoji = confidence === 'high' ? '🟢' : confidence === 'medium' ? '🟡' : '🔴';
+    confidenceLine = `\nConfidence: ${confEmoji} ${confidence} (${samples} samples, ${hoursOfData}h data)`;
+  }
+  
   // 🟢 GREEN: Volume up + Price up = Strong buying pressure
   if (volUp && priceUp) {
     return {
       signal: 'green',
-      tooltip: `🟢 Bullish\nVolume: ${volStr}\nPrice: ${priceStr}\nStrong demand, healthy uptrend`
+      tooltip: `🟢 Bullish\nVolume: ${volStr}\nPrice: ${priceStr}\nStrong demand, healthy uptrend${confidenceLine}`
     };
   }
   
@@ -129,7 +157,7 @@ function getVolumeSignal(volumeChange, priceChange) {
   if (volUp && priceDown) {
     return {
       signal: 'red',
-      tooltip: `🔴 Bearish\nVolume: ${volStr}\nPrice: ${priceStr}\nDistribution phase, selling pressure`
+      tooltip: `🔴 Bearish\nVolume: ${volStr}\nPrice: ${priceStr}\nDistribution phase, selling pressure${confidenceLine}`
     };
   }
   
@@ -137,7 +165,7 @@ function getVolumeSignal(volumeChange, priceChange) {
   if (volUp && priceStable) {
     return {
       signal: 'orange',
-      tooltip: `🟠 Watch\nVolume: ${volStr}\nPrice: ${priceStr}\nHigh activity, potential breakout`
+      tooltip: `🟠 Watch\nVolume: ${volStr}\nPrice: ${priceStr}\nHigh activity, potential breakout${confidenceLine}`
     };
   }
   
@@ -145,7 +173,7 @@ function getVolumeSignal(volumeChange, priceChange) {
   if (volDown && priceUp) {
     return {
       signal: 'yellow',
-      tooltip: `🟡 Caution\nVolume: ${volStr}\nPrice: ${priceStr}\nUptrend losing momentum`
+      tooltip: `🟡 Caution\nVolume: ${volStr}\nPrice: ${priceStr}\nUptrend losing momentum${confidenceLine}`
     };
   }
   
@@ -153,7 +181,7 @@ function getVolumeSignal(volumeChange, priceChange) {
   if (volDown && priceDown) {
     return {
       signal: 'yellow',
-      tooltip: `🟡 Consolidation\nVolume: ${volStr}\nPrice: ${priceStr}\nLow interest, sideways market`
+      tooltip: `🟡 Consolidation\nVolume: ${volStr}\nPrice: ${priceStr}\nLow interest, sideways market${confidenceLine}`
     };
   }
   
@@ -161,14 +189,14 @@ function getVolumeSignal(volumeChange, priceChange) {
   if (volDown && priceStable) {
     return {
       signal: 'yellow',
-      tooltip: `🟡 Stable\nVolume: ${volStr}\nPrice: ${priceStr}\nStable market conditions`
+      tooltip: `🟡 Stable\nVolume: ${volStr}\nPrice: ${priceStr}\nStable market conditions${confidenceLine}`
     };
   }
   
   // ⚪ NEUTRAL: No significant movement
   return {
     signal: 'neutral',
-    tooltip: `Volume: ${volStr}\nPrice: ${priceStr}\nStable market conditions`
+    tooltip: `Volume: ${volStr}\nPrice: ${priceStr}\nStable market conditions${confidenceLine}`
   };
 }
 
@@ -184,20 +212,22 @@ function applyVolumeSignal(signal, tooltip) {
   const volumeCard = document.getElementById('volume24h')?.closest('.stat-card');
   if (!volumeCard) return;
   
+  const infoBadge = volumeCard.querySelector('.info-badge');
+  const baseTooltip = 'TAO trading volume in the last 24 hours';
+  
+  // Always update tooltip (even when keeping old signal)
+  if (infoBadge && tooltip) {
+    infoBadge.setAttribute('data-tooltip', `${baseTooltip}\n\n${tooltip}`);
+  }
+  
   // If new signal is neutral, ALWAYS keep the last colored signal (if any)
   if (signal === 'neutral' && _lastVolumeSignal && _lastVolumeSignal !== 'neutral') {
     if (window._debug) console.log(`📊 Volume Signal: keeping previous signal (${_lastVolumeSignal}) - neutral ignored`);
-    return; // Don't change anything, keep current animation
+    return; // Don't change animation, but tooltip was already updated above
   }
   
   // If same signal as before, don't touch the classes (keeps animation smooth)
   if (signal === _lastVolumeSignal) {
-    // Just update tooltip if needed
-    const infoBadge = volumeCard.querySelector('.info-badge');
-    if (infoBadge && tooltip) {
-      const baseTooltip = 'TAO trading volume in the last 24 hours';
-      infoBadge.setAttribute('data-tooltip', `${baseTooltip}\n\n${tooltip}`);
-    }
     if (window._debug) console.log(`📊 Volume Signal: unchanged (${signal})`);
     return;
   }
@@ -213,13 +243,6 @@ function applyVolumeSignal(signal, tooltip) {
     if (window._debug) console.log(`📊 Volume Signal: changed to ${signal}`, tooltip);
   }
   // Note: We never remove all classes anymore - once colored, stays colored until different color
-  
-  // Update tooltip on the info badge
-  const infoBadge = volumeCard.querySelector('.info-badge');
-  if (infoBadge && tooltip) {
-    const baseTooltip = 'TAO trading volume in the last 24 hours';
-    infoBadge.setAttribute('data-tooltip', `${baseTooltip}\n\n${tooltip}`);
-  }
 }
 
 /**
@@ -227,11 +250,13 @@ function applyVolumeSignal(signal, tooltip) {
  */
 async function updateVolumeSignal(currentVolume, priceChange24h) {
   const history = await fetchVolumeHistory();
-  const volumeChange = calculateVolumeChange(history, currentVolume);
-  const { signal, tooltip } = getVolumeSignal(volumeChange, priceChange24h);
+  const volumeData = calculateVolumeChange(history, currentVolume);
+  const { signal, tooltip } = getVolumeSignal(volumeData, priceChange24h);
   
   // Always log signal calculation for debugging
-  console.log(`📊 Signal calc: vol=${volumeChange?.toFixed(1)}%, price=${priceChange24h?.toFixed(1)}% → ${signal}`);
+  const volPct = volumeData?.change?.toFixed(1) ?? 'null';
+  const conf = volumeData?.confidence ?? 'n/a';
+  console.log(`📊 Signal calc: vol=${volPct}%, price=${priceChange24h?.toFixed(1)}%, conf=${conf} → ${signal}`);
   
   applyVolumeSignal(signal, tooltip);
 }
