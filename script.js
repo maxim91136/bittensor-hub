@@ -147,7 +147,7 @@ function getVolumeSignal(volumeData, priceChange) {
   let confidenceLine = '';
   if (confidence) {
     const confEmoji = confidence === 'high' ? '🟢' : confidence === 'medium' ? '🟡' : '🔴';
-    confidenceLine = `\nConfidence: ${confEmoji} ${confidence} (${samples} samples, ${hoursOfData}h data)`;
+    confidenceLine = `\n\nConfidence: ${confEmoji} ${confidence} (${samples} samples, ${hoursOfData}h data)`;
   }
   
   // 🟢 GREEN: Volume up + Price up = Strong buying pressure
