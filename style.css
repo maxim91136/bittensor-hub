@@ -775,6 +775,9 @@ body.light-bg #maxSupplyScribble {
   cursor: pointer;
   font-weight: 700;
 }
+.tao-zoom-btn[title] { position: relative; }
+.tao-zoom-btn[title]:focus { outline: 2px solid rgba(34,197,94,0.18); }
+.tao-zoom-btn.small { padding: 6px 8px; font-size: 0.95rem; }
 .tao-zoom-btn.muted { opacity: 0.7; font-weight: 600; }
 .tao-zoom-btn:hover { background: rgba(255,255,255,0.05); }
 .tao-zoom-level { font-weight: 700; color: var(--text-muted); }

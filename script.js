@@ -2206,10 +2206,14 @@ document.addEventListener('DOMContentLoaded', function() {
     clearTimeout(fallbackTimer);
   });
 
-  card.addEventListener('click', openTaobubbles);
-  card.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTaobubbles(); }
-  });
+  // Only open when user clicks the explicit Open button; allow iframe to receive clicks
+  const openBtn = document.getElementById('taobubblesOpenBtn');
+  if (openBtn) {
+    openBtn.addEventListener('click', openTaobubbles);
+    openBtn.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTaobubbles(); }
+    });
+  }
 
   closeBtn.addEventListener('click', closeTaobubbles);
   backdrop.addEventListener('click', closeTaobubbles);

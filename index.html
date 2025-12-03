@@ -357,6 +357,10 @@
             <button id="taoZoomIn" class="tao-zoom-btn" title="Zoom in">+</button>
             <button id="taoZoomReset" class="tao-zoom-btn muted" title="Reset zoom">Reset</button>
           </div>
+          <!-- Explicit open button so clicks inside the iframe don't trigger navigation -->
+          <div style="margin-left:12px;">
+            <button id="taobubblesOpenBtn" class="tao-zoom-btn" title="Open Taobubbles in modal or new tab">Open Taobubbles</button>
+          </div>
         </div>
         <div class="taobubbles-preview" aria-hidden="true">
           <iframe id="taobubblesInlineIframe" src="https://taobubbles.xyz" frameborder="0" loading="lazy" title="Taobubbles preview"></iframe>
