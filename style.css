@@ -276,7 +276,7 @@ body.light-bg #maxSupplyScribble {
   left: 50%;
   transform: translateX(-50%);
   font-family: 'Courier New', monospace;
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 0.3px;
   text-transform: lowercase;
   opacity: 0.4;
