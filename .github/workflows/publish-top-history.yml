@@ -2,7 +2,7 @@ name: Publish Top History
 
 on:
   schedule:
-    - cron: '13 * * * *' # every hour at :13
+    - cron: '13,43 * * * *' # every 30 min at :13 and :43
   workflow_dispatch: {}
 
 jobs:
