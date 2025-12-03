@@ -269,22 +269,24 @@ body.light-bg #maxSupplyScribble {
   position: relative;
 }
 
-/* Subtle ? hint for tooltip discovery */
-.pill-hint {
+/* Subtle [pill me] hint for tooltip discovery */
+.pill-tap-hint {
   position: absolute;
-  top: 4px;
-  right: 6px;
-  font-size: 10px;
-  font-weight: 600;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Courier New', monospace;
+  font-size: 7px;
+  letter-spacing: 0.3px;
+  text-transform: lowercase;
   opacity: 0.4;
   color: inherit;
   pointer-events: none;
-  transition: opacity 0.2s ease;
-  line-height: 1;
+  white-space: nowrap;
 }
-.price-pill:hover .pill-hint,
-.halving-pill:hover .pill-hint {
-  opacity: 0.65;
+.price-pill:hover .pill-tap-hint,
+.halving-pill:hover .pill-tap-hint {
+  opacity: 0.6;
 }
 
 .price-pill#taoPricePill {
