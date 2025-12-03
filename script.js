@@ -491,10 +491,22 @@ async function fetchStakingApr() {
 
 async function fetchTaoPrice() {
   const taostats = await fetchTaostats();
+  
+  // Try to get price_24h_pct from our aggregates as fallback
+  let aggregatesPriceChange = null;
+  try {
+    const aggregates = await fetchTaostatsAggregates();
+    if (aggregates?.price_24h_pct != null) {
+      aggregatesPriceChange = aggregates.price_24h_pct;
+    }
+  } catch (e) {
+    // ignore
+  }
+  
   if (taostats && taostats.price) {
     return {
       price: taostats.price,
-      change24h: taostats.percent_change_24h ?? null,
+      change24h: taostats.percent_change_24h ?? aggregatesPriceChange ?? null,
       last_updated: taostats.last_updated ?? null,
       volume_24h: taostats.volume_24h ?? null,
       _source: 'taostats'
@@ -1425,7 +1437,8 @@ async function initDashboard() {
   }
 
   // Initial Volume Signal (Ampelsystem) update
-  const initPriceChange24h = taostats?.percent_change_24h ?? null;
+  // Use aggregates price_24h_pct as fallback if taostats doesn't provide it
+  const initPriceChange24h = taostats?.percent_change_24h ?? taoPrice?.change24h ?? null;
   if (taostats?.volume_24h) {
     updateVolumeSignal(taostats.volume_24h, initPriceChange24h);
   }
