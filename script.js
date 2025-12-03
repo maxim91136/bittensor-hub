@@ -5,7 +5,7 @@
     '> decrypting network data...',
     '> [pill me]'
   ];
-  const delays = [400, 400, 300]; // ms per line
+  const delays = [800, 800, 600]; // ms per line
   const fadeDelay = 400;
   
   function runTerminalBoot() {
@@ -31,7 +31,7 @@
           setTimeout(() => {
             overlay.classList.add('hidden');
           }, fadeDelay);
-        }, 500);
+        }, 800);
       }
     }
     showNext();
