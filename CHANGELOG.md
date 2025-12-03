@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.18.4 (2025-12-03)
+### Added
+- **Neutral Glow**: White/subtle glow animation for neutral signal state
+  - Users can now see the Volume card is interactive even when neutral
+  - Added `blink-white` CSS class with dezent white pulse
+
+### Fixed
+- **Tooltip Unification**: Single source of truth for Volume tooltip in `script.js`
+  - Removed duplicate tooltip code from `taostats-card.js`
+  - Combined Ampelsystem signal + confidence + Moving Averages in one tooltip
+- **Red Border Bug**: Removed CSS rules in `taostats-card.css` that overrode Ampelsystem
+  - `.stat-card.pulse-down` no longer sets border/background colors
+- **Neutral Signal Emoji**: Added `⚪ Neutral` emoji for consistency
+- **Confidence Line**: Removed colored emoji from confidence to reduce visual noise
+
 ## v1.0.0-rc.18.3 (2025-12-02)
 ### Fixed
 - **Emission Calculation**: Fixed incorrect AVG. EMISSION / DAY showing ~5,781 instead of ~7,185 TAO/day
