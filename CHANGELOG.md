@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.18.5 (2025-12-03)
+### Fixed
+- **MA Thresholds**: Changed from sample-count to time-based thresholds
+  - MA-3d now shows when ≥48h of data available (was: ≥432 samples)
+  - MA-7d now shows when ≥120h of data available (was: ≥1008 samples)
+- **Ampelsystem Logic**: Vol↓ + Price stable now shows neutral (white) instead of yellow
+  - Yellow reserved for actual warnings (momentum loss, consolidation)
+  - More intuitive: quiet market = no alert needed
+
 ## v1.0.0-rc.18.4 (2025-12-03)
 ### Added
 - **Neutral Glow**: White/subtle glow animation for neutral signal state
