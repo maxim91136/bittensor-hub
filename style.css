@@ -716,7 +716,8 @@ body.light-bg #maxSupplyScribble {
 .taobubbles-card .taobubbles-preview {
   margin-top: 10px;
   width: 100%;
-  height: 140px;
+  height: 320px; /* larger by default so the main bubbles area is visible */
+  min-height: 180px;
   border-radius: 10px;
   overflow: hidden;
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
@@ -727,6 +728,19 @@ body.light-bg #maxSupplyScribble {
   height: 100%;
   border: 0;
   display: block;
+}
+
+/* Responsive adjustments: larger preview on wide screens, smaller on narrow screens */
+@media (min-width: 1000px) {
+  .taobubbles-card .taobubbles-preview {
+    height: 420px;
+  }
+}
+
+@media (max-width: 700px) {
+  .taobubbles-card .taobubbles-preview {
+    height: 180px;
+  }
 }
 
 /* If the inline iframe is blocked by browser or X-Frame-Options, keep the card compact
