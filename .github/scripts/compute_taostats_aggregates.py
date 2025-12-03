@@ -93,6 +93,19 @@ def compute_aggregates(history):
     except Exception:
         pass
     
+    # Also extract prices for price_24h_pct calculation
+    prices = []
+    for e in history:
+        if e and e.get('price') is not None:
+            try:
+                prices.append((e.get('_timestamp'), float(e.get('price'))))
+            except:
+                pass
+    try:
+        prices = sorted(prices, key=lambda x: x[0])
+    except Exception:
+        pass
+    
     # Calculate actual time span in hours
     hours_of_data = 0
     try:
@@ -149,6 +162,78 @@ def compute_aggregates(history):
     else:
         confidence = 'high'
 
+    # === Calculate price_24h_pct from history ===
+    # Find entry closest to 24h ago and compare with current price
+    price_24h_pct = None
+    current_price = prices[-1][1] if prices else None
+    if prices and len(prices) >= 2 and hours_of_data >= 20:
+        try:
+            now = datetime.fromisoformat(prices[-1][0].replace('Z', '+00:00'))
+            target_time = now.timestamp() - (24 * 3600)  # 24h ago
+            
+            # Find closest entry to 24h ago
+            old_price = None
+            min_diff = float('inf')
+            for ts, price in prices:
+                entry_time = datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp()
+                diff = abs(entry_time - target_time)
+                if diff < min_diff:
+                    min_diff = diff
+                    old_price = price
+            
+            if old_price and old_price > 0:
+                price_24h_pct = ((current_price - old_price) / old_price) * 100
+        except Exception as e:
+            print(f"Warning: price_24h_pct calculation failed: {e}", file=sys.stderr)
+            price_24h_pct = None
+
+    # === Calculate volume_change_24h from history ===
+    # Compare current volume with volume from ~24h ago
+    volume_change_24h = None
+    if vols and len(vols) >= 2 and hours_of_data >= 20:
+        try:
+            now = datetime.fromisoformat(vols[-1][0].replace('Z', '+00:00'))
+            target_time = now.timestamp() - (24 * 3600)  # 24h ago
+            
+            # Find closest entry to 24h ago
+            old_volume = None
+            min_diff = float('inf')
+            for ts, vol in vols:
+                entry_time = datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp()
+                diff = abs(entry_time - target_time)
+                if diff < min_diff:
+                    min_diff = diff
+                    old_volume = vol
+            
+            if old_volume and old_volume > 0:
+                volume_change_24h = ((last_volume - old_volume) / old_volume) * 100
+        except Exception as e:
+            print(f"Warning: volume_change_24h calculation failed: {e}", file=sys.stderr)
+            volume_change_24h = None
+
+    # === Calculate volume_signal based on price and volume changes ===
+    volume_signal = None
+    if price_24h_pct is not None and volume_change_24h is not None:
+        threshold = 3.0  # ±3% for significant change
+        vol_up = volume_change_24h > threshold
+        vol_down = volume_change_24h < -threshold
+        price_up = price_24h_pct > threshold
+        price_down = price_24h_pct < -threshold
+        price_stable = not price_up and not price_down
+        
+        if vol_up and price_up:
+            volume_signal = 'green'      # Bullish
+        elif vol_up and price_down:
+            volume_signal = 'red'        # Bearish
+        elif vol_up and price_stable:
+            volume_signal = 'orange'     # Watch
+        elif vol_down and price_up:
+            volume_signal = 'yellow'     # Caution
+        elif vol_down and price_down:
+            volume_signal = 'yellow'     # Consolidation
+        else:
+            volume_signal = 'neutral'    # Stable
+
     # Determine trend_direction using hierarchical MA strategy
     # Priority hierarchy: 7-day > 3-day > 1-day > short-term
     # Each level can independently trigger alerts, higher priority overrides lower
@@ -192,6 +277,7 @@ def compute_aggregates(history):
         '_generated_at': datetime.now(timezone.utc).isoformat(),
         'count': N,
         'last_volume': last_volume,
+        'last_price': current_price,
         'ma_short': ma_short,
         'ma_med': ma_med,
         'ma_3d': ma_3d,
@@ -201,8 +287,12 @@ def compute_aggregates(history):
         'pct_change_vs_ma_med': pct_change_vs_ma_med,
         'pct_change_vs_ma_3d': pct_change_vs_ma_3d,
         'pct_change_vs_ma_7d': pct_change_vs_ma_7d,
+        'price_24h_pct': price_24h_pct,
+        'volume_change_24h': volume_change_24h,
+        'volume_signal': volume_signal,
         'trend_direction': trend_direction,
         'confidence': confidence,
+        'hours_of_data': round(hours_of_data, 1),
         'sample_timestamps': [t for (t, _) in vols[-10:]],
     }
     return aggregates
