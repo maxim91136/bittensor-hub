@@ -14,15 +14,15 @@ PS: This is my first ever GitHub and website project, with many headaches but al
 
 ## Features
 
-### 📊 Live Network Metrics
-- **Real-time TAO price** with 24h change indicator and breathing animation
+### 📊 Network Metrics
+- **TAO price** with 24h change indicator and breathing animation
 - **Circulating Supply** tracking against the 21M cap
-- **Total Issuance** with live on-chain data via Bittensor SDK
+- **Total Issuance** from on-chain data via Bittensor SDK
 - **Active Neurons** count across all subnets
 
 ### ⚡ Emission & Halving
 - **AVG. Emission/Day** calculated from on-chain issuance history
-- **Halving Countdown** with live block-based projection
+- **Halving Countdown** with block-based projection
 - **Emission curve visualization** showing TAO distribution over time
 
 ### 🚦 Volume Signal (Ampelsystem)
