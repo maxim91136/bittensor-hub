@@ -743,6 +743,50 @@ body.light-bg #maxSupplyScribble {
   }
 }
 
+/* Make the taobubbles card span full width of the dashboard grid so preview can be large */
+.taobubbles-card {
+  grid-column: 1 / -1;
+  /* slightly more padding to give the preview room */
+  padding-bottom: 18px;
+}
+
+/* Zoom controls styling */
+.taobubbles-controls-row {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 6px;
+}
+.taobubbles-zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tao-zoom-btn {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.04);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.tao-zoom-btn.muted { opacity: 0.7; font-weight: 600; }
+.tao-zoom-btn:hover { background: rgba(255,255,255,0.05); }
+.tao-zoom-level { font-weight: 700; color: var(--text-muted); }
+
+/* Zoom behavior: use CSS variable to scale iframe content while preserving layout.
+   The iframe width/height are adjusted inversely so scale-origin keeps visible area centered.
+*/
+.taobubbles-preview iframe {
+  width: calc(100% / var(--taobubbles-zoom, 1));
+  height: calc(100% / var(--taobubbles-zoom, 1));
+  transform: scale(var(--taobubbles-zoom, 1));
+  transform-origin: center top;
+  border: 0;
+  display: block;
+}
+
 /* If the inline iframe is blocked by browser or X-Frame-Options, keep the card compact
    and rely on the modal fallback (JS opens a new tab if iframe doesn't load). */
 

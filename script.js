@@ -2217,3 +2217,46 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.key === 'Escape') closeTaobubbles();
   });
 });
+
+// ===== Taobubbles Zoom Controls =====
+document.addEventListener('DOMContentLoaded', function() {
+  const zoomOut = document.getElementById('taoZoomOut');
+  const zoomIn = document.getElementById('taoZoomIn');
+  const zoomReset = document.getElementById('taoZoomReset');
+  const zoomLevelText = document.getElementById('taoZoomLevel');
+  const preview = document.querySelector('.taobubbles-preview');
+
+  if (!preview || !zoomOut || !zoomIn || !zoomReset || !zoomLevelText) return;
+
+  const STORAGE_KEY = 'taobubblesZoom';
+  let zoom = parseFloat(localStorage.getItem(STORAGE_KEY) || '1');
+  if (isNaN(zoom) || zoom <= 0) zoom = 1;
+
+  function setZoom(v) {
+    zoom = Math.max(0.6, Math.min(v, 2.0)); // clamp between 0.6x and 2.0x
+    // Apply CSS variable to preview container so iframe scales accordingly
+    preview.style.setProperty('--taobubbles-zoom', zoom);
+    // Update displayed percentage
+    zoomLevelText.textContent = Math.round(zoom * 100) + '%';
+    localStorage.setItem(STORAGE_KEY, String(zoom));
+  }
+
+  zoomOut.addEventListener('click', function() { setZoom(+(zoom - 0.1).toFixed(2)); });
+  zoomIn.addEventListener('click', function() { setZoom(+(zoom + 0.1).toFixed(2)); });
+  zoomReset.addEventListener('click', function() { setZoom(1); });
+
+  // Keyboard support when controls are focused
+  document.addEventListener('keydown', function(e) {
+    // Use +/- keys when the Taobubbles card or controls are focused
+    const active = document.activeElement;
+    if (!active) return;
+    const isInside = active.closest && (active.closest('.taobubbles-card') || active.id === 'taobubblesZoomControls');
+    if (!isInside) return;
+    if (e.key === '+' || e.key === '=' ) { e.preventDefault(); setZoom(+(zoom + 0.1).toFixed(2)); }
+    if (e.key === '-' || e.key === '_') { e.preventDefault(); setZoom(+(zoom - 0.1).toFixed(2)); }
+    if (e.key === '0') { e.preventDefault(); setZoom(1); }
+  });
+
+  // Initialize
+  setZoom(zoom);
+});

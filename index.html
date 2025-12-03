@@ -349,7 +349,15 @@
       <div class="stat-content">
         <div class="stat-label">Taobubbles</div>
         <div class="stat-value">Interactive visualizer</div>
-        <!-- Inline preview iframe: shows a small embedded preview where possible. -->
+        <!-- Zoom controls + Inline preview iframe: shows an embedded preview where possible. -->
+        <div class="taobubbles-controls-row">
+          <div class="taobubbles-zoom-controls" id="taobubblesZoomControls" aria-hidden="false">
+            <button id="taoZoomOut" class="tao-zoom-btn" title="Zoom out">−</button>
+            <span id="taoZoomLevel" class="tao-zoom-level">100%</span>
+            <button id="taoZoomIn" class="tao-zoom-btn" title="Zoom in">+</button>
+            <button id="taoZoomReset" class="tao-zoom-btn muted" title="Reset zoom">Reset</button>
+          </div>
+        </div>
         <div class="taobubbles-preview" aria-hidden="true">
           <iframe id="taobubblesInlineIframe" src="https://taobubbles.xyz" frameborder="0" loading="lazy" title="Taobubbles preview"></iframe>
         </div>
