@@ -266,21 +266,25 @@ body.light-bg #maxSupplyScribble {
   transition: box-shadow 0.3s ease;
   white-space: nowrap;
   cursor: help;
+  position: relative;
 }
 
 /* Subtle ? hint for tooltip discovery */
 .pill-hint {
-  font-size: 11px;
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  font-size: 9px;
   font-weight: 600;
-  opacity: 0.35;
-  margin-left: 4px;
+  opacity: 0.3;
   color: inherit;
   pointer-events: none;
   transition: opacity 0.2s ease;
+  line-height: 1;
 }
 .price-pill:hover .pill-hint,
 .halving-pill:hover .pill-hint {
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .price-pill#taoPricePill {
@@ -492,6 +496,7 @@ body.light-bg #maxSupplyScribble {
   transition: all 0.3s ease;
   white-space: nowrap;
   cursor: help;
+  position: relative;
 }
 
 .halving-pill:hover {
