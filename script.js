@@ -68,6 +68,39 @@ document.addEventListener('terminalBootDone', async () => {
   }
 });
 
+// Ensure auto-refresh runs even if init failed (so periodic retries happen)
+function ensureAutoRefreshStarted() {
+  try {
+    if (typeof refreshTimer === 'undefined' || refreshTimer === null) {
+      startAutoRefresh();
+    }
+  } catch (e) {
+    if (window._debug) console.warn('ensureAutoRefreshStarted error', e);
+  }
+}
+
+// After terminal boot, double-check key UI elements and trigger a refresh if still empty
+document.addEventListener('terminalBootDone', () => {
+  ensureAutoRefreshStarted();
+  // short delay to let any pending UI updates settle
+  setTimeout(() => {
+    try {
+      const priceEl = document.getElementById('taoPrice');
+      const changeEl = document.getElementById('priceChange');
+      const halvingEl = document.getElementById('halvingCountdown');
+      const needRefresh = (
+        !priceEl || priceEl.textContent.trim() === '' || priceEl.classList.contains('skeleton-text')
+      );
+      if (needRefresh) {
+        if (window._debug) console.log('terminalBootDone fallback: triggering refreshDashboard()');
+        refreshDashboard();
+      }
+    } catch (e) {
+      if (window._debug) console.warn('terminalBootDone fallback check failed', e);
+    }
+  }, 1200);
+});
+
 // ===== API Configuration =====
 const API_BASE = '/api';
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
