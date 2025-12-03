@@ -200,7 +200,7 @@ function getVolumeSignal(volumeData, priceChange) {
   // ⚪ NEUTRAL: No significant movement
   return {
     signal: 'neutral',
-    tooltip: `Volume: ${volStr}\nPrice: ${priceStr}\nStable market conditions${confidenceLine}`
+    tooltip: `⚪ Neutral\nVolume: ${volStr}\nPrice: ${priceStr}\nStable market conditions${confidenceLine}`
   };
 }
 
