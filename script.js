@@ -602,17 +602,22 @@ function updateTaoPrice(priceData) {
         changeEl.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
         
         // Apply subtle pulse animation to price pill based on 24h change
+        // 3 states: price-up (>+0.5%), price-down (<-0.5%), price-neutral (±0.5%)
         if (pricePill) {
-          pricePill.classList.remove('price-up', 'price-down');
-          if (Math.abs(change) > 0.5) { // Only pulse if change > 0.5%
-            pricePill.classList.add(change > 0 ? 'price-up' : 'price-down');
+          pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
+          if (change > 0.5) {
+            pricePill.classList.add('price-up');
+          } else if (change < -0.5) {
+            pricePill.classList.add('price-down');
+          } else {
+            pricePill.classList.add('price-neutral');
           }
         }
       }
     } else {
       priceEl.textContent = 'N/A';
       if (changeEl) changeEl.style.display = 'none';
-      if (pricePill) pricePill.classList.remove('price-up', 'price-down');
+      if (pricePill) pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
     }
   lastPrice = priceData.price;
   tryUpdateMarketCapAndFDV();
