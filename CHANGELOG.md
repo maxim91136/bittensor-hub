@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.19 (2025-12-03)
+### Added
+- **Top-10 History collection & APIs**: scheduled collector + API endpoints for validators, wallets, and subnets. Snapshots stored in Cloudflare KV and backed up locally by workflow.
+- **Terminal Boot Intro**: Matrix-style terminal overlay on page load that dispatches `terminalBootDone` to avoid init race conditions.
+- **Price Pill Three-State**: price pill now always displays one of `price-up`, `price-down`, or `price-neutral` for consistent visuals (dark & light modes).
+### Fixed
+- **Initialization Race**: Added init guards and fallback refresh to ensure dashboard initializes even if the overlay interferes.
+### Changed
+- **Workflow cadence**: Top history collector updated to run every 30 minutes (`:13, :43`).
+
 ## v1.0.0-rc.18.6 (2025-12-03)
 ### Changed
 - **Ampelsystem**: Merged 'Stable' and 'Neutral' into single 'Stable' state
