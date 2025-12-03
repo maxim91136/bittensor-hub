@@ -1,3 +1,48 @@
+/* Matrix Terminal Boot Overlay */
+.terminal-boot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s ease-out;
+}
+.terminal-boot.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+.terminal-boot.hidden {
+  display: none;
+}
+.terminal-content {
+  font-family: 'Courier New', monospace;
+  font-size: clamp(14px, 3vw, 18px);
+  color: #22c55e;
+  text-align: left;
+  line-height: 1.8;
+}
+.terminal-line {
+  opacity: 0;
+  white-space: nowrap;
+}
+.terminal-line.visible {
+  opacity: 1;
+}
+.terminal-cursor {
+  display: inline-block;
+  animation: blink-cursor 0.7s infinite;
+  margin-left: 2px;
+}
+@keyframes blink-cursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
 .pill-value.light-bg,
 .pill-value.skeleton-text.light-bg {
   color: #000 !important;

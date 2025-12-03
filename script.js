@@ -1,3 +1,50 @@
+// ===== Matrix Terminal Boot Sequence =====
+(function() {
+  const lines = [
+    '> connecting to bittensor...',
+    '> decrypting network data...',
+    '> [pill me]'
+  ];
+  const delays = [400, 400, 300]; // ms per line
+  const fadeDelay = 400;
+  
+  function runTerminalBoot() {
+    const overlay = document.getElementById('terminalBoot');
+    if (!overlay) return;
+    
+    const line1 = document.getElementById('termLine1');
+    const line2 = document.getElementById('termLine2');
+    const line3 = document.getElementById('termLine3');
+    const lineEls = [line1, line2, line3];
+    
+    let i = 0;
+    function showNext() {
+      if (i < lines.length) {
+        lineEls[i].textContent = lines[i];
+        lineEls[i].classList.add('visible');
+        i++;
+        setTimeout(showNext, delays[i - 1]);
+      } else {
+        // All lines shown, wait then fade out
+        setTimeout(() => {
+          overlay.classList.add('fade-out');
+          setTimeout(() => {
+            overlay.classList.add('hidden');
+          }, fadeDelay);
+        }, 500);
+      }
+    }
+    showNext();
+  }
+  
+  // Run on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runTerminalBoot);
+  } else {
+    runTerminalBoot();
+  }
+})();
+
 // ===== API Configuration =====
 const API_BASE = '/api';
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
