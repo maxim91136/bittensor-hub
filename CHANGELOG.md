@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.18.6 (2025-12-03)
+### Changed
+- **Ampelsystem**: Merged 'Stable' and 'Neutral' into single 'Stable' state
+  - Reduced signal matrix from 7 to 6 states
+  - White glow now shows `⚪ Stable` for all quiet conditions
+- **README**: Complete rewrite of Features section with actual highlights
+- **Documentation**: Removed misleading "live/real-time" wording
+- **Halving description**: Fixed to "issuance-based" (not block-based)
+
 ## v1.0.0-rc.18.5 (2025-12-03)
 ### Fixed
 - **MA Thresholds**: Changed from sample-count to time-based thresholds
