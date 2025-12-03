@@ -1,0 +1,37 @@
+name: Publish Top History
+
+on:
+  schedule:
+    - cron: '13 */6 * * *' # every 6 hours at :13 (after backups at :01/:04/:07/:10)
+  workflow_dispatch: {}
+
+jobs:
+  publish-top-history:
+    runs-on: ubuntu-latest
+    name: Collect Top 10 snapshots and append to history
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Publish Top History to KV
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+          API_BASE_URL: 'https://bittensor-labs.pages.dev'
+          MAX_HISTORY_ENTRIES: '672'
+        run: |
+          python .github/scripts/publish_top_history.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: top-history-snapshot
+          path: .github/data/top_history_latest.json
+          retention-days: 7
