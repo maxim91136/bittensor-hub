@@ -161,7 +161,8 @@ def process_validators(data: Dict) -> List[Dict]:
 def process_wallets(data: Dict) -> List[Dict]:
     """Extract normalized entries from top_wallets response."""
     entries = []
-    wallets = data.get('top_wallets', [])
+    # API returns 'wallets' not 'top_wallets'
+    wallets = data.get('wallets', []) or data.get('top_wallets', [])
     
     for i, w in enumerate(wallets[:10], 1):
         address = w.get('address', '')
