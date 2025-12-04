@@ -2404,20 +2404,20 @@ document.addEventListener('DOMContentLoaded', function() {
   function enableSnowfall() {
     const container = document.getElementById('snowfall');
     if (!container) return;
-    // Keep it small and performant
-    const flakes = window.innerWidth < 420 ? 18 : 28;
+    // Keep it small and performant (reduced counts for lower CPU/GPU)
+    const flakes = window.innerWidth < 420 ? 12 : 18;
     container.innerHTML = '';
     for (let i = 0; i < flakes; i++) {
       const s = document.createElement('span');
       s.className = 'snowflake';
       const left = Math.random() * 100;
-      const size = Math.floor(8 + Math.random() * 18); // px
-      const dur = (6 + Math.random() * 10).toFixed(2); // seconds
+      const size = Math.floor(6 + Math.random() * 10); // px (smaller)
+      const dur = (8 + Math.random() * 12).toFixed(2); // seconds (slower fall)
       const delay = (Math.random() * -12).toFixed(2);
       s.style.left = `${left}%`;
       s.style.fontSize = `${size}px`;
-      s.style.opacity = (0.4 + Math.random() * 0.6).toString();
-      s.style.animationDuration = `${dur}s, ${8 + Math.random() * 8}s`;
+      s.style.opacity = (0.35 + Math.random() * 0.55).toString();
+      s.style.animationDuration = `${dur}s, ${10 + Math.random() * 8}s`;
       s.style.animationDelay = `${delay}s, ${delay}s`;
       // Slight horizontal drift via small translateX applied through CSS left variation
       container.appendChild(s);
@@ -2458,15 +2458,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function spawnSparkle(container) {
     if (!container) return;
-    // Limit active sparkles for performance
-    if (container.childElementCount > 36) return;
+    // Limit active sparkles for performance (reduced)
+    if (container.childElementCount > 20) return;
     const s = document.createElement('span');
     s.className = 'sparkle';
     // Position somewhere across the width, within the top container height
     const left = Math.random() * 100;
     const top = Math.random() * 28; // percent of viewport height (within container)
-    const scale = 0.6 + Math.random() * 1.4;
-    const dur = 700 + Math.random() * 800; // ms
+    const scale = 0.6 + Math.random() * 1.0;
+    const dur = 900 + Math.random() * 900; // ms (slightly slower)
     s.style.left = `${left}%`;
     s.style.top = `${top}%`;
     s.style.width = `${Math.round(6 + Math.random() * 8)}px`;
@@ -2482,17 +2482,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const container = document.getElementById('nye-sparkles');
     if (!container) return;
-    // initial burst
-    const initial = window.innerWidth < 420 ? 8 : 14;
+    // initial burst (smaller)
+    const initial = window.innerWidth < 420 ? 4 : 8;
     for (let i = 0; i < initial; i++) spawnSparkle(container);
     // periodic bursts
     const interval = setInterval(() => {
-      // spawn 1-4 sparkles each tick
-      const count = 1 + Math.floor(Math.random() * 4);
+      // spawn 1-2 sparkles each tick (reduced)
+      const count = 1 + Math.floor(Math.random() * 2);
       for (let i = 0; i < count; i++) spawnSparkle(container);
       // Occasionally spawn confetti and rockets for a richer NYE effect
-      const confettiChance = 0.28; // ~28% per tick
-      const rocketChance = 0.12; // ~12% per tick
+      const confettiChance = 0.12; // ~12% per tick (reduced)
+      const rocketChance = 0.05; // ~5% per tick (reduced)
       if (Math.random() < confettiChance) spawnConfettiBurst();
       if (Math.random() < rocketChance) launchRocket();
     }, 1000 + Math.random() * 800);
@@ -2500,13 +2500,13 @@ document.addEventListener('DOMContentLoaded', function() {
     window._nyeSparklesInterval = interval;
   }
 
-  // Confetti burst: spawn several confetti pieces across the viewport
+  // Confetti burst: spawn several confetti pieces across the viewport (reduced)
   function spawnConfettiBurst() {
     const container = document.getElementById('confetti');
     if (!container) return;
-    // limit total active pieces
-    if (container.childElementCount > 120) return;
-    const pieces = 12 + Math.floor(Math.random() * 12);
+    // limit total active pieces (reduced)
+    if (container.childElementCount > 60) return;
+    const pieces = 6 + Math.floor(Math.random() * 5);
     for (let i = 0; i < pieces; i++) {
       const p = document.createElement('span');
       p.className = 'confetti-piece';
@@ -2516,9 +2516,9 @@ document.addEventListener('DOMContentLoaded', function() {
       const left = Math.random() * 100;
       const startX = left;
       const delay = Math.random() * 300; // ms
-      const dur = 2000 + Math.random() * 1800; // ms
-      const sizeW = 6 + Math.random()*10;
-      const sizeH = 8 + Math.random()*12;
+      const dur = 2200 + Math.random() * 1000; // ms (slightly slower)
+      const sizeW = 4 + Math.random()*6;
+      const sizeH = 6 + Math.random()*8;
       p.style.left = `${startX}%`;
       p.style.top = `${-6 - Math.random()*8}vh`;
       p.style.width = `${sizeW}px`;
@@ -2535,8 +2535,8 @@ document.addEventListener('DOMContentLoaded', function() {
   function launchRocket() {
     const container = document.getElementById('rockets');
     if (!container) return;
-    // limit concurrent rockets
-    if (container.childElementCount > 6) return;
+    // limit concurrent rockets (fewer concurrent rockets)
+    if (container.childElementCount > 3) return;
     const r = document.createElement('span');
     r.className = 'rocket';
     r.textContent = '🚀';
@@ -2546,7 +2546,7 @@ document.addEventListener('DOMContentLoaded', function() {
     r.style.left = `${left}%`;
     r.style.bottom = `${bottom}px`;
     // randomize animation duration slightly
-    const dur = 1200 + Math.random() * 1000;
+    const dur = 1400 + Math.random() * 800;
     r.style.animationDuration = `${dur}ms`;
     container.appendChild(r);
     // cleanup after animation
