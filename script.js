@@ -3,79 +3,100 @@ window.updateTopSubnets = async function updateTopSubnets() {
   try {
     const res = await fetch('/api/top_subnets');
     const data = await res.json();
+    console.log('updateTopSubnets response:', data);
     const tbody = document.getElementById('topSubnetsDisplayList');
-    if (!Array.isArray(data) || !tbody) return;
+    if (!Array.isArray(data) || !tbody) {
+      console.warn('updateTopSubnets: data not array or tbody missing', data, tbody);
+      return;
+    }
     tbody.innerHTML = '';
     data.forEach((row, i) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `<td>${i+1}</td><td>${row.subnet}</td><td>${row.emission_pct}</td><td>${row.daily_tao}</td>`;
       tbody.appendChild(tr);
     });
-  } catch (e) { /* handle error, optionally show fallback */ }
+  } catch (e) { console.error('updateTopSubnets error', e); }
 };
 
 window.updateTopValidators = async function updateTopValidators() {
   try {
     const res = await fetch('/api/top_validators');
     const data = await res.json();
+    console.log('updateTopValidators response:', data);
     const tbody = document.getElementById('topValidatorsDisplayList');
-    if (!Array.isArray(data) || !tbody) return;
+    if (!Array.isArray(data) || !tbody) {
+      console.warn('updateTopValidators: data not array or tbody missing', data, tbody);
+      return;
+    }
     tbody.innerHTML = '';
     data.forEach((row, i) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `<td>${i+1}</td><td>${row.validator}</td><td>${row.stake}</td><td>${row.dom_pct}</td><td>${row.noms}</td>`;
       tbody.appendChild(tr);
     });
-  } catch (e) { /* handle error */ }
+  } catch (e) { console.error('updateTopValidators error', e); }
 };
 
 window.updateTopWallets = async function updateTopWallets() {
   try {
     const res = await fetch('/api/top_wallets');
     const data = await res.json();
+    console.log('updateTopWallets response:', data);
     const tbody = document.getElementById('topWalletsDisplayList');
-    if (!Array.isArray(data) || !tbody) return;
+    if (!Array.isArray(data) || !tbody) {
+      console.warn('updateTopWallets: data not array or tbody missing', data, tbody);
+      return;
+    }
     tbody.innerHTML = '';
     data.forEach((row, i) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `<td>${i+1}</td><td>${row.wallet}</td><td>${row.balance}</td><td>${row.dom_pct}</td><td>${row.staked}</td>`;
       tbody.appendChild(tr);
     });
-  } catch (e) { /* handle error */ }
+  } catch (e) { console.error('updateTopWallets error', e); }
 };
 
 window.updateApiStatus = async function updateApiStatus() {
   try {
     const res = await fetch('/api/network');
     const data = await res.json();
+    console.log('updateApiStatus response:', data);
     const el = document.getElementById('apiStatus');
     if (el && data && data.status) {
       el.textContent = data.status;
+    } else {
+      console.warn('updateApiStatus: missing status', data, el);
     }
-  } catch (e) { /* handle error */ }
+  } catch (e) { console.error('updateApiStatus error', e); }
 };
 
 window.updatePrice = async function updatePrice() {
   try {
     const res = await fetch('/api/price_history');
     const data = await res.json();
+    console.log('updatePrice response:', data);
     const el = document.getElementById('taoPrice');
     if (el && data && data.length > 0) {
       el.textContent = data[data.length-1].price;
       el.classList.remove('skeleton-text');
+    } else {
+      console.warn('updatePrice: no data or element', data, el);
     }
-  } catch (e) { /* handle error */ }
+  } catch (e) { console.error('updatePrice error', e); }
 };
 
 window.updateHalvingInfo = async function updateHalvingInfo() {
   try {
     const res = await fetch('/api/issuance_history');
     const data = await res.json();
+    console.log('updateHalvingInfo response:', data);
     const el = document.getElementById('halvingCountdown');
     if (el && data && data.next_halving) {
       el.textContent = data.next_halving;
+    } else {
+      console.warn('updateHalvingInfo: missing next_halving', data, el);
     }
-  } catch (e) { /* handle error */ }
+  } catch (e) { console.error('updateHalvingInfo error', e); }
 };
 // ===== Dashboard Initialization (restored, global) =====
 window.initDashboard = async function initDashboard() {
