@@ -25,6 +25,15 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Darker Light Mode snowflakes for better contrast and unify `body.light-bg` and `prefers-color-scheme` behavior.
 
+## v1.0.0-rc.20.4 (2025-12-05)
+### Changed
+- Reduced Snowfall count by 50% to reduce visual CPU/GPU load and improve accessibility.
+- Reduced Matrix Glitch font size for improved visual balance and readability.
+- Unified Light Mode snowflake styling across `prefers-color-scheme` and `body.light-bg` toggles.
+
+### Notes
+- This release is visual and UX-only; no functional/back-end changes.
+
 
 ## v1.0.0-rc.20 (2025-12-04)
 ### Added
