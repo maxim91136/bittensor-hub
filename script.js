@@ -307,8 +307,15 @@ function getVolumeSignal(volumeData, priceChange, currentVolume = null, aggregat
       (tradedSharePct !== null && tradedSharePct >= TRADED_SHARE_MIN) ||
       (priceChange >= SUSTAIN_PRICE_PCT)
     );
+    // If traded-share or strong price move is present, consider sustained immediately
+    if (maShortUp && ma3dUp && ((tradedSharePct !== null && tradedSharePct >= TRADED_SHARE_MIN) || priceChange >= SUSTAIN_PRICE_PCT)) {
+      return {
+        signal: 'green',
+        tooltip: `🟢 Sustained bullish\nVolume: ${volStr}\nPrice: ${priceStr}\nMoving averages aligned — sustained buying pressure` + (confidenceLine || '')
+      };
+    }
+    // Otherwise use hysteresis to avoid flapping for marginal signals
     if (sustainCondition) {
-      // hysteresis: require consecutive confirmations to avoid flapping
       window._sustainedBullishCount = (window._sustainedBullishCount || 0) + 1;
     } else {
       window._sustainedBullishCount = 0;
