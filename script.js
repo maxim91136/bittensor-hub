@@ -826,8 +826,34 @@ function updateApiStatusTooltip(networkData, taostats, taoPrice, lastUpdated) {
   } else if (priceSrc === 'taostats') {
     lines.push('Source: Taostats');
   }
-
   infoBadge.setAttribute('data-tooltip', lines.join('\n'));
+
+  // Also update visible API status text and icon color to match AMPEL
+  try {
+    const apiStatusEl = document.getElementById('apiStatus');
+    const apiStatusIcon = document.querySelector('#apiStatusCard .stat-icon svg');
+    // Determine overall status: red if any ERROR, yellow if any PARTIAL, green otherwise
+    const anyError = (!networkData) || (!taostats && !taoPrice);
+    const anyPartial = (!!taostats && (!taostats.price || !taostats.volume_24h));
+    let statusText = 'All systems ok';
+    let color = '#22c55e';
+    if (anyError) {
+      statusText = 'API error';
+      color = '#ef4444';
+    } else if (anyPartial) {
+      statusText = 'Partial data';
+      color = '#eab308';
+    }
+    if (apiStatusEl) apiStatusEl.textContent = statusText;
+    if (apiStatusIcon) {
+      const circle = apiStatusIcon.querySelector('circle');
+      if (circle) circle.setAttribute('stroke', color);
+      const polyline = apiStatusIcon.querySelector('polyline');
+      if (polyline) polyline.setAttribute('stroke', color);
+    }
+  } catch (e) {
+    if (window._debug) console.debug('Failed to set apiStatus text/color from tooltip helper', e);
+  }
 }
 
 function tryUpdateMarketCapAndFDV() {
@@ -1350,28 +1376,7 @@ async function refreshDashboard() {
     updateVolumeSignal(taostats.volume_24h, priceChange24h);
   }
 
-  // Set API status
-  const apiStatusEl = document.getElementById('apiStatus');
-  const apiStatusIcon = document.querySelector('#apiStatusCard .stat-icon svg');
-  let statusText = 'All systems ok';
-  let color = '#22c55e'; // green
-  if (!networkData || !taostats) {
-    statusText = 'API error';
-    color = '#ef4444'; // red
-  } else if (!taostats.price || !taostats.volume_24h) {
-    statusText = 'Partial data';
-    color = '#eab308'; // yellow
-  }
-  if (apiStatusEl) apiStatusEl.textContent = statusText;
-  // Dynamically update SVG colors
-  if (apiStatusIcon) {
-    // Update circle color
-    const circle = apiStatusIcon.querySelector('circle');
-    if (circle) circle.setAttribute('stroke', color);
-    // Update heartbeat line color
-    const polyline = apiStatusIcon.querySelector('polyline');
-    if (polyline) polyline.setAttribute('stroke', color);
-  }
+  // API status is updated via updateApiStatusTooltip() earlier
 
   // Update Block Time and Staking APR cards
   await updateBlockTime();
