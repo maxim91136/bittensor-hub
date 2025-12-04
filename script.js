@@ -2422,6 +2422,22 @@ document.addEventListener('DOMContentLoaded', function() {
       // Slight horizontal drift via small translateX applied through CSS left variation
       container.appendChild(s);
     }
+    // Add a couple of larger, slower flakes for visual interest
+    const largeCount = window.innerWidth < 420 ? 1 : 3;
+    for (let i = 0; i < largeCount; i++) {
+      const L = document.createElement('span');
+      L.className = 'snowflake large';
+      const leftL = Math.random() * 100;
+      const sizeL = Math.floor(22 + Math.random() * 24); // px - big flakes
+      const durL = (14 + Math.random() * 12).toFixed(2); // seconds, slow fall
+      const delayL = (Math.random() * -20).toFixed(2);
+      L.style.left = `${leftL}%`;
+      L.style.fontSize = `${sizeL}px`;
+      L.style.opacity = (0.7 + Math.random() * 0.3).toString();
+      L.style.animationDuration = `${durL}s, ${14 + Math.random() * 10}s`;
+      L.style.animationDelay = `${delayL}s, ${delayL}s`;
+      container.appendChild(L);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', function() {

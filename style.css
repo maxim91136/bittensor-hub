@@ -246,6 +246,23 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Larger flakes styling */
+.snowflake.large {
+  font-size: 28px;
+  opacity: 0.9;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.08);
+}
+
+/* Improve visibility in light mode: use a subtle darker snow glyph */
+@media (prefers-color-scheme: light) {
+  .snowflake {
+    color: rgba(24,24,27,0.92);
+    text-shadow: 0 0 6px rgba(255,255,255,0.6);
+  }
+  .snowflake::before { filter: drop-shadow(0 1px 0 rgba(255,255,255,0.6)); }
+  .snowflake.large { color: rgba(18,18,20,0.95); text-shadow: 0 0 8px rgba(255,255,255,0.7); }
+}
+
 /* Reduce motion for users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .snowflake { animation: none; opacity: 0.85; }
