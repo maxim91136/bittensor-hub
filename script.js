@@ -66,6 +66,53 @@
   }
 })();
 
+// Initialize sound and bind UI interactions
+document.addEventListener('DOMContentLoaded', function() {
+  try { if (window.sound) window.sound.init(); } catch(e) {}
+
+  // Header sound toggle
+  const soundBtn = document.getElementById('soundToggleBtn');
+  const soundIcon = document.getElementById('soundToggleIcon');
+  function updateSoundIcon(){
+    try {
+      if (!window.sound || window.sound.isMuted()) { if (soundIcon) soundIcon.textContent = '🔈'; }
+      else { if (soundIcon) soundIcon.textContent = '🔊'; }
+    } catch(e){}
+  }
+  if (soundBtn) {
+    updateSoundIcon();
+    soundBtn.addEventListener('click', function(){ try { window.sound.toggleMute(); updateSoundIcon(); } catch(e){} });
+  }
+
+  // Hover -> drip (debounced per element)
+  try {
+    const hoverSelector = '.halving-pill, .price-pill, .pills-row [data-tooltip], .pill';
+    const hoverEls = document.querySelectorAll(hoverSelector);
+    const debounce = new WeakMap();
+    hoverEls.forEach(el => {
+      el.addEventListener('pointerenter', () => {
+        try {
+          if (!window.sound) return;
+          if (debounce.get(el)) return;
+          window.sound.play('drip');
+          debounce.set(el, true);
+          setTimeout(() => debounce.delete(el), 600);
+        } catch(e){}
+      });
+    });
+  } catch(e){}
+
+  // Click on info-badge -> whoosh
+  document.addEventListener('click', (ev) => {
+    try {
+      if (!window.sound) return;
+      if (ev.target.closest && ev.target.closest('.info-badge')) {
+        window.sound.play('whoosh');
+      }
+    } catch(e){}
+  });
+});
+
 // If the terminal boot hides or races with our dashboard init, ensure we re-run init
 document.addEventListener('terminalBootDone', async () => {
   try {
@@ -1936,6 +1983,16 @@ async function updateBlockTime() {
         `Source: Taostats Block API`
       ];
       badge.setAttribute('data-tooltip', tooltipLines.join('\n'));
+      // Schedule a subtle block tick sound using avg block time (fallback 12s)
+      try {
+        const sec = Math.round(Number(avgTime)) || 12;
+        const intervalSec = (sec >= 6 && sec <= 60) ? sec : 12;
+        if (window._blockTickInterval) clearInterval(window._blockTickInterval);
+        // play a soft tick aligned to interval
+        window._blockTickInterval = setInterval(() => {
+          try { if (window.sound) window.sound.play('blockTick'); } catch (e) {}
+        }, intervalSec * 1000);
+      } catch (e) { /* ignore */ }
     }
   } else {
     el.textContent = '—';

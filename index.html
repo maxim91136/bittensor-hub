@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <script src="sounds.js" defer></script>
   <script src="script.js" defer></script>
   <script src="assets/taostats/taostats-card.js" defer></script>
 </head>
@@ -52,6 +53,9 @@
     <style>
       #bgToggleBtn { top: 8px !important; right: 12px !important; }
     </style>
+    </button>
+    <button id="soundToggleBtn" aria-label="Toggle UI sounds" style="position:absolute;top:8px;right:64px;padding:0;border-radius:50%;background:rgba(34,34,34,0.92);color:#fff;border:none;cursor:pointer;z-index:10;width:40px;height:40px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px #0002;">
+      <span id="soundToggleIcon">🔊</span>
     </button>
     <div class="refresh-logo-row">
       <div id="refresh-indicator" class="refresh-indicator" title="Auto-refresh"></div>
