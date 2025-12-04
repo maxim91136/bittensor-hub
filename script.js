@@ -62,10 +62,11 @@ window.updateApiStatus = async function updateApiStatus() {
     const data = await res.json();
     console.log('updateApiStatus response:', data);
     const el = document.getElementById('apiStatus');
-    if (el && data && data.status) {
-      el.textContent = data.status;
+    if (el && data) {
+      // Display a summary or a key field, e.g. totalNeurons
+      el.textContent = `Total Neurons: ${data.totalNeurons ?? 'N/A'}`;
     } else {
-      console.warn('updateApiStatus: missing status', data, el);
+      console.warn('updateApiStatus: missing data or element', data, el);
     }
   } catch (e) { console.error('updateApiStatus error', e); }
 };
