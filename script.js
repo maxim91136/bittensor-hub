@@ -1,3 +1,82 @@
+// ===== RESTORED & GLOBALIZED DASHBOARD UPDATE FUNCTIONS =====
+window.updateTopSubnets = async function updateTopSubnets() {
+  try {
+    const res = await fetch('/api/top_subnets');
+    const data = await res.json();
+    const tbody = document.getElementById('topSubnetsDisplayList');
+    if (!Array.isArray(data) || !tbody) return;
+    tbody.innerHTML = '';
+    data.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i+1}</td><td>${row.subnet}</td><td>${row.emission_pct}</td><td>${row.daily_tao}</td>`;
+      tbody.appendChild(tr);
+    });
+  } catch (e) { /* handle error, optionally show fallback */ }
+};
+
+window.updateTopValidators = async function updateTopValidators() {
+  try {
+    const res = await fetch('/api/top_validators');
+    const data = await res.json();
+    const tbody = document.getElementById('topValidatorsDisplayList');
+    if (!Array.isArray(data) || !tbody) return;
+    tbody.innerHTML = '';
+    data.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i+1}</td><td>${row.validator}</td><td>${row.stake}</td><td>${row.dom_pct}</td><td>${row.noms}</td>`;
+      tbody.appendChild(tr);
+    });
+  } catch (e) { /* handle error */ }
+};
+
+window.updateTopWallets = async function updateTopWallets() {
+  try {
+    const res = await fetch('/api/top_wallets');
+    const data = await res.json();
+    const tbody = document.getElementById('topWalletsDisplayList');
+    if (!Array.isArray(data) || !tbody) return;
+    tbody.innerHTML = '';
+    data.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i+1}</td><td>${row.wallet}</td><td>${row.balance}</td><td>${row.dom_pct}</td><td>${row.staked}</td>`;
+      tbody.appendChild(tr);
+    });
+  } catch (e) { /* handle error */ }
+};
+
+window.updateApiStatus = async function updateApiStatus() {
+  try {
+    const res = await fetch('/api/network');
+    const data = await res.json();
+    const el = document.getElementById('apiStatus');
+    if (el && data && data.status) {
+      el.textContent = data.status;
+    }
+  } catch (e) { /* handle error */ }
+};
+
+window.updatePrice = async function updatePrice() {
+  try {
+    const res = await fetch('/api/price_history');
+    const data = await res.json();
+    const el = document.getElementById('taoPrice');
+    if (el && data && data.length > 0) {
+      el.textContent = data[data.length-1].price;
+      el.classList.remove('skeleton-text');
+    }
+  } catch (e) { /* handle error */ }
+};
+
+window.updateHalvingInfo = async function updateHalvingInfo() {
+  try {
+    const res = await fetch('/api/issuance_history');
+    const data = await res.json();
+    const el = document.getElementById('halvingCountdown');
+    if (el && data && data.next_halving) {
+      el.textContent = data.next_halving;
+    }
+  } catch (e) { /* handle error */ }
+};
 // ===== Dashboard Initialization (restored, global) =====
 window.initDashboard = async function initDashboard() {
   window._dashboardInitInProgress = true;
