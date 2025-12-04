@@ -757,6 +757,7 @@ body.light-bg #maxSupplyScribble {
 }
 .api-status-badge.ok { background: #22c55e; }
 .api-status-badge.error { background: #ef4444; }
+.api-status-badge.partial { background: #eab308; color: #111; }
 .api-status-text { vertical-align: middle; color: var(--text); font-weight: 700; }
 
 .stat-value {

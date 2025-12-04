@@ -1416,10 +1416,17 @@ async function refreshDashboard() {
     color = '#eab308'; // yellow
   }
   if (apiStatusEl) {
-    // Prepend a small OK/Fehler badge. Green = OK, anything else -> Fehler (red)
+    // Prepend a small badge in English: OK (green), Partial (yellow), Error (red)
     const isOk = (color === '#22c55e');
-    const badgeText = isOk ? 'OK' : 'Fehler';
-    const badgeClass = isOk ? 'ok' : 'error';
+    let badgeText = 'Error';
+    let badgeClass = 'error';
+    if (isOk) {
+      badgeText = 'OK';
+      badgeClass = 'ok';
+    } else if (statusText === 'Partial data') {
+      badgeText = 'Partial';
+      badgeClass = 'partial';
+    }
     apiStatusEl.innerHTML = `<span class="api-status-badge ${badgeClass}">${badgeText}</span> <span class="api-status-text">${statusText}</span>`;
   }
   // Dynamically update SVG colors
@@ -1688,10 +1695,17 @@ async function initDashboard() {
     color = '#eab308'; // yellow
   }
   if (apiStatusEl) {
-    // Prepend OK/Fehler badge (same logic as refreshDashboard)
+    // Prepend small badge in English: OK / Partial / Error (same logic as refreshDashboard)
     const isOk = (color === '#22c55e');
-    const badgeText = isOk ? 'OK' : 'Fehler';
-    const badgeClass = isOk ? 'ok' : 'error';
+    let badgeText = 'Error';
+    let badgeClass = 'error';
+    if (isOk) {
+      badgeText = 'OK';
+      badgeClass = 'ok';
+    } else if (statusText === 'Partial data') {
+      badgeText = 'Partial';
+      badgeClass = 'partial';
+    }
     apiStatusEl.innerHTML = `<span class="api-status-badge ${badgeClass}">${badgeText}</span> <span class="api-status-text">${statusText}</span>`;
   }
   // Dynamically update SVG colors
