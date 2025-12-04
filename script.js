@@ -1256,6 +1256,42 @@ async function refreshDashboard() {
     if (polyline) polyline.setAttribute('stroke', color);
   }
 
+  // Update API info-badge tooltip with per-source status so UX shows which API is failing
+  try {
+    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
+    if (infoBadge) {
+      const lines = [];
+      lines.push('API status:');
+      // Network API
+      lines.push(`Network API: ${networkData ? 'OK' : 'ERROR'}`);
+      // Taostats
+      lines.push(`Taostats: ${taostats ? 'OK' : 'ERROR'}`);
+      // Price source and status
+      if (taoPrice) {
+        const src = taoPrice._source || 'unknown';
+        const priceOk = (typeof taoPrice.price === 'number' && !Number.isNaN(taoPrice.price));
+        lines.push(`Price source: ${src} ${priceOk ? '(OK)' : '(no price)'}`);
+      } else {
+        lines.push('Price data: ERROR');
+      }
+
+      // Add brief guidance for debugging
+      if (!networkData || !taostats || !taoPrice || (taoPrice && (taoPrice.price === null || taoPrice._source === 'error'))) {
+        lines.push('');
+        lines.push('Notes:');
+        if (!networkData) lines.push('- /api/network failed or returned invalid data');
+        if (!taostats) lines.push('- /api/taostats failed or returned invalid data');
+        if (!taoPrice) lines.push('- Price fetch failed (Taostats/Coingecko)');
+        else if (taoPrice && (taoPrice.price === null || taoPrice._source === 'error')) lines.push('- Price source returned no price');
+        lines.push('- Check server logs or the API endpoints for error details');
+      }
+
+      infoBadge.setAttribute('data-tooltip', lines.join('\n'));
+    }
+  } catch (e) {
+    if (window._debug) console.debug('Failed to update API info-badge tooltip', e);
+  }
+
   // Update Block Time and Staking APR cards
   await updateBlockTime();
   await updateStakingApr();
