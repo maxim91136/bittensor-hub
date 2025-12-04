@@ -1830,11 +1830,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Info badge tooltip for API status card: will be updated by `refreshDashboard()`
-    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
-    if (infoBadge) {
-      infoBadge.setAttribute('data-tooltip', 'Initializing API status... (updates on refresh)');
-    }
+    // Do not overwrite API status tooltip here — initDashboard/updateApiStatusUI will set it.
   })();
 
   // Background toggle button
