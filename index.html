@@ -335,7 +335,7 @@
     </section>
 
     <!-- Taobubbles Integration Card -->
-    <div class="stat-card taobubbles-card" id="taobubblesCard" role="button" tabindex="0" aria-label="Open Taobubbles visualizer" title="Open Taobubbles">
+    <div class="stat-card taobubbles-card" id="taobubblesCard">
       <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Interactive Taobubbles visualizer">i</span>
       <div class="stat-icon" aria-hidden="true">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -359,7 +359,9 @@
           </div>
           <!-- Explicit open button so clicks inside the iframe don't trigger navigation -->
           <div style="margin-left:12px;">
-            <button id="taobubblesOpenBtn" class="tao-zoom-btn" title="Open Taobubbles in modal or new tab">Open Taobubbles</button>
+            <button id="taobubblesOpenBtn" class="tao-zoom-btn tao-open-btn" aria-label="Open Taobubbles" title="Open Taobubbles">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
           </div>
         </div>
         <div class="taobubbles-preview" aria-hidden="true">

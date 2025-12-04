@@ -784,6 +784,11 @@ body.light-bg #maxSupplyScribble {
 .tao-zoom-btn:hover { background: rgba(255,255,255,0.05); }
 .tao-zoom-level { font-weight: 700; color: var(--text-muted); }
 
+/* Open (magnifier) button adjustments */
+.tao-open-btn { display: inline-flex; align-items: center; justify-content: center; padding: 8px; }
+.tao-open-btn svg { width: 18px; height: 18px; color: var(--text); }
+.tao-open-btn:hover { background: rgba(255,255,255,0.04); }
+
 /* Zoom behavior: use CSS variable to scale iframe content while preserving layout.
    The iframe width/height are adjusted inversely so scale-origin keeps visible area centered.
 */
