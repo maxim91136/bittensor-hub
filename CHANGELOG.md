@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.19.2.1 (2025-12-04)
+### Fixed
+- Tooltip chip ordering: initial HTML and dynamic updates now consistently show Bittensor SDK, Taostats, CoinGecko.
+- Prevent JS from overwriting rich HTML tooltips when a descriptive tooltip already exists in the markup.
+- Reduce visual dominance of the API status chip (padding/font-size adjustments) for better card hierarchy.
+
+### Changed
+- API Status card: single centered status chip (OK / Partial / Error); detailed per-source status is available in the info-badge tooltip (HTML chips).
+- Tooltip engine: support for trusted HTML via `data-tooltip-html="true"` is now canonical and used for API status.
+
+
 ## v1.0.0-rc.19 (2025-12-03)
 ### Added
 - **Top-10 History collection & APIs**: scheduled collector + API endpoints for validators, wallets, and subnets. Snapshots stored in Cloudflare KV and backed up locally by workflow.
