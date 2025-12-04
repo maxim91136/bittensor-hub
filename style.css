@@ -741,6 +741,24 @@ body.light-bg #maxSupplyScribble {
   gap: 4px;
 }
 
+/* Small API status badge placed before the API status text */
+.api-status-badge {
+  display: inline-block;
+  min-width: 36px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  text-align: center;
+  color: #fff;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.api-status-badge.ok { background: #22c55e; }
+.api-status-badge.error { background: #ef4444; }
+.api-status-text { vertical-align: middle; color: var(--text); font-weight: 700; }
+
 .stat-value {
   /* SMALLER: Cards should be less dominant than pills */
   font-size: clamp(0.85rem, 2vw, 1.1rem);

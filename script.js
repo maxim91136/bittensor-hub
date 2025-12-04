@@ -1415,7 +1415,13 @@ async function refreshDashboard() {
     statusText = 'Partial data';
     color = '#eab308'; // yellow
   }
-  if (apiStatusEl) apiStatusEl.textContent = statusText;
+  if (apiStatusEl) {
+    // Prepend a small OK/Fehler badge. Green = OK, anything else -> Fehler (red)
+    const isOk = (color === '#22c55e');
+    const badgeText = isOk ? 'OK' : 'Fehler';
+    const badgeClass = isOk ? 'ok' : 'error';
+    apiStatusEl.innerHTML = `<span class="api-status-badge ${badgeClass}">${badgeText}</span> <span class="api-status-text">${statusText}</span>`;
+  }
   // Dynamically update SVG colors
   if (apiStatusIcon) {
     // Update circle color
@@ -1681,7 +1687,13 @@ async function initDashboard() {
     statusText = 'Partial data';
     color = '#eab308'; // yellow
   }
-  if (apiStatusEl) apiStatusEl.textContent = statusText;
+  if (apiStatusEl) {
+    // Prepend OK/Fehler badge (same logic as refreshDashboard)
+    const isOk = (color === '#22c55e');
+    const badgeText = isOk ? 'OK' : 'Fehler';
+    const badgeClass = isOk ? 'ok' : 'error';
+    apiStatusEl.innerHTML = `<span class="api-status-badge ${badgeClass}">${badgeText}</span> <span class="api-status-text">${statusText}</span>`;
+  }
   // Dynamically update SVG colors
   if (apiStatusIcon) {
     // Update circle color
