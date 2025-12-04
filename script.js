@@ -1554,8 +1554,8 @@ function startAutoRefresh() {
       try {
         // Trigger Matrix glitch only on automated refresh (not on manual click)
         if (typeof window.showMatrixGlitch === 'function') {
-          // Safe default: small duration and moderate intensity
-          window.showMatrixGlitch({ duration: 900, intensity: 1 });
+          // Use RC20.2-like duration (360ms visible) and minimal intensity
+          window.showMatrixGlitch({ duration: 360, intensity: 1 });
         }
       } catch (e) {
         if (window._debug) console.warn('showMatrixGlitch failed', e);
