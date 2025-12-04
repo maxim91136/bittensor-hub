@@ -283,6 +283,19 @@ function getVolumeSignal(volumeData, priceChange, currentVolume = null) {
     };
   }
   
+  // Detect low-volume strong price moves (price spike on thin liquidity)
+  // This should trigger even when volumeChange is slightly positive but below LOW_VOL_PCT.
+  if (priceUp && Math.abs(volumeChange) < LOW_VOL_PCT && priceChange >= PRICE_SPIKE_PCT) {
+    let pctTraded = null;
+    if (currentVolume && window.circulatingSupply) {
+      pctTraded = (currentVolume / window.circulatingSupply) * 100;
+    }
+    const spikeLines = [`🟡 Price spike (low volume)`, `Volume: ${volStr}`, `Price: ${priceStr}`];
+    if (pctTraded !== null) spikeLines.push(`Traded: ${pctTraded.toFixed(4)}% of circ supply`);
+    spikeLines.push('Likely thin liquidity or exchange-limited move', confidenceLine);
+    return { signal: 'yellow', tooltip: spikeLines.join('\n') };
+  }
+
   // 🟡 YELLOW: Volume down + Price up = Weak uptrend
   if (volDown && priceUp) {
     // Special-case: if price moved strongly but volume change is small, mark as low-volume price spike
