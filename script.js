@@ -1985,13 +1985,22 @@ async function updateBlockTime() {
       badge.setAttribute('data-tooltip', tooltipLines.join('\n'));
       // Schedule a subtle block tick sound using avg block time (fallback 12s)
       try {
-        const sec = Math.round(Number(avgTime)) || 12;
-        const intervalSec = (sec >= 6 && sec <= 60) ? sec : 12;
-        if (window._blockTickInterval) clearInterval(window._blockTickInterval);
-        // play a soft tick aligned to interval
-        window._blockTickInterval = setInterval(() => {
+        // parse float seconds
+        const avgSec = Number(data.avg_block_time) || 12;
+        // clamp to reasonable bounds to avoid rapid firing
+        const clamped = Math.max(6, Math.min(60, avgSec));
+        const intervalMs = Math.round(clamped * 1000);
+
+        // clear any previous timeout/interval
+        try { if (window._blockTickTimeout) { clearTimeout(window._blockTickTimeout); window._blockTickTimeout = null; } } catch (e) {}
+        try { if (window._blockTickInterval) { clearInterval(window._blockTickInterval); window._blockTickInterval = null; } } catch (e) {}
+
+        // schedule first tick after one interval, then repeat
+        window._blockTickTimeout = setTimeout(() => {
           try { if (window.sound) window.sound.play('blockTick'); } catch (e) {}
-        }, intervalSec * 1000);
+          try { window._blockTickInterval = setInterval(() => { try { if (window.sound) window.sound.play('blockTick'); } catch(e){} }, intervalMs); } catch(e){}
+          window._blockTickTimeout = null;
+        }, intervalMs);
       } catch (e) { /* ignore */ }
     }
   } else {
