@@ -37,11 +37,13 @@
       if (i < lines.length) {
         lineEls[i].textContent = lines[i];
         lineEls[i].classList.add('visible');
+        try { if (window.sound) window.sound.play('terminalTick'); } catch(e){}
         i++;
         setTimeout(showNext, delays[i - 1]);
       } else {
         // All lines shown, wait then fade out
         clearTimeout(forcedTimeout);
+        try { if (window.sound) window.sound.play('terminalChime'); } catch(e){}
         setTimeout(() => {
           overlay.classList.add('fade-out');
           setTimeout(() => {

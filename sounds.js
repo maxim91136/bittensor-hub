@@ -86,6 +86,37 @@
     o2.start(start2); o2.stop(start2+0.26);
   }
 
+  // terminal tick: short per-line click (for terminal boot typing)
+  function playTerminalTick() {
+    ensureAudioContext(); if (!ctx.audioCtx) return;
+    const now = ctx.audioCtx.currentTime;
+    const o = ctx.audioCtx.createOscillator(); o.type = 'square';
+    o.frequency.value = 1200 + Math.random() * 300;
+    const g = ctx.audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.linearRampToValueAtTime(0.6, now + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+    o.connect(g); g.connect(ctx.masterGain);
+    o.start(now); o.stop(now + 0.06);
+  }
+
+  // terminal chime: small soft arpeggio to mark completion of boot
+  function playTerminalChime() {
+    ensureAudioContext(); if (!ctx.audioCtx) return;
+    const now = ctx.audioCtx.currentTime;
+    const freqs = [880, 1100, 1320];
+    freqs.forEach((f, i) => {
+      const o = ctx.audioCtx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const t = now + i * 0.06;
+      const g = ctx.audioCtx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.6, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+      o.connect(g); g.connect(ctx.masterGain);
+      o.start(t); o.stop(t + 0.22);
+    });
+  }
+
   function init() {
     ensureAudioContext();
     // try to resume at start if user already interacted
@@ -101,6 +132,8 @@
       case 'drip': playDrip(); break;
       case 'whoosh': playWhoosh(); break;
       case 'blockTick': playBlockTick(); break;
+      case 'terminalTick': playTerminalTick(); break;
+      case 'terminalChime': playTerminalChime(); break;
       default: break;
     }
   }
