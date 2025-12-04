@@ -41,7 +41,8 @@
       const fadeDuration = typeof opts.fade === 'number' ? opts.fade : 180;
       const overlay = ensureMatrixDom();
       const codeEl = overlay.querySelector('.matrix-glitch-code');
-      const palette = opts.palette || ['#22c55e', '#16a34a', '#14532d', '#a3a3a3', '#525252', '#eaff00', '#b3b300', '#d1fae5', '#d4d4d4'];
+      // Prefer darker greens first to emphasize a deep matrix look
+      const palette = opts.palette || ['#073116', '#0f3b20', '#14532d', '#0b2816', '#16a34a', '#22c55e', '#a3a3a3', '#525252', '#d4d4d4'];
       const glyphs = opts.glyphs || '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz░▒▓█▲◆◀▶◼︎◻︎※☰☲☷☯☢☣☠♠♣♥♦♤♧♡♢';
       // Build 1-2 horizontal rows based on viewport width to span the dashboard
       const fontSizeCss = window.getComputedStyle(document.documentElement).getPropertyValue('--glitch-font-size') || null;
