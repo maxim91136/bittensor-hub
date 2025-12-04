@@ -820,12 +820,10 @@ function updateApiStatusTooltip(networkData, taostats, taoPrice, lastUpdated) {
   const priceOk = !!(taoPrice && taoPrice.price);
   lines.push(`${statusLight(priceOk, false)} Price (${priceSrc}): ${priceOk ? 'OK' : 'ERROR'}`);
 
-  // Fallback/source hint (concise)
-  if (priceSrc === 'coingecko') {
-    lines.push('Fallback: CoinGecko used for price');
-  } else if (priceSrc === 'taostats') {
-    lines.push('Source: Taostats');
-  }
+  // Per-metric source lines (clear, explicit)
+  const circSource = window._circSupplySource || (taostats && taostats._source) || 'unknown';
+  lines.push(`Price source: ${priceSrc}`);
+  lines.push(`CircSupply source: ${circSource}`);
   infoBadge.setAttribute('data-tooltip', lines.join('\n'));
 
   // Also update visible API status text and icon color to match AMPEL
