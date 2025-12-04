@@ -38,8 +38,8 @@
   display: inline-block;
   text-align: center;
 }
-.matrix-glitch-code span { display: block; }
-.matrix-glitch-code span span { margin: 0 .06em; }
+.matrix-glitch-code > span { display: block; }
+.matrix-glitch-code > span > span { display: inline-block; margin: 0 .06em; }
 .terminal-boot.hidden {
   opacity: 0;
   visibility: hidden;
