@@ -781,124 +781,6 @@ function updateMarketCapAndFDV(price, circulatingSupply) {
   }
 }
 
-// Build a small AMPEL (traffic-light) emoji for status
-function statusLight(ok, partial) {
-  if (ok) return '🟢';
-  if (partial) return '🟡';
-  return '🔴';
-}
-
-// Helper to update the API status info-badge tooltip with per-source AMPEL, last-checked time and source info
-async function updateApiStatusTooltip(networkData, taostats, taoPrice, lastUpdated) {
-  const infoBadge = document.querySelector('#apiStatusCard .info-badge');
-  if (!infoBadge) return;
-
-  const lines = [];
-  // Last checked time (use provided lastUpdated when available, otherwise now)
-  const checkedAt = lastUpdated ? new Date(lastUpdated) : new Date();
-  const hh = checkedAt.getHours().toString().padStart(2, '0');
-  const mm = checkedAt.getMinutes().toString().padStart(2, '0');
-  lines.push(`Last checked: ${hh}:${mm}`);
-  lines.push('');
-
-  // Network
-  const netOk = !!networkData;
-  lines.push(`${statusLight(netOk, false)} Network: ${netOk ? 'OK' : 'ERROR'}`);
-
-  // Taostats
-  let taostatsOk = false;
-  let taostatsPartial = false;
-  if (taostats) {
-    // consider partial if missing some fields
-    if (taostats.price && taostats.volume_24h) taostatsOk = true;
-    else taostatsPartial = true;
-  }
-  lines.push(`${statusLight(taostatsOk, taostatsPartial)} Taostats: ${taostatsOk ? 'OK' : (taostatsPartial ? 'PARTIAL' : 'ERROR')}`);
-
-  // Price (source-aware)
-  const priceSrc = (taoPrice && taoPrice._source) ? taoPrice._source : 'unknown';
-  const priceOk = !!(taoPrice && taoPrice.price);
-  lines.push(`${statusLight(priceOk, false)} Price (${priceSrc}): ${priceOk ? 'OK' : 'ERROR'}`);
-
-  // Per-metric source lines (clear, explicit)
-  const circSource = window._circSupplySource || (taostats && taostats._source) || 'unknown';
-  lines.push(`Price source: ${priceSrc}`);
-  lines.push(`CircSupply source: ${circSource}`);
-
-  // Also include explicit system list: Network, Taostats, CoinGecko (we'll probe CoinGecko in background if unknown)
-  const netOk = !!networkData;
-  const taostatsOk = !!taostats;
-  let coinStatus = 'Checking';
-  if (taoPrice && taoPrice._source === 'coingecko') coinStatus = 'OK';
-  // initial systems lines
-  lines.splice(1, 0, `${statusLight(netOk, false)} Network: ${netOk ? 'OK' : 'ERROR'}`);
-  lines.splice(2, 0, `${statusLight(taostatsOk, false)} Taostats: ${taostatsOk ? 'OK' : 'ERROR'}`);
-  lines.splice(3, 0, `${statusLight(coinStatus === 'OK', coinStatus === 'Checking')} CoinGecko: ${coinStatus}`);
-  infoBadge.setAttribute('data-tooltip', lines.join('\n'));
-
-  // Also update visible API status text and icon color to match AMPEL
-  try {
-    const apiStatusEl = document.getElementById('apiStatus');
-    const apiStatusIcon = document.querySelector('#apiStatusCard .stat-icon svg');
-    // Determine overall status: red if any ERROR, yellow if any PARTIAL, green otherwise
-    const anyError = (!networkData) || (!taostats && !taoPrice);
-    const anyPartial = (!!taostats && (!taostats.price || !taostats.volume_24h));
-    let statusText = 'All systems ok';
-    let color = '#22c55e';
-    if (anyError) {
-      statusText = 'API error';
-      color = '#ef4444';
-    } else if (anyPartial) {
-      statusText = 'Partial data';
-      color = '#eab308';
-    }
-    if (apiStatusEl) apiStatusEl.textContent = statusText;
-    if (apiStatusIcon) {
-      const circle = apiStatusIcon.querySelector('circle');
-      if (circle) circle.setAttribute('stroke', color);
-      const polyline = apiStatusIcon.querySelector('polyline');
-      if (polyline) polyline.setAttribute('stroke', color);
-    }
-  } catch (e) {
-    if (window._debug) console.debug('Failed to set apiStatus text/color from tooltip helper', e);
-  }
-
-  // If CoinGecko status is not known, probe it in background and update tooltip when ready
-  if (coinStatus === 'Checking') {
-    (async () => {
-      try {
-        const ctl = new AbortController();
-        const timeout = setTimeout(() => ctl.abort(), 1500);
-        const res = await fetch(`${COINGECKO_API}/ping`, { signal: ctl.signal });
-        clearTimeout(timeout);
-        if (res && res.ok) {
-          coinStatus = 'OK';
-        } else {
-          coinStatus = `ERROR (${res ? res.status : 'no-res'})`;
-        }
-      } catch (err) {
-        coinStatus = `ERROR`;
-        if (window._debug) console.debug('CoinGecko probe failed', err);
-      }
-      // rebuild lines with updated coinStatus
-      try {
-        const newLines = [];
-        newLines.push(`Last checked: ${hh}:${mm}`);
-        newLines.push('');
-        newLines.push(`${statusLight(netOk, false)} Network: ${netOk ? 'OK' : 'ERROR'}`);
-        newLines.push(`${statusLight(taostatsOk, false)} Taostats: ${taostatsOk ? 'OK' : 'ERROR'}`);
-        newLines.push(`${statusLight(coinStatus === 'OK', coinStatus === 'Checking')} CoinGecko: ${coinStatus}`);
-        newLines.push('');
-        newLines.push(`Price source: ${priceSrc}`);
-        newLines.push(`CircSupply source: ${circSource}`);
-        infoBadge.setAttribute('data-tooltip', newLines.join('\n'));
-      } catch (e) {
-        if (window._debug) console.debug('Failed to update tooltip after CoinGecko probe', e);
-      }
-    })();
-  }
-}
-
 function tryUpdateMarketCapAndFDV() {
   if (window.circulatingSupply && lastPrice) {
     updateMarketCapAndFDV(lastPrice, window.circulatingSupply);
@@ -1400,13 +1282,6 @@ async function refreshDashboard() {
     if (lastUpdateEl) lastUpdateEl.textContent = `Updated: --:--`;
   }
 
-  // Update API status tooltip immediately with per-source AMPEL status and last-checked time
-  try {
-    updateApiStatusTooltip(networkData, taostats, taoPrice, lastUpdated || null);
-  } catch (e) {
-    if (window._debug) console.debug('Failed to update API status tooltip from refreshDashboard', e);
-  }
-
   // Get volume from taostats!
   const volumeEl = document.getElementById('volume24h');
   if (volumeEl && taostats && typeof taostats.volume_24h === 'number') {
@@ -1419,7 +1294,28 @@ async function refreshDashboard() {
     updateVolumeSignal(taostats.volume_24h, priceChange24h);
   }
 
-  // API status is updated via updateApiStatusTooltip() earlier
+  // Set API status
+  const apiStatusEl = document.getElementById('apiStatus');
+  const apiStatusIcon = document.querySelector('#apiStatusCard .stat-icon svg');
+  let statusText = 'All systems ok';
+  let color = '#22c55e'; // green
+  if (!networkData || !taostats) {
+    statusText = 'API error';
+    color = '#ef4444'; // red
+  } else if (!taostats.price || !taostats.volume_24h) {
+    statusText = 'Partial data';
+    color = '#eab308'; // yellow
+  }
+  if (apiStatusEl) apiStatusEl.textContent = statusText;
+  // Dynamically update SVG colors
+  if (apiStatusIcon) {
+    // Update circle color
+    const circle = apiStatusIcon.querySelector('circle');
+    if (circle) circle.setAttribute('stroke', color);
+    // Update heartbeat line color
+    const polyline = apiStatusIcon.querySelector('polyline');
+    if (polyline) polyline.setAttribute('stroke', color);
+  }
 
   // Update Block Time and Staking APR cards
   await updateBlockTime();
@@ -1665,13 +1561,26 @@ async function initDashboard() {
   }
 
   // Fill initial API status
-  // Update API status tooltip immediately on init too
-  try {
-    // Use taostats.last_updated when available, otherwise null
-    const lastUpdated = (taoPrice && taoPrice._source === 'taostats' && taoPrice.last_updated) ? taoPrice.last_updated : null;
-    updateApiStatusTooltip(networkData, taostats, taoPrice, lastUpdated);
-  } catch (e) {
-    if (window._debug) console.debug('Failed to update API status tooltip from initDashboard', e);
+  const apiStatusEl = document.getElementById('apiStatus');
+  const apiStatusIcon = document.querySelector('#apiStatusCard .stat-icon svg');
+  let statusText = 'All systems ok';
+  let color = '#22c55e'; // green
+  if (!networkData || !taostats) {
+    statusText = 'API error';
+    color = '#ef4444'; // red
+  } else if (!taostats.price || !taostats.volume_24h) {
+    statusText = 'Partial data';
+    color = '#eab308'; // yellow
+  }
+  if (apiStatusEl) apiStatusEl.textContent = statusText;
+  // Dynamically update SVG colors
+  if (apiStatusIcon) {
+    // Update circle color
+    const circle = apiStatusIcon.querySelector('circle');
+    if (circle) circle.setAttribute('stroke', color);
+    // Update heartbeat line color
+    const polyline = apiStatusIcon.querySelector('polyline');
+    if (polyline) polyline.setAttribute('stroke', color);
   }
 
   const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
@@ -1915,7 +1824,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Remove static API tooltip; we'll update it dynamically on init/refresh
+    // Info badge tooltip for API status card: static text
+    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
+    if (infoBadge) {
+      infoBadge.setAttribute('data-tooltip', 'API status: Network, Taostats, Coingecko');
+    }
   })();
 
   // Background toggle button
