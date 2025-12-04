@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 - 
 
+## v1.0.0-rc.20 (2025-12-04)
+### Added
+- Lightweight seasonal snowfall overlay (active Dec 1 → Jan 31). Toggle via `?holiday=1` or `body.holiday`.
+- NYE visuals: sparkles, confetti bursts, and small rockets (active Dec 31 & Jan 1). Toggle via `?nye=1` or `body.nye`.
+
+### Changed
+- Holiday visuals isolated in overlay containers to avoid modifying the logo SVG directly.
+
+### Notes
+- Cherry-picked commit `b17ad377f4e2370d6b580ef7148a04ff6fee158c` from `feature/holiday-snow` and applied to `main`.
+
+
 ## v1.0.0-rc.19.2.1 (2025-12-04)
 ### Fixed
 - Tooltip chip ordering: initial HTML and dynamic updates now consistently show Bittensor SDK, Taostats, CoinGecko.
