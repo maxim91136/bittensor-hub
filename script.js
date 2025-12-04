@@ -1317,6 +1317,22 @@ async function refreshDashboard() {
     if (polyline) polyline.setAttribute('stroke', color);
   }
 
+  // Update API Status info-badge with per-source OK/ERROR lines
+  try {
+    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
+    if (infoBadge) {
+      const lines = [];
+      lines.push(`Network: ${networkData ? 'OK' : 'ERROR'}`);
+      lines.push(`Taostats: ${taostats ? 'OK' : 'ERROR'}`);
+      const priceSource = (taoPrice && taoPrice._source) ? taoPrice._source : 'unknown';
+      const priceStatus = (taoPrice && taoPrice.price) ? 'OK' : 'ERROR';
+      lines.push(`Price (${priceSource}): ${priceStatus}`);
+      infoBadge.setAttribute('data-tooltip', lines.join('\n'));
+    }
+  } catch (e) {
+    if (window._debug) console.debug('Failed to update API status info-badge', e);
+  }
+
   // Update Block Time and Staking APR cards
   await updateBlockTime();
   await updateStakingApr();
