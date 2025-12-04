@@ -3,7 +3,23 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
-- 
+-
+
+## v1.0.0-rc.20.3 (2025-12-05)
+### Added
+- Release notes and documentation for RC20.3.
+
+### Changed
+- Matrix overlay behaviour: DOM-based RC20.2 look restored and refined; palette updated to emphasize deeper greens.
+- Glitch behavior updated to run only on automated refreshes.
+
+### Fixed
+- Snowfall Light Mode color issue (flakes were rendering as white instead of blue).
+- Matrix overlay alignment and width across the dashboard; clamped to 1–2 rows and improved centering.
+- Restored global dashboard update functions to prevent 'Loading...' regressions.
+
+### Notes
+- Version bumped to `v1.0.0-rc.20.3` and all release notes updated.
 
 ## v1.0.0-rc.20 (2025-12-04)
 ### Added
