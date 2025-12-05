@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 -
+## v1.0.0-rc.21.1 (2025-12-06)
+### Fixed
+- Light-mode spoon rendering: use white-background PNG (`assets/fng-spoon-white.png`) as the light-mode asset so the spoon displays correctly in Light Mode and PWA contexts.
+- Theme toggle: fixed target element id for spoon swap (`#fngSpoonImage`) and ensured `useFngGraphics()` defaults to the black/white PNG fallbacks.
+- Hidden the small `.barometer-class` label to rely on the larger left-side status badge only.
+
+### Changed
+- Minor JS/CSS cleanup around F&G asset loading and light-mode overrides.
+
+### Notes
+- See `RELEASE_NOTES/v1.0.0-rc.21.1.md` for full details and testing notes.
 
 ## v1.0.0-rc.21 (2025-12-05)
 ### Added
