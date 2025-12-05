@@ -314,34 +314,6 @@
   </div>
 
   <div class="dashboard-grid">
-  <!-- Fear & Greed Index (full-width, placed above Top Subnets) -->
-    <section class="dashboard-card fng-card" id="fngCard" aria-labelledby="fng-card-heading">
-      <div class="card-header">
-        <h2 id="fng-card-heading">Fear & Greed Index</h2>
-        <span class="info-badge" translate="no" aria-hidden="true" id="fngInfo" data-tooltip="Source: alternative.me">i</span>
-      </div>
-      <div class="fng-card-body">
-        <!-- Spoon background image -->
-        <img id="fngSpoonBg" src="assets/fng-spoon-black.png" class="fng-spoon-bg" alt="">
-        <!-- Barometer (Tachometer) positioned in spoon handle curve -->
-        <div class="fng-barometer">
-          <div class="barometer-plate" aria-hidden="true">
-            <div class="barometer-face"></div>
-            <div id="fngNeedle" class="barometer-needle" style="transform:rotate(-90deg);"></div>
-            <div class="barometer-center" aria-hidden="true"><span id="fngValueCenter" style="font-size:1.1rem;line-height:1;">—</span></div>
-            <div class="barometer-class" aria-hidden="true"><span id="fngClass" style="font-size:0.78rem;line-height:1;color:var(--text-muted)">—</span></div>
-          </div>
-          <div class="barometer-scale">
-            <span>0</span><span>50</span><span>100</span>
-          </div>
-        </div>
-        <!-- F&G Timeline: historical values -->
-        <div id="fngTimelineText" class="fng-timeline-text" style="text-align:center;font-size:0.92em;color:var(--text-muted);margin-top:2px;"></div>
-        <!-- Matrix Easter Egg -->
-        <div class="matrix-quote" aria-hidden="true">there is no spoon...</div>
-      </div>
-    </section>
-
   <!-- Top Subnets Card -->
     <section class="dashboard-card top-subnets-card" aria-labelledby="top-subnets-card-heading">
       <div class="card-header">
@@ -443,6 +415,33 @@
       </div>
     </section>
       <div class="last-update" id="lastUpdate"></div>
+    <!-- Fear & Greed Index (placed under Price Chart; width unchanged) -->
+    <section class="dashboard-card fng-card" id="fngCard" aria-labelledby="fng-card-heading">
+      <div class="card-header">
+        <h2 id="fng-card-heading">Fear & Greed Index</h2>
+        <span class="info-badge" translate="no" aria-hidden="true" id="fngInfo" data-tooltip="Source: alternative.me">i</span>
+      </div>
+      <div class="fng-card-body">
+        <!-- Spoon background image -->
+        <img id="fngSpoonBg" src="assets/fng-spoon-black.png" class="fng-spoon-bg" alt="">
+        <!-- Barometer (Tachometer) positioned in spoon handle curve -->
+        <div class="fng-barometer">
+          <div class="barometer-plate" aria-hidden="true">
+            <div class="barometer-face"></div>
+            <div id="fngNeedle" class="barometer-needle" style="transform:rotate(-90deg);"></div>
+            <div class="barometer-center" aria-hidden="true"><span id="fngValueCenter" style="font-size:1.1rem;line-height:1;">—</span></div>
+            <div class="barometer-class" aria-hidden="true"><span id="fngClass" style="font-size:0.78rem;line-height:1;color:var(--text-muted)">—</span></div>
+          </div>
+          <div class="barometer-scale">
+            <span>0</span><span>50</span><span>100</span>
+          </div>
+        </div>
+        <!-- F&G Timeline: historical values -->
+        <div id="fngTimelineText" class="fng-timeline-text" style="text-align:center;font-size:0.92em;color:var(--text-muted);margin-top:18px;position:relative;z-index:2;"></div>
+        <!-- Matrix Easter Egg -->
+        <div class="matrix-quote" aria-hidden="true">there is no spoon...</div>
+      </div>
+    </section>
       <!-- TAO Tensor Law Embed Card: Model preview + link (Dark Mode aware) -->
       <section class="dashboard-card taotensor-card" aria-labelledby="taotensor-heading">
         <div class="card-header">
