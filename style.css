@@ -943,13 +943,11 @@ body.light-bg .matrix-quote {
 }
 body.light-bg .fng-spoon-bg {
   left: 34%;
-  /* In light mode avoid a visible dark rectangle from the source image:
-     - use `mix-blend-mode: screen` so black backgrounds become transparent
-     - reduce heavy drop-shadow so the spoon sits cleanly on white
-  */
-  mix-blend-mode: screen;
-  filter: brightness(0.98) contrast(1.02) drop-shadow(0 2px 6px rgba(0,0,0,0.12));
-  transition: filter 300ms ease;
+  /* Use a lighter filter in light mode and avoid blend modes that can
+     remove the image against white backgrounds. The loader (`useFngGraphics`)
+     will swap in a light variant image when available. */
+  filter: brightness(1.02) contrast(1.04) drop-shadow(0 6px 14px rgba(0,0,0,0.06));
+  transition: filter 300ms ease, opacity 200ms ease;
 }
 
 /* Light mode spoon styling */
@@ -980,8 +978,8 @@ body.light-bg .fng-spoon-gauge-container {
   left: 18px;
   top: 50%;
   transform: translateY(-50%);
-  width: 140px;
-  height: 120px;
+  width: 120px;
+  height: 100px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -994,7 +992,7 @@ body.light-bg .fng-spoon-gauge-container {
 
 .fng-side-status .status-text {
   font-family: ui-monospace, 'Caveat', 'Courier New', monospace;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: #111;
   letter-spacing: 0.12em;
@@ -1030,8 +1028,8 @@ body.light-bg .fng-spoon-gauge-container {
 
 /* Make badge larger on wide screens and push further left */
 @media (min-width:1000px) {
-  .fng-side-status { left: 28px; width: 160px; height: 140px; }
-  .fng-side-status .status-text { font-size: 2rem; }
+  .fng-side-status { left: 28px; width: 140px; height: 120px; }
+  .fng-side-status .status-text { font-size: 1.8rem; }
 }
 
 /* Hide or shrink on very small screens */
