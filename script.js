@@ -797,6 +797,7 @@ window.testSpoonGauge = function(value = 50) {
 async function updateFearAndGreed() {
   const infoBadge = document.getElementById('fngInfo');
   const timelineEl = document.getElementById('fngTimeline');
+  const timelineTextEl = document.getElementById('fngTimelineText');
   const data = await fetchFearAndGreed();
 
   if (!data || !data.current) {
@@ -843,12 +844,12 @@ async function updateFearAndGreed() {
   } catch (e) { if (window._debug) console.debug('spoon needle animate failed', e); }
 
   // Render F&G timeline (yesterday, last_week, last_month, current)
+  const timeline = [];
+  if (data.last_month) timeline.push({label:'Month',...data.last_month});
+  if (data.last_week) timeline.push({label:'Week',...data.last_week});
+  if (data.yesterday) timeline.push({label:'Yesterday',...data.yesterday});
+  timeline.push({label:'Now',...cur});
   if (timelineEl) {
-    const timeline = [];
-    if (data.last_month) timeline.push({label:'Month',...data.last_month});
-    if (data.last_week) timeline.push({label:'Week',...data.last_week});
-    if (data.yesterday) timeline.push({label:'Yesterday',...data.yesterday});
-    timeline.push({label:'Now',...cur});
     let bars = '';
     timeline.forEach((h, i) => {
       const v = typeof h.value === 'number' ? h.value : Number(h.value);
@@ -861,9 +862,14 @@ async function updateFearAndGreed() {
       else if (c.includes('greed')) cls += ' greed';
       else if (c.includes('neutral')) cls += ' neutral';
       if (i === timeline.length-1) cls += ' current';
-      bars += `<div class=\"${cls}\" title=\"${h.label}: ${c} (${pct})\" style=\"height:${8+Math.round(pct*0.18)}px\"></div>`;
+      bars += `<div class=\"${cls}\" title=\"${h.label}: ${c} (${pct})\" style=\"height:${38+Math.round(pct*0.42)}px\"></div>`;
     });
     timelineEl.innerHTML = bars;
+  }
+  // Render compact timeline text
+  if (timelineTextEl) {
+    const txt = timeline.map(h => `${h.label}: ${h.value} (${h.value_classification})`).join(' | ');
+    timelineTextEl.textContent = txt;
   }
 }
 
