@@ -10,7 +10,13 @@ This project provides a compact dashboard for visualizing and monitoring key Bit
 First it was just a learning and hobby project, but now it is passion.
 PS: This is my first ever GitHub and website project, with many headaches but also much fun.
 
-**Latest release:** `v1.0.0-rc.20.4` — see `RELEASE_NOTES/v1.0.0-rc.20.4.md` and `CHANGELOG.md` for details.
+**Latest release:** `v1.0.0-rc.20.5` — see [RELEASE_NOTES/v1.0.0-rc.20.5.md](RELEASE_NOTES/v1.0.0-rc.20.5.md) and [CHANGELOG.md](CHANGELOG.md) for details.
+
+> ℹ️ The version badge and release notes link are auto-updated from the `VERSION` file. To update the README after a version bump, run:
+> ```bash
+> node scripts/update-readme-version.js
+> ```
+> Or add this step to your release workflow for automation.
 
 ## Features
 
