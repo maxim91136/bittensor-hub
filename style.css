@@ -931,6 +931,9 @@ body.light-bg .matrix-quote {
   height: auto;
   max-height: 320px;
   object-fit: contain;
+body.light-bg .fng-spoon-bg {
+  left: 34%;
+}
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
   transition: filter 300ms ease;
 }
