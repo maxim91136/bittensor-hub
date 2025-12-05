@@ -1,18 +1,36 @@
-# Fear & Greed Index API endpoint for Cloudflare Worker
-# Serves the latest index from KV as JSON
+export async function onRequest(context) {
+    const cors = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'public, max-age=30, s-maxage=60'
+    };
 
-default_headers = [
-    ("Content-Type", "application/json; charset=utf-8"),
-    ("Access-Control-Allow-Origin", "*"),
-]
+    const { request, env } = context;
 
-async def handle_request(request, env):
-    kv = env.METRICS_KV
-    data = await kv.get("fear_and_greed_index")
-    if not data:
-        return Response('{"error": "No data"}', headers=default_headers, status=404)
-    return Response(data, headers=default_headers)
+    if (request.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: cors });
+    }
 
-exported = {
-    "fetch": handle_request
+    const KV = env?.METRICS_KV;
+    if (!KV) {
+        return new Response(JSON.stringify({ error: 'KV not bound' }), { status: 500, headers: cors });
+    }
+
+    try {
+        const raw = await KV.get('fear_and_greed_index');
+        if (!raw) {
+            return new Response(JSON.stringify({ error: 'No data found', _source: 'fear_and_greed' }), {
+                status: 404,
+                headers: cors
+            });
+        }
+        return new Response(raw, { status: 200, headers: cors });
+    } catch (e) {
+        return new Response(JSON.stringify({ error: 'Failed to fetch Fear & Greed data', details: e.message }), {
+            status: 500,
+            headers: cors
+        });
+    }
 }
