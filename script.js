@@ -282,10 +282,15 @@ function getVolumeSignal(volumeData, priceChange, currentVolume = null, aggregat
   // Composite detection: Sustained bullish vs short spikes
   // Check for sustained bullish: moving averages aligned AND volume up enough
   try {
-    const maShortPct = aggregates?.pct_change_vs_ma_short ?? null;
-    const ma3dPct = aggregates?.pct_change_vs_ma_3d ?? null;
-    const maShortUp = (maShortPct !== null && maShortPct > 0);
-    const ma3dUp = (ma3dPct !== null && ma3dPct > 0);
+    // Determine MA alignment using the actual MA values instead of
+    // percent-change-to-MA proxies. This avoids false positives where
+    // the latest volume sits above a short MA but the MA ordering is
+    // not bull-aligned (short > med > long).
+    const maShortVal = aggregates?.ma_short ?? null;
+    const maMedVal = aggregates?.ma_med ?? null;
+    const ma3dVal = aggregates?.ma_3d ?? null;
+    const maShortUp = (maShortVal !== null && maMedVal !== null && maShortVal > maMedVal);
+    const ma3dUp = (maMedVal !== null && ma3dVal !== null && maMedVal > ma3dVal);
     // traded share (percent) if data available — convert USD volume to TAO using lastPrice when possible
     let tradedSharePct = null;
     if (currentVolume && window.circulatingSupply) {
@@ -302,13 +307,14 @@ function getVolumeSignal(volumeData, priceChange, currentVolume = null, aggregat
       }
     }
     // sustain if MAs aligned AND (volume up OR traded share large OR strong price move)
-    const sustainCondition = maShortUp && ma3dUp && (
+    const masAligned = maShortVal !== null && maMedVal !== null && ma3dVal !== null && (maShortVal > maMedVal && maMedVal > ma3dVal);
+    const sustainCondition = masAligned && (
       volumeChange >= SUSTAIN_VOL_PCT ||
       (tradedSharePct !== null && tradedSharePct >= TRADED_SHARE_MIN) ||
       (priceChange >= SUSTAIN_PRICE_PCT)
     );
     // If traded-share or strong price move is present, consider sustained immediately
-    if (maShortUp && ma3dUp && ((tradedSharePct !== null && tradedSharePct >= TRADED_SHARE_MIN) || priceChange >= SUSTAIN_PRICE_PCT)) {
+    if (masAligned && ((tradedSharePct !== null && tradedSharePct >= TRADED_SHARE_MIN) || priceChange >= SUSTAIN_PRICE_PCT)) {
       return {
         signal: 'green',
         tooltip: `🟢 Sustained bullish\nVolume: ${volStr}\nPrice: ${priceStr}\nMoving averages aligned — sustained buying pressure` + (confidenceLine || '')
