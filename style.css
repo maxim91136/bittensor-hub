@@ -840,7 +840,8 @@ body.light-bg #maxSupplyScribble {
 .fng-card {
   border-radius: 8px;
   position: relative;
-  background: #000a08 !important;
+  /* Use true black to avoid perceived brightness differences across devices */
+  background: #000000 !important;
   backdrop-filter: none !important;
   border: 1px solid rgba(34,197,94,0.15);
   min-height: 120px;
@@ -877,7 +878,8 @@ body.light-bg .fng-card {
   position: relative;
   z-index: 1;
   min-height: 120px;
-  background: #000a08;
+  /* match the card background exactly to avoid a visible inner panel */
+  background: #000000;
 }
 
 body.light-bg .fng-card .fng-card-body {
@@ -922,18 +924,22 @@ body.light-bg .matrix-quote {
 }
 
 /* Spoon Gauge */
-.fng-spoon-gauge {
-  width: 100%;
-  max-width: 320px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.fng-spoon-img {
-  width: 100%;
-  height: auto;
-  max-height: 320px;
+.fng-spoon-bg {
+  position: absolute;
+  width: 60%;
+  height: 85%;
   object-fit: contain;
+  object-position: left center;
+  top: 0;
+  left: 30%;
+  /* keep image visible but slightly brighten it so it doesn't disappear on black */
+  opacity: 0.95;
+  z-index: 0;
+  pointer-events: none;
+  /* counteract darker source image backgrounds: brighten + slightly increase contrast */
+  filter: brightness(1.12) contrast(1.06) drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+  background-color: transparent;
+}
 body.light-bg .fng-spoon-bg {
   left: 34%;
 }
