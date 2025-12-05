@@ -5,6 +5,7 @@ import * as issuance from './functions/api/issuance_history.js';
 import * as topSubnets from './functions/api/top_subnets.js';
 import * as taostats from './functions/api/taostats.js';
 import * as taostatsHistory from './functions/api/taostats_history.js';
+import * as fearAndGreed from './functions/api/fear_and_greed_index.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -44,6 +45,11 @@ export default {
     // Taostats latest endpoint
     if (url.pathname === '/api/taostats' || url.pathname.startsWith('/api/taostats')) {
       if (typeof taostats.onRequest === 'function') return taostats.onRequest(context);
+    }
+
+    // Fear & Greed Index endpoint
+    if (url.pathname === '/api/fear_and_greed_index' || url.pathname.startsWith('/api/fear_and_greed_index')) {
+      if (typeof fearAndGreed.onRequest === 'function') return fearAndGreed.onRequest(context);
     }
 
     return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
