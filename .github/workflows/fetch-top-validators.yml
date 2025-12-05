@@ -2,7 +2,7 @@ name: Fetch Top Validators
 
 on:
   schedule:
-    - cron: '29 * * * *'    # every hour at :29 (offset from subnets at :59)
+    - cron: '31 * * * *'    # every hour at :31
   workflow_dispatch: {}
   workflow_call: {}
 

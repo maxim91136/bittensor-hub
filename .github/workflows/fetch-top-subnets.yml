@@ -2,7 +2,7 @@ name: Fetch Top Subnets
 
 on:
   schedule:
-    - cron: '59 * * * *'    # every hour at :59
+    - cron: '53 * * * *'    # every hour bei :53
   workflow_dispatch: {}
   workflow_call: {}
 

@@ -2,7 +2,7 @@ name: Fetch Network Data
 
 on:
   schedule:
-    - cron: '11,21,31,41,51 * * * *' # every 10 minutes
+    - cron: '7,22,37,52 * * * *' # every 15 Minuten, versetzt
   workflow_dispatch: {}
 
 jobs:

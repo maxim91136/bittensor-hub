@@ -1,7 +1,7 @@
 name: Fetch Taostats Metrics
 on:
   schedule:
-    - cron: '3,13,23,33,43,53 * * * *'  # every 10 minutes at odd minutes
+    - cron: '2,17,32,47 * * * *'  # every 15 minutes, ungerade Minuten
   workflow_dispatch: {}
 
 jobs:

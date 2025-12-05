@@ -2,8 +2,8 @@ name: Fetch Top Wallets
 
 on:
   schedule:
-    # Run hourly at :39 (staggered from other workflows)
-    - cron: '39 * * * *'
+    # Run hourly at :37
+    - cron: '37 * * * *'
   workflow_dispatch:
 
 jobs:

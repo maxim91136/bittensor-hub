@@ -2,8 +2,8 @@ name: Fetch Block Time
 
 on:
   schedule:
-    # Every hour at :49
-    - cron: '49 * * * *'
+    # Every hour at :41
+    - cron: '41 * * * *'
   workflow_dispatch:
 
 jobs:

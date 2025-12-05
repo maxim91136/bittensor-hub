@@ -2,7 +2,7 @@ name: Fetch ATH/ATL
 on:
   workflow_dispatch:
   schedule:
-    - cron: '10 */3 * * *' # Every 3 hours at :10
+    - cron: '14 */3 * * *' # Every 3 hours bei :14
 
 jobs:
   fetch-ath-atl:

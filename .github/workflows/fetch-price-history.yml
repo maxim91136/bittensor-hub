@@ -2,8 +2,8 @@ name: Fetch Price History
 
 on:
   schedule:
-    # Run every hour at :05 to have fresh chart data
-    - cron: '5 * * * *'
+    # Run every hour at :7
+    - cron: '7 * * * *'
   workflow_dispatch:
 
 jobs:
