@@ -5,7 +5,10 @@
   display: flex;
   gap: 2px;
   align-items: flex-end;
-  margin-top: 8px;
+  margin: 12px auto 0 auto;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
 }
 .fng-timeline-bar {
   width: 6px;
