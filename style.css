@@ -1,3 +1,28 @@
+/* F&G Timeline styles */
+.fng-timeline {
+  width: 100%;
+  min-height: 24px;
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  margin-top: 8px;
+}
+.fng-timeline-bar {
+  width: 6px;
+  border-radius: 2px 2px 0 0;
+  background: var(--timeline-bar-bg, #eab308);
+  opacity: 0.85;
+  transition: height 0.3s, background 0.3s;
+}
+.fng-timeline-bar.fear { background: #ef4444; }
+.fng-timeline-bar.neutral { background: #eab308; }
+.fng-timeline-bar.greed { background: #22c55e; }
+.fng-timeline-bar.extreme-fear { background: #b91c1c; }
+.fng-timeline-bar.extreme-greed { background: #16a34a; }
+.fng-timeline-bar.current {
+  box-shadow: 0 0 0 2px #fff2, 0 0 4px #fff6;
+  opacity: 1;
+}
 
 /* Simple loader overlay styles */
 /* Matrix terminal boot styles */
