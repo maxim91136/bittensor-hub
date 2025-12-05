@@ -637,7 +637,7 @@ window.setFngSpoonVariant = function(variant) {
  * darkPath and lightPath are relative URLs to the images (e.g. 'assets/fng-spoon-dark.png').
  * The image will switch when `body.light-bg` toggles.
  */
-window.useFngGraphics = async function(darkPath = '/assets/fng-spoon-dark.webp', lightPath = '/assets/fng-spoon-light.webp') {
+window.useFngGraphics = async function(darkPath = '/assets/fng-spoon-black.png', lightPath = '/assets/fng-spoon-white.png') {
   try {
     const imgEl = document.getElementById('fngSpoonImage');
     if (!imgEl) return false;
@@ -2179,7 +2179,7 @@ async function initDashboard() {
     // Auto-load user-supplied FNG graphics if present (assets/fng-spoon-*.png)
     try {
       if (window.useFngGraphics) {
-          window.useFngGraphics('/assets/fng-spoon-dark.webp','/assets/fng-spoon-light.webp');
+          window.useFngGraphics('/assets/fng-spoon-black.png','/assets/fng-spoon-white.png');
         }
     } catch (e) { if (window._debug) console.debug('auto useFngGraphics failed', e); }
     // Mark initialization completed
@@ -2465,7 +2465,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Switch spoon background image for Fear & Greed card
-    const spoonBg = document.getElementById('fngSpoonBg');
+    const spoonBg = document.getElementById('fngSpoonImage');
     if (spoonBg) {
       spoonBg.src = active ? 'assets/fng-spoon-white.png' : 'assets/fng-spoon-black.png';
     }
