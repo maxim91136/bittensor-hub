@@ -852,9 +852,12 @@ async function updateFearAndGreed() {
   // Balken entfernt, nur Text bleibt
   // Render compact timeline text
   if (timelineTextEl) {
-    // Kompaktere Darstellung: Month/Week/Yest/Now: Wert (Class)
-    const txt = timeline.map(h => `${h.label[0]}/${h.label==='Yesterday'?'Yest':h.label==='Now'?'Now':h.label}: ${h.value} (${h.value_classification})`).join(' | ');
-    timelineTextEl.textContent = txt;
+    // Ultrakompakt: Abkürzungen für Zeitangaben
+    const short = {Month:'M',Week:'W',Yesterday:'Y',Now:'N'};
+    const values = timeline.map(h => `${short[h.label]||h.label[0]}:${h.value}`).join(' | ');
+    const tooltip = timeline.map(h => `${h.label}: ${h.value_classification}`).join(' | ');
+    timelineTextEl.textContent = values;
+    timelineTextEl.setAttribute('title', tooltip);
   }
 }
 
