@@ -867,21 +867,23 @@ async function updateFearAndGreed() {
     }
   } catch (e) { if (window._debug) console.debug('spoon needle animate failed', e); }
 
-  // Render F&G timeline (yesterday, last_week, last_month, current)
-  const timeline = [];
-  if (data.last_month) timeline.push({label:'Month',...data.last_month});
-  if (data.last_week) timeline.push({label:'Week',...data.last_week});
-  if (data.yesterday) timeline.push({label:'Yesterday',...data.yesterday});
-  timeline.push({label:'Now',...cur});
-  // Balken entfernt, nur Text bleibt
-  // Render compact timeline text
+  // Render F&G timeline in a clear, human-readable order: Now → Yesterday → Week → Month
+  // Build a lookup of available timeline entries and then render in the desired order
+  const entries = {};
+  if (data.last_month) entries['Month'] = data.last_month;
+  if (data.last_week) entries['Week'] = data.last_week;
+  if (data.yesterday) entries['Yesterday'] = data.yesterday;
+  entries['Now'] = cur;
+
   if (timelineTextEl) {
-    // Ultrakompakt: Abkürzungen für Zeitangaben
-    const short = {Month:'M',Week:'W',Yesterday:'Y',Now:'N'};
-    const values = timeline.map(h => `${short[h.label]||h.label[0]}:${h.value}`).join(' | ');
-    const tooltip = timeline.map(h => `${h.label}: ${h.value_classification}`).join(' | ');
-    timelineTextEl.textContent = values;
-    timelineTextEl.setAttribute('title', tooltip);
+    const order = ['Now', 'Yesterday', 'Week', 'Month'];
+    const labels = { Now: 'Now', Yesterday: 'Yesterday', Week: 'Week', Month: 'Month' };
+
+    const parts = order.filter(k => entries[k]).map(k => `${labels[k]}: ${entries[k].value}`);
+    const tooltipParts = order.filter(k => entries[k]).map(k => `${labels[k]}: ${entries[k].value_classification}`);
+
+    timelineTextEl.textContent = parts.join(' | ');
+    timelineTextEl.setAttribute('title', tooltipParts.join(' | '));
   }
 }
 
