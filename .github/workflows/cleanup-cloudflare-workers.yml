@@ -1,0 +1,78 @@
+name: Cleanup unused Cloudflare Workers
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    name: Inventory and cleanup Cloudflare Workers
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Inventory and delete unused workers
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          echo "Listing services (module-based Workers)..."
+          services_json=$(curl -s -H "Authorization: Bearer $CF_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/workers/services")
+          echo "$services_json" | jq '.' > services_full.json
+          jq -r '.result[]?.name' services_full.json | sort > services_list.txt || true
+
+          echo "Listing classical scripts (legacy Workers)..."
+          scripts_json=$(curl -s -H "Authorization: Bearer $CF_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/workers/scripts")
+          echo "$scripts_json" | jq '.' > scripts_full.json
+          jq -r '.result[]?.id' scripts_full.json | sort > scripts_list.txt || true
+
+          echo "Listing zones to find routes..."
+          zones_json=$(curl -s -H "Authorization: Bearer $CF_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/zones?per_page=50")
+          echo "$zones_json" | jq '.' > zones_full.json
+          jq -r '.result[]?.id' zones_full.json | while read -r zone; do
+            echo "Fetching routes for zone $zone"
+            curl -s -H "Authorization: Bearer $CF_API_TOKEN" "https://api.cloudflare.com/client/v4/zones/$zone/workers/routes?per_page=100" || true
+          done > all_routes_raw.json || true
+
+          # Collect referenced scripts/services from routes
+          echo "Collecting referenced scripts/services from routes"
+          jq -r '.result[]? | .script, .service' all_routes_raw.json | grep -v null | sort -u > referenced_from_routes.txt || true
+
+          echo "Services found:" && cat services_list.txt || true
+          echo "Scripts found:" && cat scripts_list.txt || true
+          echo "Referenced from routes:" && cat referenced_from_routes.txt || true
+
+          # Identify unreferenced services and scripts
+          echo "Computing unreferenced services..."
+          comm -23 <(sort services_list.txt || true) <(sort referenced_from_routes.txt || true) > services_unreferenced.txt || true
+          echo "Computing unreferenced scripts..."
+          comm -23 <(sort scripts_list.txt || true) <(sort referenced_from_routes.txt || true) > scripts_unreferenced.txt || true
+
+          echo "Unreferenced services:" && cat services_unreferenced.txt || true
+          echo "Unreferenced scripts:" && cat scripts_unreferenced.txt || true
+
+          # Delete unreferenced services
+          while read -r svc; do
+            if [ -z "$svc" ]; then continue; fi
+            echo "Deleting service: $svc"
+            curl -s -X DELETE -H "Authorization: Bearer $CF_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/workers/services/$svc" | jq '.' || true
+          done < services_unreferenced.txt || true
+
+          # Delete unreferenced scripts
+          while read -r sc; do
+            if [ -z "$sc" ]; then continue; fi
+            echo "Deleting script: $sc"
+            curl -s -X DELETE -H "Authorization: Bearer $CF_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/workers/scripts/$sc" | jq '.' || true
+          done < scripts_unreferenced.txt || true
+
+          echo "Cleanup complete."
