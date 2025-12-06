@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 -
+## v1.0.0-rc.23 (2025-12-06)
+### Added
+- **Sound System**: Complete procedural Matrix-themed audio engine
+  - Sound toggle button in header (speaker icon desktop, ♪ music note mobile)
+  - Price Pill click sound (400Hz, 0.15s smooth fade)
+  - Halving Pill click sound (300Hz, 0.18s fade)
+  - Auto-refresh beep (220Hz, subtle notification)
+  - Sound toggle confirmation (440Hz→660Hz dual-tone)
+  - Neo Easter Egg glitch sound (digital noise burst)
+  - Morpheus typewriter sounds (150Hz bass per character)
+  - Audio unlock system for browser compatibility
+  - Settings persist via localStorage
+
+### Technical
+- MatrixSound engine with Web Audio API
+- Procedurally generated sounds (no external files)
+- Bass-heavy frequencies (110Hz-660Hz)
+- Low volume levels (0.02-0.06 gain)
+- Smooth ADSR-style envelopes
+- Immediate sound stop on overlay close
+
+### Notes
+- Pure frontend enhancement, zero licensing concerns
+- See `RELEASE_NOTES/v1.0.0-rc.23.md` for full technical details
+
 ## v1.0.0-rc.22.1 (2025-12-06)
 ### Fixed
 - **Mobile Display**: Morpheus message (Neo Easter Egg) now fully visible on iPhone Pro Max and other mobile devices

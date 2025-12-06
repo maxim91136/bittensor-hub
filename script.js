@@ -1,3 +1,257 @@
+// ===== Matrix Sound Engine =====
+const MatrixSound = (function() {
+  let audioContext = null;
+  let soundEnabled = localStorage.getItem('matrixSoundEnabled') !== 'false'; // Default: enabled
+  let isUnlocked = false;
+
+  // Initialize Audio Context (lazy load on first sound)
+  function getAudioContext() {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioContext;
+  }
+
+  // Unlock audio context (required by browsers after user interaction)
+  function unlockAudio() {
+    if (isUnlocked) return;
+
+    try {
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      // Play silent sound to unlock
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(0);
+      osc.stop(0.01);
+
+      isUnlocked = true;
+    } catch (e) {
+      console.warn('Audio unlock failed:', e);
+    }
+  }
+
+  // Toggle sound on/off
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+    localStorage.setItem('matrixSoundEnabled', soundEnabled);
+    return soundEnabled;
+  }
+
+  // Check if sound is enabled
+  function isEnabled() {
+    return soundEnabled;
+  }
+
+  // Play a synthesized sound
+  function play(type, options = {}) {
+    if (!soundEnabled) return;
+
+    try {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      switch(type) {
+        case 'boot-power-up':
+          playBootPowerUp(ctx, now, options);
+          break;
+        case 'boot-typing':
+          playBootTyping(ctx, now, options);
+          break;
+        case 'boot-ready':
+          playBootReady(ctx, now, options);
+          break;
+        case 'glitch':
+          playGlitch(ctx, now, options);
+          break;
+        case 'pill-click':
+          playPillClick(ctx, now, options);
+          break;
+        case 'halving-click':
+          playHalvingClick(ctx, now, options);
+          break;
+        case 'refresh-beep':
+          playRefreshBeep(ctx, now, options);
+          break;
+        default:
+          console.warn('Unknown sound type:', type);
+      }
+    } catch (e) {
+      console.warn('MatrixSound playback error:', e);
+    }
+  }
+
+  // Boot Power-Up: Low to high frequency sweep
+  function playBootPowerUp(ctx, startTime, options) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(60, startTime); // Start low
+    osc.frequency.exponentialRampToValueAtTime(800, startTime + 1.2); // Sweep up
+
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.15, startTime + 0.1);
+    gain.gain.linearRampToValueAtTime(0.08, startTime + 0.6);
+    gain.gain.linearRampToValueAtTime(0, startTime + 1.2);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + 1.2);
+  }
+
+  // Boot Typing: Quick blip sounds for terminal text (150Hz - bass)
+  function playBootTyping(ctx, startTime, options) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, startTime);
+
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.04, startTime + 0.01);
+    gain.gain.linearRampToValueAtTime(0, startTime + 0.04);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + 0.04);
+  }
+
+  // Boot Ready: Confirming beep (for sound toggle)
+  function playBootReady(ctx, startTime, options) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, startTime);
+    osc.frequency.setValueAtTime(660, startTime + 0.1);
+
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.04, startTime + 0.02);
+    gain.gain.linearRampToValueAtTime(0.03, startTime + 0.15);
+    gain.gain.linearRampToValueAtTime(0, startTime + 0.25);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + 0.25);
+  }
+
+  // Glitch: Digital noise burst
+  function playGlitch(ctx, startTime, options) {
+    const bufferSize = ctx.sampleRate * 0.1; // 100ms
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    // Generate white noise
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.3;
+    }
+
+    const source = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    source.buffer = buffer;
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(2000, startTime);
+
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.08, startTime + 0.01);
+    gain.gain.linearRampToValueAtTime(0, startTime + 0.08);
+
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    source.start(startTime);
+  }
+
+  // Price Pill Click: Neutral blip (400Hz) - länger
+  function playPillClick(ctx, startTime, options) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, startTime);
+
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.06, startTime + 0.02);
+    gain.gain.linearRampToValueAtTime(0.04, startTime + 0.08);
+    gain.gain.linearRampToValueAtTime(0, startTime + 0.15);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + 0.15);
+  }
+
+  // Halving Pill Click: Mechanical tick (300Hz) - länger
+  function playHalvingClick(ctx, startTime, options) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, startTime);
+
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.04, startTime + 0.02);
+    gain.gain.linearRampToValueAtTime(0.03, startTime + 0.1);
+    gain.gain.linearRampToValueAtTime(0, startTime + 0.18);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + 0.18);
+  }
+
+  // Auto-Refresh Beep: Subtle notification (220Hz)
+  function playRefreshBeep(ctx, startTime, options) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(220, startTime);
+
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.03, startTime + 0.01);
+    gain.gain.linearRampToValueAtTime(0, startTime + 0.08);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + 0.08);
+  }
+
+  return {
+    play,
+    toggleSound,
+    isEnabled,
+    unlockAudio
+  };
+})();
+
+// Unlock audio on first user interaction
+['click', 'touchstart', 'keydown'].forEach(event => {
+  document.addEventListener(event, () => {
+    MatrixSound.unlockAudio();
+  }, { once: true });
+});
+
 // ===== Matrix Terminal Boot Sequence =====
 (function() {
   const lines = [
@@ -11,12 +265,12 @@
   function runTerminalBoot() {
     const overlay = document.getElementById('terminalBoot');
     if (!overlay) return;
-    
+
     const line1 = document.getElementById('termLine1');
     const line2 = document.getElementById('termLine2');
     const line3 = document.getElementById('termLine3');
     const lineEls = [line1, line2, line3];
-    
+
     let i = 0;
     // safety: if the boot sequence doesn't finish (runtime error or missing elements),
     // force-hide the overlay after a short timeout so init can continue.
@@ -37,6 +291,7 @@
       if (i < lines.length) {
         lineEls[i].textContent = lines[i];
         lineEls[i].classList.add('visible');
+
         i++;
         setTimeout(showNext, delays[i - 1]);
       } else {
@@ -1705,6 +1960,7 @@ function setupDynamicTooltips() {
     pill.addEventListener('blur', e => { if (!isTouch) hideTooltip(); });
     pill.addEventListener('click', e => {
       e.stopPropagation();
+      MatrixSound.play('halving-click');
       const text = pill.getAttribute('data-tooltip') || '';
       const htmlFlag = pill.getAttribute('data-tooltip-html') === 'true';
       if (isTouch) {
@@ -1737,6 +1993,7 @@ function setupDynamicTooltips() {
     pill.addEventListener('blur', hideTooltip);
     pill.addEventListener('click', e => {
       e.stopPropagation();
+      MatrixSound.play('pill-click');
       const txt = pill.getAttribute('data-tooltip') || '';
       const htmlFlag = pill.getAttribute('data-tooltip-html') === 'true';
       showTooltip(e, txt, { html: htmlFlag });
@@ -1928,6 +2185,7 @@ function startAutoRefresh() {
       } catch (e) {
         if (window._debug) console.warn('showMatrixGlitch failed', e);
       }
+      MatrixSound.play('refresh-beep');
       refreshDashboard();
     }
     renderRefreshIndicator();
@@ -2463,7 +2721,7 @@ document.addEventListener('DOMContentLoaded', () => {
     body,
     header,
     refreshIndicator,
-    ...Array.from(document.querySelectorAll('.dashboard-card, .stat-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, .stat-value, .info-badge, .pill-value, .disclaimer-card, .site-footer'))
+    ...Array.from(document.querySelectorAll('.dashboard-card, .stat-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, #soundToggleBtn, .stat-value, .info-badge, .pill-value, .disclaimer-card, .site-footer'))
   ];
   function setLightMode(active) {
     elementsToToggle.forEach(el => {
@@ -2615,6 +2873,40 @@ document.addEventListener('DOMContentLoaded', () => {
     setLightMode(!isLight);
     localStorage.setItem('bgMode', isLight ? 'dark' : 'light');
   });
+
+  // Sound toggle button
+  const soundBtn = document.getElementById('soundToggleBtn');
+  const soundOnIcon = document.getElementById('soundOnIcon');
+  const soundOffIcon = document.getElementById('soundOffIcon');
+  const soundMusicNote = document.getElementById('soundMusicNote');
+
+  if (soundBtn && soundOnIcon && soundOffIcon) {
+    // Set initial icon state
+    function updateSoundIcon() {
+      const soundEnabled = MatrixSound.isEnabled();
+      soundOnIcon.style.display = soundEnabled ? 'inline' : 'none';
+      soundOffIcon.style.display = soundEnabled ? 'none' : 'inline';
+
+      // Update music note color on mobile
+      if (soundMusicNote) {
+        soundMusicNote.style.color = soundEnabled ? '#22c55e' : '#ef4444';
+      }
+    }
+
+    // Initialize icon on page load
+    updateSoundIcon();
+
+    // Toggle sound on click
+    soundBtn.addEventListener('click', function() {
+      MatrixSound.toggleSound();
+      updateSoundIcon();
+
+      // Play a test sound if we just enabled it
+      if (MatrixSound.isEnabled()) {
+        MatrixSound.play('boot-ready');
+      }
+    });
+  }
 });
 
 // ===== Top Subnets Display Card (Main Grid) =====
@@ -3062,6 +3354,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.body.appendChild(neoSnippet);
 
+    // Play glitch sound when snippet appears
+    MatrixSound.play('glitch');
+
     // Fade in
     setTimeout(() => { neoSnippet.style.opacity = '1'; }, 100);
 
@@ -3199,8 +3494,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Typewriter effect
     let lineIndex = 0;
     let charIndex = 0;
+    let isTyping = true;
+    let typeTimeout = null;
 
     function typeMessage() {
+      if (!isTyping) return; // Stop if overlay closed
+
       if (lineIndex < messages.length) {
         const currentLine = messages[lineIndex];
 
@@ -3208,9 +3507,14 @@ document.addEventListener('DOMContentLoaded', function() {
           textContainer.textContent += currentLine[charIndex];
           charIndex++;
 
+          // Play typing sound for each character (except spaces)
+          if (currentLine[charIndex - 1] !== ' ') {
+            MatrixSound.play('boot-typing');
+          }
+
           // Faster typing for short pauses
           const delay = currentLine === '' ? 50 : (40 + Math.random() * 40);
-          setTimeout(typeMessage, delay);
+          typeTimeout = setTimeout(typeMessage, delay);
         } else {
           textContainer.textContent += '\n';
           lineIndex++;
@@ -3218,11 +3522,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
           // Pause between lines
           const pause = messages[lineIndex] === '' ? 400 : 600;
-          setTimeout(typeMessage, pause);
+          typeTimeout = setTimeout(typeMessage, pause);
         }
       } else {
         // Show close hint
-        setTimeout(() => {
+        typeTimeout = setTimeout(() => {
+          if (!isTyping) return;
           const closeHint = document.createElement('div');
           closeHint.textContent = '[ Press ESC or click to close ]';
           closeHint.style.cssText = `
@@ -3240,10 +3545,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(overlay);
 
     // Start typing after short delay
-    setTimeout(typeMessage, 600);
+    typeTimeout = setTimeout(typeMessage, 600);
 
     // Close handlers
     function closeOverlay() {
+      isTyping = false;
+      if (typeTimeout) clearTimeout(typeTimeout);
       clearInterval(matrixInterval);
       overlay.style.animation = 'morpheusFadeOut 0.5s ease-in';
       setTimeout(() => overlay.remove(), 500);

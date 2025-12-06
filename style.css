@@ -160,10 +160,10 @@
   -webkit-text-fill-color: #000 !important;
   font-weight: 800 !important;
 }
-#bgToggleBtn {
+#bgToggleBtn,
+#soundToggleBtn {
   position: fixed;
   top: 18px;
-  right: 18px;
   z-index: 200;
   background: var(--surface);
   border-radius: 50%;
@@ -180,12 +180,36 @@
   user-select: none;
   pointer-events: auto;
 }
+#bgToggleBtn {
+  right: 18px;
+}
+#soundToggleBtn {
+  right: 62px;
+}
 @media (max-width: 700px) {
   #bgToggleBtn {
     top: 12px;
     right: 12px;
     width: 34px;
     height: 34px;
+  }
+  #soundToggleBtn {
+    top: 12px;
+    right: 50px;
+    width: 28px;
+    height: 28px;
+  }
+  #soundToggleBtn #soundMusicNote {
+    font-size: 14px;
+  }
+  /* Hide SVG icons on mobile */
+  #soundOnIcon,
+  #soundOffIcon {
+    display: none !important;
+  }
+  /* Show music note */
+  #soundMusicNote {
+    display: inline !important;
   }
 }
 
@@ -2144,7 +2168,14 @@ body.light-bg .fng-card.fng-red .barometer-class {
 .refresh-logo-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+}
+
+/* On mobile, reduce gap even more */
+@media (max-width: 600px) {
+  .refresh-logo-row {
+    gap: 4px;
+  }
 }
 
 /* --- Refresh Indicator (Kompakt & Dezent) --- */
@@ -2152,6 +2183,7 @@ body.light-bg .fng-card.fng-red .barometer-class {
   width: 18px; /* a bit smaller to satisfy the request */
   height: 18px;
   margin-right: 10px;
+  margin-left: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2651,7 +2683,8 @@ body.light-bg .embed-overlay-mobile {
   color: #22c55e !important;
   border: 1px solid #c0c0c0 !important;
 }
-#bgToggleBtn.light-bg {
+#bgToggleBtn.light-bg,
+#soundToggleBtn.light-bg {
   /* Keep the toggle obvious in light backgrounds: use a dark rounded button */
   background: #111318 !important; /* darker for visibility */
   color: #fff !important;
