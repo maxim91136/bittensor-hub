@@ -3455,29 +3455,113 @@ document.addEventListener('DOMContentLoaded', function() {
     messageBox.style.scrollbarWidth = 'thin';
     messageBox.style.scrollbarColor = '#0f0 rgba(0, 20, 0, 0.5)';
 
-    // Messages from Morpheus
-    const messages = [
-      'I imagine that right now, you\'re feeling a bit like Alice.',
-      'Tumbling down the rabbit hole?',
-      '',
-      'I can see it in your eyes.',
-      'You have the look of someone who accepts what they see,',
-      'because they are expecting to wake up.',
-      '',
-      'Ironically, this is not far from the truth.',
-      '',
-      'The Matrix is everywhere.',
-      'It is all around us.',
-      'Even now, in this very dashboard.',
-      '',
-      'You can see it when you look at your validators,',
-      'or when you check the TAO price.',
-      '',
-      'It is the world that has been pulled over your eyes',
-      'to blind you from the truth.',
-      '',
-      '— Morpheus'
+    // Messages from The Matrix - randomly selected
+    const allMessages = [
+      // Morpheus #1 - Original
+      [
+        'I imagine that right now, you\'re feeling a bit like Alice.',
+        'Tumbling down the rabbit hole?',
+        '',
+        'I can see it in your eyes.',
+        'You have the look of someone who accepts what they see,',
+        'because they are expecting to wake up.',
+        '',
+        'Ironically, this is not far from the truth.',
+        '',
+        'The Matrix is everywhere.',
+        'It is all around us.',
+        'Even now, in this very dashboard.',
+        '',
+        'You can see it when you look at your validators,',
+        'or when you check the TAO price.',
+        '',
+        'It is the world that has been pulled over your eyes',
+        'to blind you from the truth.',
+        '',
+        '— Morpheus'
+      ],
+      // Morpheus #2
+      [
+        'What is real?',
+        'How do you define "real"?',
+        '',
+        'If you\'re talking about what you can feel,',
+        'what you can smell, what you can taste and see,',
+        'then "real" is simply electrical signals',
+        'interpreted by your brain.',
+        '',
+        'This is the construct.',
+        'It\'s our loading program.',
+        '',
+        'We can load anything, from clothing,',
+        'to equipment, weapons, training simulations,',
+        'anything we need.',
+        '',
+        '— Morpheus'
+      ],
+      // Morpheus #3
+      [
+        'I\'m trying to free your mind, Neo.',
+        'But I can only show you the door.',
+        'You\'re the one that has to walk through it.',
+        '',
+        'You have to let it all go, Neo.',
+        'Fear, doubt, and disbelief.',
+        '',
+        'Free your mind.',
+        '',
+        'Sooner or later you\'re going to realize,',
+        'just as I did,',
+        'that there\'s a difference between knowing the path',
+        'and walking the path.',
+        '',
+        '— Morpheus'
+      ],
+      // Trinity #1
+      [
+        'The answer is out there, Neo.',
+        'It\'s looking for you.',
+        '',
+        'And it will find you,',
+        'if you want it to.',
+        '',
+        'I know why you\'re here.',
+        'I know what you\'ve been doing.',
+        '',
+        'I know why you hardly sleep,',
+        'why you live alone,',
+        'and why, night after night,',
+        'you sit at your computer.',
+        '',
+        'You\'re looking for him.',
+        'I know, because I was once looking for the same thing.',
+        '',
+        '— Trinity'
+      ],
+      // Trinity #2
+      [
+        'Neo, I\'m not afraid anymore.',
+        '',
+        'The Oracle told me',
+        'that I would fall in love,',
+        'and that man, the man that I loved,',
+        'would be The One.',
+        '',
+        'So you see,',
+        'you can\'t be dead.',
+        '',
+        'You can\'t be...',
+        'because I love you.',
+        '',
+        'You hear me?',
+        'I love you.',
+        '',
+        '— Trinity'
+      ]
     ];
+
+    // Randomly select a message
+    const messages = allMessages[Math.floor(Math.random() * allMessages.length)];
 
     const textContainer = document.createElement('div');
     const isMobile = window.innerWidth <= 768;
