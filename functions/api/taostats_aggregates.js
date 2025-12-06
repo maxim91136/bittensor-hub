@@ -25,7 +25,28 @@ export async function onRequest(context) {
           headers: cors
         });
       }
-      // Return the raw JSON stored in KV
+      // Diagnostic mode: parse and validate stored aggregates
+      try {
+        const url = new URL(context.request.url);
+        const validate = url.searchParams.get('validate');
+        if (validate === '1' || validate === 'true') {
+          let agg = null;
+          try {
+            agg = JSON.parse(raw);
+          } catch (e) {
+            return new Response(JSON.stringify({ error: 'Failed to parse KV payload as JSON', details: e.message, _source: 'taostats_aggregates' }), { status: 500, headers: cors });
+          }
+          const ma3 = agg?.ma_3d ?? null;
+          const ma7 = agg?.ma_7d ?? null;
+          const identical = (ma3 !== null && ma7 !== null && ma3 === ma7);
+          return new Response(JSON.stringify({ _source: 'taostats_aggregates', ma_3d: ma3, ma_7d: ma7, identical, _raw_present: true }), { status: 200, headers: cors });
+        }
+      } catch (e) {
+        // fall through to returning raw payload
+        console.warn('Validation check failed', e);
+      }
+
+      // Return the raw JSON stored in KV (default behaviour)
       return new Response(raw, { status: 200, headers: cors });
     }
 

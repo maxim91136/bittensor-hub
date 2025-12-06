@@ -130,25 +130,37 @@ def compute_aggregates(history):
 
     # 3-day MA: calculate mean of only last 72 hours of data
     ma_3d = None
+    vols_3d = []
+    vols_3d_first_ts = None
+    vols_3d_last_ts = None
     if hours_of_data >= 72:
         try:
             last_ts = vols[-1][0]
             last_dt = datetime.fromisoformat(last_ts.replace('Z', '+00:00'))
             cutoff_3d = last_dt.timestamp() - (72 * 3600)
-            vols_3d = [v for (ts, v) in vols if datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp() >= cutoff_3d]
-            ma_3d = mean(vols_3d) if vols_3d else None
+            vols_3d = [ (ts, v) for (ts, v) in vols if datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp() >= cutoff_3d]
+            ma_3d = mean([v for (_, v) in vols_3d]) if vols_3d else None
+            if vols_3d:
+                vols_3d_first_ts = vols_3d[0][0]
+                vols_3d_last_ts = vols_3d[-1][0]
         except Exception:
             pass
 
     # 7-day MA: calculate mean of only last 168 hours of data
     ma_7d = None
+    vols_7d = []
+    vols_7d_first_ts = None
+    vols_7d_last_ts = None
     if hours_of_data >= 168:
         try:
             last_ts = vols[-1][0]
             last_dt = datetime.fromisoformat(last_ts.replace('Z', '+00:00'))
             cutoff_7d = last_dt.timestamp() - (168 * 3600)
-            vols_7d = [v for (ts, v) in vols if datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp() >= cutoff_7d]
-            ma_7d = mean(vols_7d) if vols_7d else None
+            vols_7d = [ (ts, v) for (ts, v) in vols if datetime.fromisoformat(ts.replace('Z', '+00:00')).timestamp() >= cutoff_7d]
+            ma_7d = mean([v for (_, v) in vols_7d]) if vols_7d else None
+            if vols_7d:
+                vols_7d_first_ts = vols_7d[0][0]
+                vols_7d_last_ts = vols_7d[-1][0]
         except Exception:
             pass
     
@@ -300,6 +312,13 @@ def compute_aggregates(history):
         'ma_med': ma_med,
         'ma_3d': ma_3d,
         'ma_7d': ma_7d,
+        # Diagnostic fields to help debug MA windowing
+        'ma_3d_count': len(vols_3d) if isinstance(vols_3d, list) else 0,
+        'ma_7d_count': len(vols_7d) if isinstance(vols_7d, list) else 0,
+        'ma_3d_first_ts': vols_3d_first_ts,
+        'ma_3d_last_ts': vols_3d_last_ts,
+        'ma_7d_first_ts': vols_7d_first_ts,
+        'ma_7d_last_ts': vols_7d_last_ts,
         'sd_med': sd_med,
         'pct_change_vs_ma_short': pct_change_vs_ma_short,
         'pct_change_vs_ma_med': pct_change_vs_ma_med,
