@@ -16,6 +16,18 @@ All notable changes to this project will be documented in this file.
 ### Notes
 - See `RELEASE_NOTES/v1.0.0-rc.21.1.md` for full details and testing notes.
 
+## v1.0.0-rc.21.2 (2025-12-06)
+### Added / Changed
+- Timeline labels expanded and reordered for clarity: Now → Yesterday → Week → Month.
+- Timeline text styling changed to monospace/console (Matrix-like) with responsive sizing.
+
+### Fixed
+- Light-mode spoon loader and fallback now use the white-background PNG reliably; toggle behavior corrected.
+- Matrix easter-egg moved to the F&G card header to avoid overlapping timeline content.
+
+### Notes
+- Small frontend polish release; recommended to hard-refresh after deploy to clear cached assets.
+
 ## v1.0.0-rc.21 (2025-12-05)
 ### Added
 - Fear & Greed (F&G) UI: improved card layout with history matrix and a spoon-shaped gauge. Support for user-provided spoon graphics added (`assets/fng-spoon-*.webp`).
