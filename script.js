@@ -127,7 +127,7 @@ const PRICE_CACHE_TTL_MAX = 3600000;
 // ===== State Management =====
 let priceChart = null;
 let lastPrice = null;
-let currentPriceRange = '3';
+let currentPriceRange = localStorage.getItem('priceRange') || '3';
 let isLoadingPrice = false;
 // Track whether main dashboard init has completed
 window._dashboardInitialized = false;
@@ -2399,6 +2399,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const range = btn.getAttribute('data-range'); // "7", "30", "365"
         if (range === currentPriceRange) return; // No reload if same
         currentPriceRange = range;
+        // Persist user's selection so it survives reloads (client-side only)
+        try { localStorage.setItem('priceRange', currentPriceRange); } catch (e) { /* ignore */ }
 
         // Update button UI
         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
@@ -2417,6 +2419,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (priceCard) priceCard.classList.remove('loading');
       });
     });
+
+    // Ensure the correct active button is set from persisted preference (if any)
+    try {
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.querySelector(`.time-btn[data-range="${currentPriceRange}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+    } catch (e) { /* ignore */ }
 
     // Info badge tooltip for API status card: preserve any existing (HTML) tooltip
     // Only set a default if the attribute is missing or suspiciously short (regression guard).
