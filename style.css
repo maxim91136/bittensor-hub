@@ -939,6 +939,23 @@ body.light-bg .fng-timeline-text {
   94%, 97% { opacity: 0.1; }
 }
 
+/* Place the Matrix quote in the F&G card header to avoid overlapping the timeline */
+.fng-card .matrix-quote {
+  bottom: auto;
+  top: 12px;
+  left: 18px;
+  font-size: 0.78rem;
+  opacity: 0.48;
+  z-index: 25;
+  text-shadow: 0 0 6px rgba(0,255,65,0.28);
+}
+
+body.light-bg .fng-card .matrix-quote {
+  color: #00cc33;
+  opacity: 0.55;
+  text-shadow: 0 0 4px rgba(0,204,51,0.18);
+}
+
 body.light-bg .matrix-quote {
   animation: matrixGlitchLight 8s ease-in-out infinite;
 }
