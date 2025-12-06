@@ -18,7 +18,7 @@ BLOCK_URL = "https://api.taostats.io/api/block/v1"
 # Target block time in seconds
 TARGET_BLOCK_TIME = 12.0
 
-def fetch_block_time(num_blocks=500, max_attempts=4):
+def fetch_block_time(num_blocks=100, max_attempts=4):
     """Fetch last N blocks and calculate average block time."""
     if not TAOSTATS_API_KEY:
         print("❌ TAOSTATS_API_KEY not set", file=sys.stderr)
@@ -183,7 +183,8 @@ def parse_timestamp(ts_str):
 
 def main():
     # Fetch block time data (200 blocks = ~40 min of chain data)
-    result, rate_limited = fetch_block_time(200)
+    # Limit blocks fetched to a maximum of 100 to reduce request volume
+    result, rate_limited = fetch_block_time(100)
 
     if not result:
         if rate_limited:
