@@ -3050,6 +3050,12 @@ document.addEventListener('DOMContentLoaded', function() {
           0%, 50% { opacity: 1; }
           51%, 100% { opacity: 0; }
         }
+        /* Mobile-optimized scrolling for iOS */
+        @supports (-webkit-overflow-scrolling: touch) {
+          .neo-message-box {
+            -webkit-overflow-scrolling: touch;
+          }
+        }
       `;
       document.head.appendChild(style);
     }
@@ -3136,7 +3142,11 @@ document.addEventListener('DOMContentLoaded', function() {
       position: relative;
       z-index: 10;
       max-width: 700px;
-      padding: 50px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 30px;
+      margin: 20px;
       background: rgba(0, 20, 0, 0.95);
       border: 2px solid #0f0;
       border-radius: 8px;
@@ -3144,6 +3154,11 @@ document.addEventListener('DOMContentLoaded', function() {
       font-family: 'Courier New', monospace;
       color: #0f0;
     `;
+
+    // Add mobile-optimized scrollbar styling
+    messageBox.className = 'neo-message-box';
+    messageBox.style.scrollbarWidth = 'thin';
+    messageBox.style.scrollbarColor = '#0f0 rgba(0, 20, 0, 0.5)';
 
     // Messages from Morpheus
     const messages = [
@@ -3170,11 +3185,12 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
 
     const textContainer = document.createElement('div');
+    const isMobile = window.innerWidth <= 768;
     textContainer.style.cssText = `
-      font-size: 18px;
-      line-height: 1.8;
+      font-size: ${isMobile ? '15px' : '18px'};
+      line-height: ${isMobile ? '1.6' : '1.8'};
       white-space: pre-wrap;
-      min-height: 400px;
+      min-height: ${isMobile ? '200px' : '400px'};
     `;
 
     messageBox.appendChild(textContainer);
