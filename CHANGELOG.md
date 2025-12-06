@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 -
+## v1.0.0-rc.22.1 (2025-12-06)
+### Fixed
+- **Mobile Display**: Morpheus message (Neo Easter Egg) now fully visible on iPhone Pro Max and other mobile devices
+  - Responsive box with max-height 85vh and scrollable overflow
+  - Reduced padding and font size for mobile (15px vs 18px)
+  - Smooth iOS scrolling with native momentum
+  - Green Matrix-themed scrollbar
+
+### Notes
+- Pure frontend fix for mobile UX
+- See `RELEASE_NOTES/v1.0.0-rc.22.1.md` for full details
+
 ## v1.0.0-rc.22 (2025-12-06)
 ### Added
 - **Easter Egg**: "Wake up, Neo..." Matrix-themed Easter Egg for engaged users
