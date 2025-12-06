@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 -
+
+## v1.0.0-rc.21.3.1 (2025-12-06)
+### Fixed
+- Removed duplicate clickable `alternative.me` link from the About section; attribution text retained. The only visible source link remains in the Disclaimer & Data Sources grid.
+
+### Changed
+- Default Price Chart timeframe set to **3D** on first load (was 7D).
+- Persist chart timeframe selection in `localStorage` under `priceRange` so user preference survives page reloads (client-side only).
+
+### Notes
+- Frontend-only, low-risk release. Hard-refresh recommended after deployment to pick up updated assets and script changes.
+
 ## v1.0.0-rc.21.1 (2025-12-06)
 ### Fixed
 - Light-mode spoon rendering: use white-background PNG (`assets/fng-spoon-white.png`) as the light-mode asset so the spoon displays correctly in Light Mode and PWA contexts.
