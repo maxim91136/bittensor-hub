@@ -604,12 +604,14 @@ function getVolumeSignal(volumeData, priceChange, currentVolume = null, aggregat
       const ma7dTrend = ((ma3dVal - ma7dVal) / ma7dVal) * 100;
       if (ma7dTrend > 5) {
         marketPhase = 'bullish';
-        marketPhaseNote = `\n📈 Market: Bullish trend (MA-3d vs MA-7d: +${ma7dTrend.toFixed(1)}%)`;
+        marketPhaseNote = `\n📈 Market: Bullish (3d avg is ${ma7dTrend.toFixed(1)}% above 7d avg)`;
       } else if (ma7dTrend < -5) {
         marketPhase = 'bearish';
-        marketPhaseNote = `\n📉 Market: Bearish trend (MA-3d vs MA-7d: ${ma7dTrend.toFixed(1)}%)`;
+        marketPhaseNote = `\n📉 Market: Bearish (3d avg is ${Math.abs(ma7dTrend).toFixed(1)}% below 7d avg)`;
       } else {
-        marketPhaseNote = `\n➡️ Market: Neutral (MA-3d vs MA-7d: ${ma7dTrend >= 0 ? '+' : ''}${ma7dTrend.toFixed(1)}%)`;
+        const aboveBelow = ma7dTrend >= 0 ? 'above' : 'below';
+        const absValue = Math.abs(ma7dTrend).toFixed(1);
+        marketPhaseNote = `\n➡️ Market: Neutral (3d avg is ${absValue}% ${aboveBelow} 7d avg)`;
       }
     }
 
@@ -692,11 +694,13 @@ Both declining — downward momentum${marketPhaseNote}` + (confidenceLine || '')
     if (ma3dVal && ma7dVal) {
       const ma7dTrend = ((ma3dVal - ma7dVal) / ma7dVal) * 100;
       if (ma7dTrend > 5) {
-        marketPhaseNote = `\n📈 Market: Bullish trend (MA-3d vs MA-7d: +${ma7dTrend.toFixed(1)}%)`;
+        marketPhaseNote = `\n📈 Market: Bullish (3d avg is ${ma7dTrend.toFixed(1)}% above 7d avg)`;
       } else if (ma7dTrend < -5) {
-        marketPhaseNote = `\n📉 Market: Bearish trend (MA-3d vs MA-7d: ${ma7dTrend.toFixed(1)}%)`;
+        marketPhaseNote = `\n📉 Market: Bearish (3d avg is ${Math.abs(ma7dTrend).toFixed(1)}% below 7d avg)`;
       } else {
-        marketPhaseNote = `\n➡️ Market: Neutral (MA-3d vs MA-7d: ${ma7dTrend >= 0 ? '+' : ''}${ma7dTrend.toFixed(1)}%)`;
+        const aboveBelow = ma7dTrend >= 0 ? 'above' : 'below';
+        const absValue = Math.abs(ma7dTrend).toFixed(1);
+        marketPhaseNote = `\n➡️ Market: Neutral (3d avg is ${absValue}% ${aboveBelow} 7d avg)`;
       }
     }
   } catch (e) { /* ignore */ }
