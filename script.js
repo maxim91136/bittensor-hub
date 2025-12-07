@@ -1849,169 +1849,284 @@ async function updateNetworkStats(data) {
   startHalvingCountdown();
 }
 
-// ===== Dynamic Tooltip System =====
-function setupDynamicTooltips() {
-  let tooltip = document.createElement('div');
-  tooltip.className = 'dynamic-tooltip';
-  document.body.appendChild(tooltip);
-  let tooltipClose = null;
-  let tooltipPersistent = false;
-  let tooltipOwner = null;
+// ===== Modern Tooltip System =====
+class TooltipManager {
+  constructor() {
+    this.tooltip = null;
+    this.currentTarget = null;
+    this.hideTimer = null;
+    this.isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+    this.init();
+  }
 
-  function showTooltip(e, text, opts = {}) {
-    // opts.persistent -> keep tooltip visible until explicitly closed/tapped again
-    const persistent = !!opts.persistent;
-    const wide = !!opts.wide;
-    const html = !!opts.html;
-    tooltipOwner = e.target;
-    tooltipPersistent = persistent;
-    tooltip.dataset.persistent = persistent ? 'true' : 'false';
-    // Build content (preserve newlines)
-    tooltip.innerHTML = '';
+  init() {
+    // Create tooltip element
+    this.tooltip = document.createElement('div');
+    this.tooltip.className = 'modern-tooltip';
+    this.tooltip.setAttribute('role', 'tooltip');
+    this.tooltip.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(this.tooltip);
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+      if (!this.tooltip.contains(e.target) && this.currentTarget && !this.currentTarget.contains(e.target)) {
+        this.hide();
+      }
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.tooltip.classList.contains('visible')) {
+        this.hide();
+      }
+    });
+  }
+
+  show(target, options = {}) {
+    const {
+      text = '',
+      html = false,
+      persistent = false,
+      autoHide = 4000,
+      wide = false
+    } = options;
+
+    // Clear any existing timer
+    this.clearTimer();
+
+    // If clicking same target, toggle off
+    if (this.currentTarget === target && this.tooltip.classList.contains('visible')) {
+      this.hide();
+      return;
+    }
+
+    // Update current target
+    this.currentTarget = target;
+
+    // Build content
+    this.tooltip.innerHTML = '';
+
     const body = document.createElement('div');
     body.className = 'tooltip-body';
-    if (html) body.innerHTML = text; else body.textContent = text;
-    tooltip.appendChild(body);
-    if (persistent) {
-      // add close control
-      if (!tooltipClose) {
-        tooltipClose = document.createElement('button');
-        tooltipClose.className = 'tooltip-close';
-        tooltipClose.setAttribute('aria-label', 'Close');
-        tooltipClose.textContent = '×';
-        tooltipClose.addEventListener('click', (ev) => {
-          ev.stopPropagation();
-          hideTooltip();
+    if (html) {
+      body.innerHTML = text;
+    } else {
+      body.textContent = text;
+    }
+    this.tooltip.appendChild(body);
+
+    // Add close button if persistent or touch
+    if (persistent || this.isTouch) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'tooltip-close';
+      closeBtn.innerHTML = '×';
+      closeBtn.setAttribute('aria-label', 'Close tooltip');
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.hide();
+      });
+      this.tooltip.appendChild(closeBtn);
+      this.tooltip.classList.add('has-close');
+    } else {
+      this.tooltip.classList.remove('has-close');
+    }
+
+    // Wide variant
+    if (wide) {
+      this.tooltip.classList.add('wide');
+    } else {
+      this.tooltip.classList.remove('wide');
+    }
+
+    // Show tooltip
+    this.tooltip.classList.add('visible');
+    this.tooltip.setAttribute('aria-hidden', 'false');
+
+    // Position tooltip
+    this.position(target);
+
+    // Auto-hide timer (unless persistent)
+    if (!persistent && autoHide > 0) {
+      this.hideTimer = setTimeout(() => this.hide(), autoHide);
+    }
+  }
+
+  position(target) {
+    // Get rects
+    const targetRect = target.getBoundingClientRect();
+    const tooltipRect = this.tooltip.getBoundingClientRect();
+    const padding = 8;
+    const arrowOffset = 6;
+
+    // Determine best vertical position
+    const spaceAbove = targetRect.top;
+    const spaceBelow = window.innerHeight - targetRect.bottom;
+    const positionBelow = spaceBelow >= tooltipRect.height + padding + arrowOffset;
+
+    let top, left;
+
+    // Position vertically
+    if (positionBelow) {
+      top = targetRect.bottom + arrowOffset + padding;
+      this.tooltip.dataset.position = 'bottom';
+    } else {
+      top = targetRect.top - tooltipRect.height - arrowOffset - padding;
+      this.tooltip.dataset.position = 'top';
+    }
+
+    // Position horizontally (centered on target)
+    left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+
+    // Keep within viewport horizontally
+    if (left < padding) {
+      left = padding;
+    }
+    if (left + tooltipRect.width > window.innerWidth - padding) {
+      left = window.innerWidth - tooltipRect.width - padding;
+    }
+
+    // Final flip check - if still doesn't fit, flip vertical position
+    if (top < padding) {
+      top = targetRect.bottom + arrowOffset + padding;
+      this.tooltip.dataset.position = 'bottom';
+    }
+    if (top + tooltipRect.height > window.innerHeight - padding) {
+      top = targetRect.top - tooltipRect.height - arrowOffset - padding;
+      this.tooltip.dataset.position = 'top';
+    }
+
+    // Apply position
+    this.tooltip.style.top = `${top}px`;
+    this.tooltip.style.left = `${left}px`;
+  }
+
+  hide() {
+    this.clearTimer();
+    this.tooltip.classList.remove('visible');
+    this.tooltip.setAttribute('aria-hidden', 'true');
+    this.currentTarget = null;
+  }
+
+  clearTimer() {
+    if (this.hideTimer) {
+      clearTimeout(this.hideTimer);
+      this.hideTimer = null;
+    }
+  }
+}
+
+// Initialize global tooltip manager
+const tooltipManager = new TooltipManager();
+
+// Setup dynamic tooltips
+function setupDynamicTooltips() {
+  const isTouch = tooltipManager.isTouch;
+
+  // Info badges
+  document.querySelectorAll('.info-badge').forEach(badge => {
+    if (badge.closest && badge.closest('.taotensor-card')) return;
+
+    if (!isTouch) {
+      badge.addEventListener('mouseenter', () => {
+        const text = badge.getAttribute('data-tooltip');
+        const html = badge.getAttribute('data-tooltip-html') === 'true';
+        if (text) tooltipManager.show(badge, { text, html, persistent: false });
+      });
+      badge.addEventListener('mouseleave', () => tooltipManager.hide());
+    }
+
+    // Keyboard navigation
+    badge.addEventListener('focus', () => {
+      const text = badge.getAttribute('data-tooltip');
+      const html = badge.getAttribute('data-tooltip-html') === 'true';
+      if (text) tooltipManager.show(badge, { text, html, persistent: false, autoHide: 0 });
+    });
+    badge.addEventListener('blur', () => tooltipManager.hide());
+
+    badge.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const text = badge.getAttribute('data-tooltip');
+      const html = badge.getAttribute('data-tooltip-html') === 'true';
+      if (text) {
+        tooltipManager.show(badge, {
+          text,
+          html,
+          persistent: isTouch,
+          autoHide: isTouch ? 0 : TOOLTIP_AUTO_HIDE_MS
         });
       }
-      tooltip.appendChild(tooltipClose);
-      tooltip.classList.add('persistent');
-    } else {
-      if (tooltipClose && tooltip.contains(tooltipClose)) tooltip.removeChild(tooltipClose);
-      tooltip.classList.remove('persistent');
-    }
-    // wide option: allow wider tooltip for desktop halving pill
-    if (wide) tooltip.classList.add('wide'); else tooltip.classList.remove('wide');
-    tooltip.classList.add('visible');
-    const rect = e.target.getBoundingClientRect();
-    const tooltipRect = tooltip.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
-    if (left + tooltipRect.width > window.innerWidth - 8) {
-      left = window.innerWidth - tooltipRect.width - 8;
-    }
-    if (left < 8) left = 8;
-    if (top + tooltipRect.height > window.innerHeight - 8) {
-      top = rect.top - tooltipRect.height - 8;
-    }
-    tooltip.style.top = `${top}px`;
-    tooltip.style.left = `${left}px`;
-  }
-
-  function hideTooltip() {
-    tooltip.classList.remove('visible');
-    tooltipPersistent = false;
-    tooltipOwner = null;
-    tooltip.dataset.persistent = 'false';
-    if (tooltipClose && tooltip.contains(tooltipClose)) tooltip.removeChild(tooltipClose);
-    tooltip.classList.remove('persistent');
-  }
-
-  document.querySelectorAll('.info-badge').forEach(badge => {
-    // Skip any info-badge that lives in the TAO Tensor Law card (we removed it)
-    if (badge.closest && badge.closest('.taotensor-card')) return;
-    // Only initialize tooltips for badges that actually have tooltip text
-    // Read the attribute at event time so updates to `data-tooltip` later are respected.
-    badge.addEventListener('mouseenter', e => {
-      const txt = badge.getAttribute('data-tooltip');
-      const htmlFlag = badge.getAttribute('data-tooltip-html') === 'true';
-      if (txt) showTooltip(e, txt, { persistent: false, html: htmlFlag });
     });
-    badge.addEventListener('mouseleave', hideTooltip);
-    badge.addEventListener('focus', e => {
-      const txt = badge.getAttribute('data-tooltip');
-      const htmlFlag = badge.getAttribute('data-tooltip-html') === 'true';
-      if (txt) showTooltip(e, txt, { persistent: false, html: htmlFlag });
-    });
-    badge.addEventListener('blur', hideTooltip);
-    badge.addEventListener('click', e => {
-      e.stopPropagation();
-      const txt = badge.getAttribute('data-tooltip');
-      const htmlFlag = badge.getAttribute('data-tooltip-html') === 'true';
-      if (txt) {
-        showTooltip(e, txt, { persistent: false, html: htmlFlag });
-        setTimeout(hideTooltip, TOOLTIP_AUTO_HIDE_MS);
-      }
-    });
-    // No theme-dependent behavior here; map swap is handled centrally in setLightMode().
   });
 
-  const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+  // Halving pills (wide tooltips)
   document.querySelectorAll('.halving-pill').forEach(pill => {
-    // Use a wider tooltip on desktop so the halving projection content can breathe
-    pill.addEventListener('mouseenter', e => {
-      if (!isTouch) {
-        const txt = pill.getAttribute('data-tooltip') || '';
-        const htmlFlag = pill.getAttribute('data-tooltip-html') === 'true';
-        showTooltip(e, txt, { wide: true, html: htmlFlag });
-      }
+    if (!isTouch) {
+      pill.addEventListener('mouseenter', () => {
+        const text = pill.getAttribute('data-tooltip') || '';
+        const html = pill.getAttribute('data-tooltip-html') === 'true';
+        if (text) tooltipManager.show(pill, { text, html, wide: true, persistent: false });
+      });
+      pill.addEventListener('mouseleave', () => tooltipManager.hide());
+    }
+
+    // Keyboard navigation
+    pill.addEventListener('focus', () => {
+      const text = pill.getAttribute('data-tooltip') || '';
+      const html = pill.getAttribute('data-tooltip-html') === 'true';
+      if (text) tooltipManager.show(pill, { text, html, wide: true, persistent: false, autoHide: 0 });
     });
-    pill.addEventListener('mouseleave', e => { if (!isTouch) hideTooltip(); });
-    pill.addEventListener('focus', e => {
-      if (!isTouch) {
-        const txt = pill.getAttribute('data-tooltip') || '';
-        const htmlFlag = pill.getAttribute('data-tooltip-html') === 'true';
-        showTooltip(e, txt, { wide: true, html: htmlFlag });
-      }
-    });
-    pill.addEventListener('blur', e => { if (!isTouch) hideTooltip(); });
-    pill.addEventListener('click', e => {
+    pill.addEventListener('blur', () => tooltipManager.hide());
+
+    pill.addEventListener('click', (e) => {
       e.stopPropagation();
       MatrixSound.play('halving-click');
       const text = pill.getAttribute('data-tooltip') || '';
-      const htmlFlag = pill.getAttribute('data-tooltip-html') === 'true';
-      if (isTouch) {
-        // Toggle persistent tooltip on touch devices
-        if (tooltipPersistent && tooltipOwner === pill) {
-          hideTooltip();
-        } else {
-          showTooltip(e, text, { persistent: true, html: htmlFlag });
-        }
-      } else {
-        // On desktop clicking the pill should show the same wide variant as hover
-        showTooltip(e, text, { persistent: false, wide: true, html: htmlFlag });
-        setTimeout(hideTooltip, TOOLTIP_AUTO_HIDE_MS);
+      const html = pill.getAttribute('data-tooltip-html') === 'true';
+      if (text) {
+        tooltipManager.show(pill, {
+          text,
+          html,
+          wide: true,
+          persistent: isTouch,
+          autoHide: isTouch ? 0 : TOOLTIP_AUTO_HIDE_MS
+        });
       }
     });
   });
 
+  // Price pills
   document.querySelectorAll('.price-pill').forEach(pill => {
-    pill.addEventListener('mouseenter', e => {
-      const txt = pill.getAttribute('data-tooltip') || '';
-      const htmlFlag = pill.getAttribute('data-tooltip-html') === 'true';
-      showTooltip(e, txt, { html: htmlFlag });
+    if (!isTouch) {
+      pill.addEventListener('mouseenter', () => {
+        const text = pill.getAttribute('data-tooltip') || '';
+        const html = pill.getAttribute('data-tooltip-html') === 'true';
+        if (text) tooltipManager.show(pill, { text, html, persistent: false });
+      });
+      pill.addEventListener('mouseleave', () => tooltipManager.hide());
+    }
+
+    // Keyboard navigation
+    pill.addEventListener('focus', () => {
+      const text = pill.getAttribute('data-tooltip') || '';
+      const html = pill.getAttribute('data-tooltip-html') === 'true';
+      if (text) tooltipManager.show(pill, { text, html, persistent: false, autoHide: 0 });
     });
-    pill.addEventListener('mouseleave', hideTooltip);
-    pill.addEventListener('focus', e => {
-      const txt = pill.getAttribute('data-tooltip') || '';
-      const htmlFlag = pill.getAttribute('data-tooltip-html') === 'true';
-      showTooltip(e, txt, { html: htmlFlag });
-    });
-    pill.addEventListener('blur', hideTooltip);
-    pill.addEventListener('click', e => {
+    pill.addEventListener('blur', () => tooltipManager.hide());
+
+    pill.addEventListener('click', (e) => {
       e.stopPropagation();
       MatrixSound.play('pill-click');
-      const txt = pill.getAttribute('data-tooltip') || '';
-      const htmlFlag = pill.getAttribute('data-tooltip-html') === 'true';
-      showTooltip(e, txt, { html: htmlFlag });
-      setTimeout(hideTooltip, TOOLTIP_AUTO_HIDE_MS);
+      const text = pill.getAttribute('data-tooltip') || '';
+      const html = pill.getAttribute('data-tooltip-html') === 'true';
+      if (text) {
+        tooltipManager.show(pill, {
+          text,
+          html,
+          persistent: isTouch,
+          autoHide: isTouch ? 0 : TOOLTIP_AUTO_HIDE_MS
+        });
+      }
     });
-  });
-
-  // document click should hide tooltip only when not persistent
-  document.addEventListener('click', (e) => {
-    if (tooltipPersistent) return;
-    hideTooltip();
   });
 }
 
