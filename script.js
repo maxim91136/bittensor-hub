@@ -2055,38 +2055,33 @@ const tooltipManager = new TooltipManager();
 function setupDynamicTooltips() {
   const isTouch = tooltipManager.isTouch;
 
-  // Info badges
+  // Info badges - always persistent with X-button (Desktop & Mobile)
   document.querySelectorAll('.info-badge').forEach(badge => {
     if (badge.closest && badge.closest('.taotensor-card')) return;
 
+    // Hover on desktop shows tooltip with X-button
     if (!isTouch) {
       badge.addEventListener('mouseenter', () => {
         const text = badge.getAttribute('data-tooltip');
         const html = badge.getAttribute('data-tooltip-html') === 'true';
-        if (text) tooltipManager.show(badge, { text, html, persistent: false });
+        if (text) tooltipManager.show(badge, { text, html, persistent: true, autoHide: 0 });
       });
-      badge.addEventListener('mouseleave', () => tooltipManager.hide());
     }
 
     // Keyboard navigation
     badge.addEventListener('focus', () => {
       const text = badge.getAttribute('data-tooltip');
       const html = badge.getAttribute('data-tooltip-html') === 'true';
-      if (text) tooltipManager.show(badge, { text, html, persistent: false, autoHide: 0 });
+      if (text) tooltipManager.show(badge, { text, html, persistent: true, autoHide: 0 });
     });
-    badge.addEventListener('blur', () => tooltipManager.hide());
 
+    // Click on mobile/touch
     badge.addEventListener('click', (e) => {
       e.stopPropagation();
       const text = badge.getAttribute('data-tooltip');
       const html = badge.getAttribute('data-tooltip-html') === 'true';
       if (text) {
-        tooltipManager.show(badge, {
-          text,
-          html,
-          persistent: isTouch,
-          autoHide: isTouch ? 0 : TOOLTIP_AUTO_HIDE_MS
-        });
+        tooltipManager.show(badge, { text, html, persistent: true, autoHide: 0 });
       }
     });
   });
