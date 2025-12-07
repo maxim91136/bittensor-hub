@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 -
+
+## v1.0.0-rc.24 (2025-12-07)
+### Added
+- **Market Conditions Card**: New comprehensive card with market signal, volume/price metrics, moving averages, and phase analysis
+- **Fear & Greed Index Integration**: Market sentiment data integrated into signal calculation
+- **Last Updated Timestamps**: All tooltips and cards show data freshness
+
+### Changed
+- **Card Layout**: Swapped API Status (position 7) with Neurons (position 11) for better hierarchy
+- **API Status Card**: Centered badge within card with responsive positioning
+- **Typography**: Market Conditions title reduced to 1.3em on desktop
+- **F&G Card**: Spoon gauge moved lower for better visual balance
+
+### Improved
+- **Tooltips**: English translations, improved descriptions, pills stay open on hover
+- **Market Intelligence**: Multi-factor analysis with volume, price, MAs, and sentiment
+
+### Technical
+- New files: `market-conditions.css`, `market-conditions.js`
+- CSS Grid for metrics (4 cols desktop, responsive)
+- Absolute positioning with transform for pixel-perfect centering
+
+### Notes
+- Pure frontend enhancement with external API integration
+- See `RELEASE_NOTES/v1.0.0-rc.24.md` for full technical details
+
 ## v1.0.0-rc.23.4 (2025-12-06)
 ### Added
 - **Easter Egg Variety**: 5 randomized Matrix messages (3x Morpheus, 1x Trinity, 1x The Oracle)
