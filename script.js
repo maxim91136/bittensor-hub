@@ -2059,12 +2059,12 @@ function setupDynamicTooltips() {
   document.querySelectorAll('.info-badge').forEach(badge => {
     if (badge.closest && badge.closest('.taotensor-card')) return;
 
-    // Hover on desktop shows tooltip with X-button
+    // Hover on desktop shows tooltip without X-button (persistent behavior, no auto-hide)
     if (!isTouch) {
       badge.addEventListener('mouseenter', () => {
         const text = badge.getAttribute('data-tooltip');
         const html = badge.getAttribute('data-tooltip-html') === 'true';
-        if (text) tooltipManager.show(badge, { text, html, persistent: true, autoHide: 0 });
+        if (text) tooltipManager.show(badge, { text, html, persistent: false, autoHide: 0 });
       });
     }
 
