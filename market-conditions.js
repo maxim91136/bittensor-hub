@@ -167,7 +167,7 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
 }
 
 /**
- * Update Token Economics Card
+ * Update Token Economics Card (Issued Tokens %)
  */
 async function updateTokenEconomicsCard() {
   const card = document.getElementById('tokenEconomicsCard');
@@ -177,12 +177,6 @@ async function updateTokenEconomicsCard() {
     const res = await fetch('/api/network');
     if (!res.ok) throw new Error('Network API failed');
     const data = await res.json();
-
-    // Average Emission (7-day average from historical data)
-    const avgEmissionEl = card.querySelector('#avgEmissionValue');
-    if (avgEmissionEl && data.emission) {
-      avgEmissionEl.textContent = `${Number(data.emission).toLocaleString()} τ`;
-    }
 
     // Issued percentage
     const issuedEl = card.querySelector('#issuedPercentValue');
