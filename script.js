@@ -3084,12 +3084,11 @@ document.addEventListener('DOMContentLoaded', function() {
       if (params.get('holiday') === '0') return false;
     } catch (e) { /* ignore */ }
     if (document.body.classList.contains('holiday')) return true;
-    // Auto-enable during holiday season by default: Dec 1 → Jan 31
+    // Auto-enable during winter season by default: Dec 1 → Feb 28/29
     const now = new Date();
     const m = now.getMonth() + 1; // 1-12
-    const d = now.getDate();
-    // Dec (any day) or January up to 31st
-    if ((m === 12 && d >= 1) || (m === 1 && d <= 31)) return true;
+    // December, January, or February
+    if (m === 12 || m === 1 || m === 2) return true;
     return false;
   }
 
@@ -3271,6 +3270,192 @@ document.addEventListener('DOMContentLoaded', function() {
         const c = document.getElementById('nye-sparkles'); if (c) c.innerHTML = '';
       }
     } catch (e) { if (window._debug) console.warn('NYE init failed', e); }
+  });
+})();
+
+// ===== Spring Elements (Birds & Bees) =====
+(function() {
+  function isSpringEnabled() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('spring') === '1') return true;
+      if (params.get('spring') === '0') return false;
+    } catch (e) { /* ignore */ }
+    if (document.body.classList.contains('spring')) return true;
+    // Auto-enable during spring season: March, April, May
+    const now = new Date();
+    const m = now.getMonth() + 1; // 1-12
+    if (m === 3 || m === 4 || m === 5) return true;
+    return false;
+  }
+
+  function enableSpring() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const container = document.getElementById('spring-elements');
+    if (!container) return;
+
+    // Spawn birds and bees flying across the screen
+    function spawnSpringElement() {
+      if (container.childElementCount > 12) return; // limit active elements
+
+      const elem = document.createElement('span');
+      const isBird = Math.random() > 0.5;
+      elem.className = isBird ? 'spring-element bird' : 'spring-element bee';
+
+      // Random vertical position (top 70% of viewport)
+      const top = Math.random() * 70;
+      elem.style.top = `${top}vh`;
+
+      // Random size
+      const size = isBird ? (16 + Math.random() * 12) : (14 + Math.random() * 8);
+      elem.style.fontSize = `${size}px`;
+
+      // Random flight duration and vertical movement
+      const duration = (12 + Math.random() * 10).toFixed(2); // 12-22s
+      const verticalMove = (Math.random() - 0.5) * 20; // -10vh to +10vh
+      elem.style.setProperty('--fly-y', `${verticalMove}vh`);
+      elem.style.animationDuration = `${duration}s`;
+
+      // Random delay for natural feel
+      const delay = (Math.random() * -8).toFixed(2);
+      elem.style.animationDelay = `${delay}s`;
+
+      container.appendChild(elem);
+
+      // Cleanup after animation
+      const totalTime = (parseFloat(duration) + Math.abs(parseFloat(delay))) * 1000;
+      setTimeout(() => { try { elem.remove(); } catch (e) {} }, totalTime + 500);
+    }
+
+    // Initial burst
+    const initial = window.innerWidth < 420 ? 3 : 5;
+    for (let i = 0; i < initial; i++) {
+      setTimeout(() => spawnSpringElement(), i * 800);
+    }
+
+    // Periodic spawning
+    const interval = setInterval(() => {
+      if (Math.random() > 0.3) { // 70% chance to spawn
+        spawnSpringElement();
+      }
+    }, 3000 + Math.random() * 2000); // every 3-5 seconds
+
+    window._springInterval = interval;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      if (isSpringEnabled()) {
+        enableSpring();
+      } else {
+        const c = document.getElementById('spring-elements');
+        if (c) c.innerHTML = '';
+      }
+    } catch (e) {
+      if (window._debug) console.warn('Spring init failed', e);
+    }
+  });
+})();
+
+// ===== Autumn Leaves =====
+(function() {
+  function isAutumnEnabled() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('autumn') === '1') return true;
+      if (params.get('autumn') === '0') return false;
+    } catch (e) { /* ignore */ }
+    if (document.body.classList.contains('autumn')) return true;
+    // Auto-enable during autumn season: September, October, November
+    const now = new Date();
+    const m = now.getMonth() + 1; // 1-12
+    if (m === 9 || m === 10 || m === 11) return true;
+    return false;
+  }
+
+  function enableAutumn() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const container = document.getElementById('autumn-leaves');
+    if (!container) return;
+
+    // Spawn falling leaves
+    const baseLeaves = window.innerWidth < 420 ? 10 : 15;
+    const leafCount = Math.max(1, Math.floor(baseLeaves * 0.8)); // slightly fewer than snow
+
+    container.innerHTML = '';
+
+    for (let i = 0; i < leafCount; i++) {
+      const leaf = document.createElement('span');
+
+      // Random leaf type: maple (🍁), oak (🍂), or yellow (🍃)
+      const types = ['maple', 'oak', 'yellow'];
+      const weights = [0.4, 0.4, 0.2]; // 40% maple, 40% oak, 20% yellow
+      const rand = Math.random();
+      let type;
+      if (rand < weights[0]) type = types[0];
+      else if (rand < weights[0] + weights[1]) type = types[1];
+      else type = types[2];
+
+      leaf.className = `autumn-leaf ${type}`;
+
+      // Random position and properties
+      const left = Math.random() * 100;
+      const size = Math.floor(12 + Math.random() * 14); // 12-26px
+      const fallDuration = (10 + Math.random() * 12).toFixed(2); // 10-22s
+      const swayDuration = (3 + Math.random() * 4).toFixed(2); // 3-7s
+      const delay = (Math.random() * -15).toFixed(2);
+      const swayDistance = (15 + Math.random() * 30).toFixed(0); // 15-45px
+
+      leaf.style.left = `${left}%`;
+      leaf.style.fontSize = `${size}px`;
+      leaf.style.opacity = (0.75 + Math.random() * 0.25).toString();
+      leaf.style.setProperty('--sway-distance', `${swayDistance}px`);
+      leaf.style.animationDuration = `${fallDuration}s, ${swayDuration}s`;
+      leaf.style.animationDelay = `${delay}s, ${delay}s`;
+
+      container.appendChild(leaf);
+    }
+
+    // Add a few larger leaves for variety
+    const baseLarge = window.innerWidth < 420 ? 2 : 4;
+    const largeCount = Math.max(0, Math.floor(baseLarge * 0.8));
+
+    for (let i = 0; i < largeCount; i++) {
+      const leaf = document.createElement('span');
+      const types = ['maple', 'oak'];
+      const type = types[Math.floor(Math.random() * types.length)];
+
+      leaf.className = `autumn-leaf ${type}`;
+
+      const left = Math.random() * 100;
+      const size = Math.floor(28 + Math.random() * 18); // 28-46px - larger
+      const fallDuration = (16 + Math.random() * 10).toFixed(2); // slower fall
+      const swayDuration = (4 + Math.random() * 5).toFixed(2);
+      const delay = (Math.random() * -20).toFixed(2);
+      const swayDistance = (25 + Math.random() * 40).toFixed(0);
+
+      leaf.style.left = `${left}%`;
+      leaf.style.fontSize = `${size}px`;
+      leaf.style.opacity = (0.8 + Math.random() * 0.2).toString();
+      leaf.style.setProperty('--sway-distance', `${swayDistance}px`);
+      leaf.style.animationDuration = `${fallDuration}s, ${swayDuration}s`;
+      leaf.style.animationDelay = `${delay}s, ${delay}s`;
+
+      container.appendChild(leaf);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      if (isAutumnEnabled()) {
+        enableAutumn();
+      } else {
+        const c = document.getElementById('autumn-leaves');
+        if (c) c.innerHTML = '';
+      }
+    } catch (e) {
+      if (window._debug) console.warn('Autumn init failed', e);
+    }
   });
 })();
 

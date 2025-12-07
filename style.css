@@ -475,6 +475,121 @@ body.light-bg .snowflake::before { filter: drop-shadow(0 2px 0 rgba(43,109,246,0
 
 /* End confetti & rockets */
 
+/* ---- Spring Elements (Birds & Bees) ---- */
+#spring-elements {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997; /* same level as snowfall */
+  overflow: hidden;
+}
+.spring-element {
+  position: absolute;
+  will-change: transform, left;
+  opacity: 0.85;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: fly-across linear infinite;
+}
+.spring-element.bird::before {
+  content: '🐦';
+  display: inline-block;
+  font-size: inherit;
+}
+.spring-element.bee::before {
+  content: '🐝';
+  display: inline-block;
+  font-size: inherit;
+}
+@keyframes fly-across {
+  0% {
+    transform: translateX(-30px) translateY(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  90% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateX(calc(100vw + 30px)) translateY(var(--fly-y, 0)) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* Improve visibility in light mode */
+@media (prefers-color-scheme: light) {
+  .spring-element {
+    filter: brightness(0.95) contrast(1.05);
+  }
+}
+body.light-bg .spring-element {
+  filter: brightness(0.95) contrast(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spring-element { animation: none; opacity: 0.7; }
+}
+
+@media (max-width: 420px) {
+  .spring-element { font-size: 14px !important; }
+}
+/* End Spring Elements */
+
+/* ---- Autumn Leaves ---- */
+#autumn-leaves {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997; /* same level as snowfall */
+  overflow: hidden;
+}
+.autumn-leaf {
+  position: absolute;
+  top: -10vh;
+  will-change: transform, opacity;
+  opacity: 0.9;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: leaf-fall linear infinite, leaf-sway ease-in-out infinite;
+}
+.autumn-leaf::before {
+  display: inline-block;
+  font-size: inherit;
+  transform: translateZ(0);
+}
+.autumn-leaf.maple::before { content: '🍁'; }
+.autumn-leaf.oak::before { content: '🍂'; }
+.autumn-leaf.yellow::before { content: '🍃'; }
+
+@keyframes leaf-fall {
+  to { transform: translateY(120vh) rotate(720deg); }
+}
+@keyframes leaf-sway {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(var(--sway-distance, 30px)); }
+}
+
+/* Improve visibility in light mode */
+@media (prefers-color-scheme: light) {
+  .autumn-leaf {
+    filter: brightness(0.92) saturate(1.1);
+  }
+}
+body.light-bg .autumn-leaf {
+  filter: brightness(0.92) saturate(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .autumn-leaf { animation: none; opacity: 0.7; }
+}
+
+@media (max-width: 420px) {
+  .autumn-leaf { font-size: 12px !important; opacity: 0.8 !important; }
+}
+/* End Autumn Leaves */
+
 /* ---- Header: Logo at the top, pills below, always centered ---- */
 .site-header {
   position: sticky;
