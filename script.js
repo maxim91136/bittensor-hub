@@ -2092,7 +2092,7 @@ function setupDynamicTooltips() {
       pill.addEventListener('mouseenter', () => {
         const text = pill.getAttribute('data-tooltip') || '';
         const html = pill.getAttribute('data-tooltip-html') === 'true';
-        if (text) tooltipManager.show(pill, { text, html, wide: true, persistent: false });
+        if (text) tooltipManager.show(pill, { text, html, wide: true, persistent: false, autoHide: 0 });
       });
       pill.addEventListener('mouseleave', () => tooltipManager.hide());
     }
@@ -2128,7 +2128,7 @@ function setupDynamicTooltips() {
       pill.addEventListener('mouseenter', () => {
         const text = pill.getAttribute('data-tooltip') || '';
         const html = pill.getAttribute('data-tooltip-html') === 'true';
-        if (text) tooltipManager.show(pill, { text, html, persistent: false });
+        if (text) tooltipManager.show(pill, { text, html, persistent: false, autoHide: 0 });
       });
       pill.addEventListener('mouseleave', () => tooltipManager.hide());
     }
