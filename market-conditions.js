@@ -80,12 +80,29 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
     }
   }
 
-  // Update phase badge
+  // Update phase badge with color
   const phaseMetric = card.querySelector('#marketPhase');
   if (phaseMetric) {
     let phaseLabel = 'Neutral';
-    if (tooltip.includes('Bullish')) phaseLabel = 'Bullish';
-    else if (tooltip.includes('Bearish')) phaseLabel = 'Bearish';
+    let phaseClass = 'phase-neutral';
+
+    if (tooltip.includes('Bullish')) {
+      phaseLabel = 'Bullish';
+      phaseClass = 'phase-bullish';
+    } else if (tooltip.includes('Bearish')) {
+      phaseLabel = 'Bearish';
+      phaseClass = 'phase-bearish';
+    } else if (tooltip.includes('Caution')) {
+      phaseLabel = 'Caution';
+      phaseClass = 'phase-caution';
+    } else if (tooltip.includes('Watch')) {
+      phaseLabel = 'Watch';
+      phaseClass = 'phase-watch';
+    }
+
+    // Remove all phase classes and add the current one
+    phaseMetric.classList.remove('phase-bullish', 'phase-bearish', 'phase-caution', 'phase-watch', 'phase-neutral');
+    phaseMetric.classList.add(phaseClass);
     phaseMetric.querySelector('.metric-value').textContent = phaseLabel;
   }
 
