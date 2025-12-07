@@ -2366,6 +2366,14 @@ async function refreshDashboard() {
         if (window._debug) console.debug('updateMarketConditionsCard failed', e);
       }
     }
+    // Update Token Economics Card
+    if (typeof updateTokenEconomicsCard === 'function') {
+      try {
+        await updateTokenEconomicsCard();
+      } catch (e) {
+        if (window._debug) console.debug('updateTokenEconomicsCard failed', e);
+      }
+    }
     // Update Fear & Greed card (fetch from Worker KV via API)
     try { updateFearAndGreed(); } catch (e) { if (window._debug) console.debug('updateFearAndGreed failed', e); }
   }
@@ -2675,6 +2683,14 @@ async function initDashboard() {
         await updateMarketConditionsCard(taostats.volume_24h, initPriceChange24h);
       } catch (e) {
         if (window._debug) console.debug('init updateMarketConditionsCard failed', e);
+      }
+    }
+    // Update Token Economics Card on init
+    if (typeof updateTokenEconomicsCard === 'function') {
+      try {
+        await updateTokenEconomicsCard();
+      } catch (e) {
+        if (window._debug) console.debug('init updateTokenEconomicsCard failed', e);
       }
     }
     try { updateFearAndGreed(); } catch (e) { if (window._debug) console.debug('init updateFearAndGreed failed', e); }

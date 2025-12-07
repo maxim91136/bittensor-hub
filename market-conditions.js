@@ -178,21 +178,19 @@ async function updateTokenEconomicsCard() {
     if (!res.ok) throw new Error('Network API failed');
     const data = await res.json();
 
-    // Daily Emission
-    const emissionEl = card.querySelector('#dailyEmissionValue');
-    if (emissionEl && data.emission) {
-      emissionEl.textContent = `${Number(data.emission).toLocaleString()} τ`;
+    // Average Emission (7-day average from historical data)
+    const avgEmissionEl = card.querySelector('#avgEmissionValue');
+    if (avgEmissionEl && data.emission) {
+      avgEmissionEl.textContent = `${Number(data.emission).toLocaleString()} τ`;
     }
 
     // Issued percentage
     const issuedEl = card.querySelector('#issuedPercentValue');
-    if (issuedEl && data.totalIssuance && data.halvingThresholds) {
+    if (issuedEl && data.totalIssuance) {
       const maxSupply = 21000000;
       const issuedPct = (data.totalIssuanceHuman / maxSupply) * 100;
       issuedEl.textContent = `${issuedPct.toFixed(2)}%`;
     }
-
-    // Halving removed - we have the pill for that
 
     // Apply light mode
     if (document.body.classList.contains('light-bg')) {
