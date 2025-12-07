@@ -878,6 +878,13 @@ async function updateVolumeSignal(currentVolume, priceChange24h) {
   // Fetch MA aggregates to help detect sustained moves
   const aggregates = await fetchTaostatsAggregates();
   let { signal, tooltip } = getVolumeSignal(volumeData, priceChange24h, currentVolume, aggregates);
+  // Add last updated if available
+  let lastUpdatedStr = null;
+  if (aggregates && aggregates.last_updated) {
+    lastUpdatedStr = new Date(aggregates.last_updated).toLocaleString();
+  } else if (volumeData && volumeData.last_updated) {
+    lastUpdatedStr = new Date(volumeData.last_updated).toLocaleString();
+  }
   
   // Fetch MA data and append to tooltip (we already fetched `aggregates` above)
   if (aggregates && aggregates.ma_short) {
@@ -896,6 +903,10 @@ async function updateVolumeSignal(currentVolume, priceChange24h) {
       maLines.push(`MA-7d: ${formatMADollar(aggregates.ma_7d)} (${formatMAPct(aggregates.pct_change_vs_ma_7d)})`);
     }
     tooltip += maLines.join('\n');
+  }
+  // Add last updated to tooltip
+  if (lastUpdatedStr) {
+    tooltip += `\n\nLast updated: ${lastUpdatedStr}`;
   }
   
   // Always log signal calculation for debugging
@@ -2757,6 +2768,7 @@ async function updateStakingApr() {
       const minApr = data.min_apr !== undefined ? `${Number(data.min_apr).toFixed(2)}%` : '—';
       const maxApr = data.max_apr !== undefined ? `${Number(data.max_apr).toFixed(2)}%` : '—';
       const validators = data.validators_analyzed || 50;
+      const lastUpdatedStr = data.last_updated ? new Date(data.last_updated).toLocaleString() : null;
       const tooltipLines = [
         `Stake-weighted average APR across top ${validators} validators.`,
         '',
@@ -2767,7 +2779,16 @@ async function updateStakingApr() {
         `Range: ${minApr} to ${maxApr}`,
         `Source: Taostats dTao Validator API`
       ];
+      if (lastUpdatedStr) tooltipLines.push(`Last updated: ${lastUpdatedStr}`);
       badge.setAttribute('data-tooltip', tooltipLines.join('\n'));
+    }
+    // Add tooltip for price badge
+    const priceBadge = document.querySelector('#taoPriceCard .info-badge');
+    if (priceBadge) {
+      let tooltip = 'Current TAO price';
+      if (taoPrice && taoPrice.price) tooltip += `\n$${taoPrice.price}`;
+      if (lastUpdated) tooltip += `\nLast updated: ${new Date(lastUpdated).toLocaleString()}`;
+      priceBadge.setAttribute('data-tooltip', tooltip);
     }
   } else {
     el.textContent = '—';
