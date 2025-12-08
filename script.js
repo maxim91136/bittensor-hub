@@ -2355,10 +2355,8 @@ async function refreshDashboard() {
   ]);
   // Expose taostats globally for tooltips and other UI pieces
   window._taostats = taostats ?? null;
-  updateNetworkStats(networkData);
-  updateTaoPrice(taoPrice);
 
-  // LAST UPDATE from Taostats, otherwise fallback
+  // LAST UPDATE from Taostats - set BEFORE updateNetworkStats/updateTaoPrice so tooltips have access
   const lastUpdateEl = document.getElementById('lastUpdate');
   let lastUpdated = null;
   if (taoPrice && taoPrice._source === 'taostats' && taoPrice.last_updated) {
@@ -2366,6 +2364,13 @@ async function refreshDashboard() {
   } else if (taoPrice && taoPrice._source === 'taostats' && taoPrice._timestamp) {
     lastUpdated = taoPrice._timestamp;
   }
+  // Expose lastUpdated globally for tooltips BEFORE other updates
+  window._lastUpdated = lastUpdated;
+
+  updateNetworkStats(networkData);
+  updateTaoPrice(taoPrice);
+
+  // Update UI display for last update time
   let lastUpdateStr = '--:--';
   if (lastUpdated) {
     const d = new Date(lastUpdated);
@@ -2376,8 +2381,6 @@ async function refreshDashboard() {
   } else {
     if (lastUpdateEl) lastUpdateEl.textContent = `Updated: --:--`;
   }
-  // Expose lastUpdated globally for tooltips
-  window._lastUpdated = lastUpdated;
 
   // Get volume from taostats!
   const volumeEl = document.getElementById('volume24h');
