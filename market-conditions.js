@@ -62,6 +62,14 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
       const volChange = volumeData.change || 0;
       const volStr = volChange >= 0 ? `+${volChange.toFixed(1)}%` : `${volChange.toFixed(1)}%`;
       volumeChangeEl.textContent = volStr;
+
+      // Add conditional color class
+      volumeChangeEl.classList.remove('positive', 'negative');
+      if (volChange >= 0) {
+        volumeChangeEl.classList.add('positive');
+      } else {
+        volumeChangeEl.classList.add('negative');
+      }
     }
   }
 
@@ -69,7 +77,16 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
   const priceMetric = card.querySelector('#marketPrice');
   if (priceMetric && priceChange24h !== null) {
     const priceStr = priceChange24h >= 0 ? `+${priceChange24h.toFixed(1)}%` : `${priceChange24h.toFixed(1)}%`;
-    priceMetric.querySelector('.metric-value').textContent = priceStr;
+    const priceValueEl = priceMetric.querySelector('.metric-value');
+    priceValueEl.textContent = priceStr;
+
+    // Add conditional color class
+    priceValueEl.classList.remove('positive', 'negative');
+    if (priceChange24h >= 0) {
+      priceValueEl.classList.add('positive');
+    } else {
+      priceValueEl.classList.add('negative');
+    }
   }
 
   // Extract market phase from tooltip

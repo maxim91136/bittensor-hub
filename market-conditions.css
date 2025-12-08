@@ -114,22 +114,39 @@
   filter: brightness(1.2) contrast(1.2);
 }
 
+/* Price metric conditional coloring */
+.market-metric#marketPrice .metric-value.positive {
+  color: #22c55e;
+}
+
+.market-metric#marketPrice .metric-value.negative {
+  color: #ef4444;
+}
+
 /* Dual-value metric styling (for Volume with dollar + %) */
 .market-metric .metric-value-main {
   font-size: 1.5em;
   font-weight: 900;
-  color: #22c55e;
+  color: #e5e7eb;
   font-family: 'Caveat', 'Courier New', Consolas, monospace;
   letter-spacing: 1px;
-  filter: brightness(1.2) contrast(1.2);
 }
 
 .market-metric .metric-value-sub {
   font-size: 0.9em;
   font-weight: 700;
-  color: rgba(34,197,94,0.7);
+  color: rgba(229,231,235,0.6);
   font-family: 'Courier New', Consolas, monospace;
   letter-spacing: 0.5px;
+}
+
+/* Conditional coloring for percentage changes */
+.market-metric .metric-value-sub.positive {
+  color: #22c55e;
+}
+
+.market-metric .metric-value-sub.negative {
+  color: #ef4444;
 }
 
 /* Signal color states */
@@ -222,9 +239,8 @@
 }
 
 .ma-item .ma-value {
-  color: #22c55e;
+  color: #e5e7eb;
   font-weight: 700;
-  text-shadow: 0 0 5px rgba(34,197,94,0.3);
 }
 
 .ma-item .ma-change {
@@ -440,11 +456,27 @@
 }
 
 .market-conditions-card.light-bg .metric-value-main {
-  color: #16a34a;
+  color: #374151;
 }
 
 .market-conditions-card.light-bg .metric-value-sub {
-  color: rgba(22,163,74,0.7);
+  color: rgba(55,65,81,0.6);
+}
+
+.market-conditions-card.light-bg .metric-value-sub.positive {
+  color: #16a34a;
+}
+
+.market-conditions-card.light-bg .metric-value-sub.negative {
+  color: #dc2626;
+}
+
+.market-conditions-card.light-bg #marketPrice .metric-value.positive {
+  color: #16a34a;
+}
+
+.market-conditions-card.light-bg #marketPrice .metric-value.negative {
+  color: #dc2626;
 }
 
 .market-conditions-card.light-bg .metric-label {
@@ -476,8 +508,15 @@
 }
 
 .market-conditions-card.light-bg .ma-value {
+  color: #374151;
+}
+
+.market-conditions-card.light-bg .ma-change.positive {
   color: #16a34a;
-  text-shadow: 0 0 5px rgba(22,163,74,0.2);
+}
+
+.market-conditions-card.light-bg .ma-change.negative {
+  color: #dc2626;
 }
 
 .market-conditions-card.light-bg .market-confidence {
