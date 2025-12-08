@@ -214,7 +214,7 @@
 }
 
 .ma-title {
-  font-size: 0.75em;
+  font-size: 0.9em;
   font-weight: 700;
   color: rgba(229,231,235,0.7);
   margin-bottom: 8px;
@@ -232,10 +232,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 8px;
+  padding: 6px 10px;
   background: rgba(34,197,94,0.05);
   border-radius: 3px;
-  font-size: 0.75em;
+  font-size: 0.95em;
   font-family: 'Courier New', monospace;
   border: 1px solid rgba(34,197,94,0.1);
 }
@@ -420,7 +420,7 @@
   }
 
   .ma-title {
-    font-size: 0.75em;
+    font-size: 0.85em;
     margin-bottom: 6px;
   }
 
@@ -429,19 +429,20 @@
   }
 
   .ma-item {
-    padding: 5px 6px;
-  }
-
-  .ma-label {
-    font-size: 0.75em;
-  }
-
-  .ma-value {
+    padding: 6px 8px;
     font-size: 0.9em;
   }
 
+  .ma-label {
+    font-size: 0.85em;
+  }
+
+  .ma-value {
+    font-size: 1em;
+  }
+
   .ma-change {
-    font-size: 0.7em;
+    font-size: 0.85em;
   }
 
   .market-confidence {
