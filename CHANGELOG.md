@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.26 (2025-12-08)
+### Added
+- **Subnet Ranking System**: Position change indicators (▲ ▼ NEW)
+- **History Comparison**: Fetches previous snapshot for ranking changes
+
+### Improved
+- **Unified Fonts**: Monospace across entire subnet table
+- **4-Column Layout**: Streamlined Rank | Subnet | Share | Daily
+- **Market Conditions Title**: Smaller desktop, larger mobile
+
 ## v1.0.0-rc.25.6 (2025-12-08)
 ### Improved
 - **Volume Moving Averages**: Renamed section title for clarity
