@@ -1742,7 +1742,7 @@ async function updateNetworkStats(data) {
         elements.blockHeight.textContent = formatFull(data.blockHeight);
         elements.blockHeight.classList.remove('skeleton-text');
       }
-      // Update Block Height tooltip with last updated
+      // Update Block Height tooltip (no last_updated - Network API has no timestamp)
       const blockHeightBadge = document.querySelector('#blockHeightCard .info-badge');
       if (blockHeightBadge) {
         const tooltipLines = [
@@ -1750,7 +1750,6 @@ async function updateNetworkStats(data) {
           `Block: ${formatFull(data.blockHeight)}`,
           'Source: Network API'
         ];
-        if (window._lastUpdated) tooltipLines.push(`Last updated: ${new Date(window._lastUpdated).toLocaleString()}`);
         blockHeightBadge.setAttribute('data-tooltip', tooltipLines.join('\n'));
       }
     }
@@ -1992,10 +1991,7 @@ async function updateNetworkStats(data) {
         });
       }
     }
-    // Add last updated timestamp
-    if (window._lastUpdated) {
-      halvingLines.push(`Last updated: ${new Date(window._lastUpdated).toLocaleString()}`);
-    }
+    // No last_updated - Network API has no timestamp
 
     halvingPill.setAttribute('data-tooltip', halvingLines.join('\n'));
     // Apply a confidence CSS class to the halving pill so UX can visually
