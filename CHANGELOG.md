@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.26.3 (2025-12-08)
+### Added
+- **Last Updated Timestamps**: All key tooltips now show data freshness
+- **Tooltips Enhanced**: Block Height, Block Time, Staking APY, Price Change, Halving, TAO Price
+
+### Fixed
+- **Immediate Display**: Timestamps appear on page load, not just after refresh
+- **Price Badge**: Fixed undefined variable issue in tooltip
+
 ## v1.0.0-rc.26.2 (2025-12-08)
 ### Added
 - **Wallets Ranking System**: Position change indicators (▲ ▼ NEW)

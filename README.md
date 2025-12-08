@@ -8,10 +8,10 @@ Started: November 3, 2025
 
 This project provides a compact dashboard for visualizing and monitoring key Bittensor metrics. It is designed for anyone interested in understanding the Bittensor ecosystem.
 
-**Latest release:** `v1.0.0-rc.26.2` — see [RELEASE_NOTES/v1.0.0-rc.26.2.md](RELEASE_NOTES/v1.0.0-rc.26.2.md) and [CHANGELOG.md](CHANGELOG.md) for details.
+**Latest release:** `v1.0.0-rc.26.3` — see [RELEASE_NOTES/v1.0.0-rc.26.3.md](RELEASE_NOTES/v1.0.0-rc.26.3.md) and [CHANGELOG.md](CHANGELOG.md) for details.
 
-> 🎯 **RC26.2 Highlight**: Complete Ranking System for all 3 Top 10 cards (Subnets, Validators, Wallets).
-> 📊 Strategic color usage for clearer visual hierarchy - neutral values, conditional signals.
+> 🎯 **RC26.3 Highlight**: Last Updated timestamps in all key tooltips.
+> 📊 Data freshness visible at a glance - Block Height, Price, Halving, Staking APY.
 > 📱 Mobile-optimized with compact, responsive design.
 
 ## Features
