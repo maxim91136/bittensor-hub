@@ -1221,6 +1221,9 @@ async function updateFearAndGreed() {
   const timelineTextEl = document.getElementById('fngTimelineText');
   const data = await fetchFearAndGreed();
 
+  // Store globally for API status tooltip
+  window._fearAndGreed = data;
+
   if (!data || !data.current) {
     if (timelineEl) timelineEl.innerHTML = '';
     return;
@@ -1297,7 +1300,7 @@ async function updateFearAndGreed() {
 }
 
 // Build HTML for API status tooltip showing per-source chips
-function buildApiStatusHtml({ networkData, taostats, taoPrice }) {
+function buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGreed }) {
   function chip(status) {
     const cls = status === 'ok' ? 'ok' : (status === 'partial' ? 'partial' : 'error');
     const label = status === 'ok' ? 'OK' : (status === 'partial' ? 'Partial' : 'Error');
@@ -1320,15 +1323,23 @@ function buildApiStatusHtml({ networkData, taostats, taoPrice }) {
     else coingeckoStatus = (taoPrice.price ? 'ok' : 'error');
   }
 
+  // Fear & Greed (alternative.me)
+  let fngStatus = 'error';
+  if (fearAndGreed && fearAndGreed.current) {
+    const hasValue = fearAndGreed.current.value !== undefined && fearAndGreed.current.value !== null;
+    fngStatus = hasValue ? 'ok' : 'partial';
+  }
+
   // Bittensor SDK / network API
   const networkStatus = networkData ? 'ok' : 'error';
 
   const lines = [];
   lines.push('<div>Status of all data sources powering the dashboard</div>');
-  // Order: Bittensor SDK (network), Taostats, CoinGecko
+  // Order: Bittensor SDK (network), Taostats, CoinGecko, Alternative.me
   lines.push('<div style="margin-top:8px">' + chip(networkStatus) + ' Bittensor SDK</div>');
   lines.push('<div>' + chip(taostatsStatus) + ' Taostats</div>');
   lines.push('<div>' + chip(coingeckoStatus) + ' CoinGecko</div>');
+  lines.push('<div>' + chip(fngStatus) + ' Alternative.me (F&G)</div>');
   return lines.join('');
 }
 
@@ -2422,7 +2433,8 @@ async function refreshDashboard() {
   try {
     const infoBadge = document.querySelector('#apiStatusCard .info-badge');
     if (infoBadge) {
-      const html = buildApiStatusHtml({ networkData, taostats, taoPrice });
+      const fearAndGreed = window._fearAndGreed || null;
+      const html = buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGreed });
       infoBadge.setAttribute('data-tooltip', html);
       infoBadge.setAttribute('data-tooltip-html', 'true');
     }
@@ -3010,7 +3022,8 @@ document.addEventListener('DOMContentLoaded', () => {
             '<br/>',
             '<div><span class="tooltip-chip ok">OK</span> Taostats</div>',
             '<div><span class="tooltip-chip error">Error</span> CoinGecko</div>',
-            '<div><span class="tooltip-chip ok">OK</span> Bittensor SDK</div>'
+            '<div><span class="tooltip-chip ok">OK</span> Bittensor SDK</div>',
+            '<div><span class="tooltip-chip ok">OK</span> Alternative.me (F&G)</div>'
           ].join('');
           infoBadge.setAttribute('data-tooltip', html);
           infoBadge.setAttribute('data-tooltip-html', 'true');
