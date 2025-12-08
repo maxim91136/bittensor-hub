@@ -3581,6 +3581,15 @@ body.light-bg .map-preview-card .map-attribution {
   overflow: hidden;
 }
 
+/* Header colors to match data values */
+.validators-display-table th.dominance-col {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.validators-display-table th.nominators-col {
+  color: rgba(255, 255, 255, 0.7);
+}
+
 /* 5 columns: Rank(12%), Validator(26%), Stake(24%), Dom%(19%), Noms(19%) */
 .validators-display-table th:nth-child(1),
 .validators-display-table td:nth-child(1) {
