@@ -1991,7 +1991,10 @@ async function updateNetworkStats(data) {
         });
       }
     }
-    // No last_updated - Network API has no timestamp
+    // Use last_issuance_ts from Network API for timestamp
+    if (data && data.last_issuance_ts) {
+      halvingLines.push(`Last updated: ${new Date(data.last_issuance_ts * 1000).toLocaleString()}`);
+    }
 
     halvingPill.setAttribute('data-tooltip', halvingLines.join('\n'));
     // Apply a confidence CSS class to the halving pill so UX can visually
