@@ -8,10 +8,11 @@ Started: November 3, 2025
 
 This project provides a compact dashboard for visualizing and monitoring key Bittensor metrics. It is designed for anyone interested in understanding the Bittensor ecosystem.
 
-**Latest release:** `v1.0.0-rc.23.7` — see [RELEASE_NOTES/v1.0.0-rc.23.7.md](RELEASE_NOTES/v1.0.0-rc.23.7.md) and [CHANGELOG.md](CHANGELOG.md) for details.
+**Latest release:** `v1.0.0-rc.25.3.1` — see [RELEASE_NOTES/v1.0.0-rc.25.3.1.md](RELEASE_NOTES/v1.0.0-rc.25.3.1.md) and [CHANGELOG.md](CHANGELOG.md) for details.
 
-> ℹ️ Spoon gauge: The Fear & Greed card now uses optimized WebP spoon assets (`assets/fng-spoon-dark.webp`, `assets/fng-spoon-light.webp`).
-> Ampelsystem: Volume signal logic and UI have been improved for RC21. See `script.js` for runtime config.
+> 🎯 **RC25 Highlight**: Market Conditions Card with real-time intelligence - multi-factor signal analysis combining volume, price, moving averages, and Fear & Greed sentiment.
+> 📊 Strategic color usage for clearer visual hierarchy - neutral values, conditional signals.
+> 📱 Mobile-optimized with compact, responsive design.
 
 ## Features
 
@@ -20,6 +21,39 @@ This project provides a compact dashboard for visualizing and monitoring key Bit
 - **Circulating Supply** tracking against the 21M cap
 - **Total Issuance** from on-chain data via Bittensor SDK
 - **Active Neurons** count across all subnets
+
+### 🎯 Market Conditions Intelligence (RC25+)
+Real-time market analysis card combining multiple data sources into actionable intelligence:
+
+**Four Key Metrics** (Matrix-style 2x2 grid):
+- **Signal** 🟢 Bullish/🔴 Bearish/🟠 Watch/🟡 Caution - Multi-factor short-term signal
+- **Volume 24h** - Dollar amount ($180M) + percentage change (+145%)
+- **Price 24h** - Short-term price change percentage
+- **Trend (3d/7d)** - Medium-term price trend (3-day vs 7-day MA comparison)
+
+**Market Phase Analysis**:
+- Contextual phase detection (Bullish/Bearish/Neutral)
+- Fear & Greed Index integration from Alternative.me
+- Weekend activity context
+- Clear explanations in expandable section
+
+**Moving Averages Dashboard**:
+- MA-2h, MA-4h, MA-3d, MA-7d live tracking
+- Percentage difference from current price
+- Green (above MA) / Red (below MA) indicators
+- Trend analysis at a glance
+
+**Data Quality & Transparency**:
+- Confidence scoring (high/medium/low)
+- Sample count and hours of data displayed
+- Last updated timestamps
+- Transparent data provenance
+
+**Visual Design**:
+- Strategic color usage: Neutral values (white), conditional signals (green/red)
+- Matrix console aesthetic with monospace typography
+- Fully responsive (4 → 2 → 1 columns on mobile)
+- Complete light/dark mode support
 
 ### ⚡ Emission & Halving
 - **AVG. Emission/Day** calculated from on-chain issuance history
