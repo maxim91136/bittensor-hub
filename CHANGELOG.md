@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.25.3.1 (2025-12-08)
+### Changed
+- **Market Phase Section Mobile Optimization**: Improved text readability on small screens
+  - Base: Added word-wrap and overflow-wrap for better text breaking
+  - Tablet (≤768px): Font reduced to 0.75em, line-height 1.45
+  - Mobile (≤480px): Font reduced to 0.72em, line-height 1.4, added hyphens
+  - Long descriptive text now wraps cleanly without overflow
+
+### Impact
+- Better readability on mobile devices
+- No text overflow on narrow screens
+- Professional appearance across all screen sizes
+
+### Notes
+- Pure mobile UX refinement
+- Desktop experience unchanged
+- See `RELEASE_NOTES/v1.0.0-rc.25.3.1.md` for details
+
 ## v1.0.0-rc.25.3 (2025-12-08)
 ### Changed
 - **Metric Label Clarity**: Fourth metric renamed for maximum understanding
