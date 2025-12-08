@@ -426,29 +426,29 @@
   }
 
   .ma-title {
-    font-size: 0.95em;
-    margin-bottom: 6px;
+    font-size: 0.75em;
+    margin-bottom: 5px;
   }
 
   .ma-grid {
-    gap: 6px;
+    gap: 5px;
   }
 
   .ma-item {
-    padding: 8px 10px;
-    font-size: 1em;
+    padding: 5px 8px;
+    font-size: 0.75em;
   }
 
   .ma-label {
-    font-size: 0.95em;
+    font-size: 0.73em;
   }
 
   .ma-value {
-    font-size: 1.1em;
+    font-size: 0.83em;
   }
 
   .ma-change {
-    font-size: 0.95em;
+    font-size: 0.73em;
   }
 
   .market-confidence {
