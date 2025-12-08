@@ -2592,6 +2592,16 @@ async function initDashboard() {
     ]);
   // Expose taostats globally and update UI after available
   window._taostats = taostats ?? null;
+
+  // Set lastUpdated BEFORE updates so tooltips have access (same as refreshDashboard)
+  let lastUpdated = null;
+  if (taoPrice && taoPrice._source === 'taostats' && taoPrice.last_updated) {
+    lastUpdated = taoPrice.last_updated;
+  } else if (taoPrice && taoPrice._source === 'taostats' && taoPrice._timestamp) {
+    lastUpdated = taoPrice._timestamp;
+  }
+  window._lastUpdated = lastUpdated;
+
   await updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
 
