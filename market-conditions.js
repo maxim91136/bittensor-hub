@@ -24,6 +24,8 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
   const volumeData = calculateVolumeChange(history, currentVolume);
   const aggregates = await fetchTaostatsAggregates();
   const fngData = await fetchFearAndGreed();
+  const athAtlData = await fetchAthAtl();
+  const taostats = await fetchTaostats();
   const { signal, tooltip } = getVolumeSignal(volumeData, priceChange24h, currentVolume, aggregates, fngData);
 
   // Parse tooltip to extract structured data
@@ -103,6 +105,18 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
         break;
       } else if (inPhaseSection && line.trim() && !line.includes('Confidence:') && !line.includes('Last updated:')) {
         phaseLines.push(line);
+      }
+    }
+
+    // Add ATH/ATL distance line
+    if (athAtlData && taostats?.price) {
+      const currentPrice = taostats.price;
+      const ath = athAtlData.ath;
+      const atl = athAtlData.atl;
+      if (ath && atl && currentPrice) {
+        const distFromAtl = ((currentPrice - atl) / atl) * 100;
+        const distFromAth = ((ath - currentPrice) / ath) * 100;
+        phaseLines.push(`📍 ATL: +${distFromAtl.toFixed(1)}% | ATH: -${distFromAth.toFixed(1)}%`);
       }
     }
 

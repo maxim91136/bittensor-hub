@@ -622,7 +622,7 @@ function getVolumeSignal(volumeData, priceChange, currentVolume = null, aggregat
       // Base market phase from MA trend
       if (ma7dTrend > 5) {
         marketPhase = 'bullish';
-        let phaseText = `📈 Market: Bullish (+${ma7dTrend.toFixed(1)}% 3d/7d)`;
+        let phaseText = `📈 Market: Bullish (+${ma7dTrend.toFixed(1)}% Vol. MA 3d/7d)`;
 
         // Add Fear & Greed context
         if (fngSentiment === 'extreme_greed') {
@@ -636,7 +636,7 @@ function getVolumeSignal(volumeData, priceChange, currentVolume = null, aggregat
         marketPhaseNote = `\n${phaseText}`;
       } else if (ma7dTrend < -5) {
         marketPhase = 'bearish';
-        let phaseText = `📉 Market: Bearish (-${Math.abs(ma7dTrend).toFixed(1)}% 3d/7d)`;
+        let phaseText = `📉 Market: Bearish (-${Math.abs(ma7dTrend).toFixed(1)}% Vol. MA 3d/7d)`;
 
         // Add Fear & Greed context
         if (fngSentiment === 'extreme_fear') {
@@ -652,7 +652,7 @@ function getVolumeSignal(volumeData, priceChange, currentVolume = null, aggregat
         const aboveBelow = ma7dTrend >= 0 ? 'above' : 'below';
         const absValue = Math.abs(ma7dTrend).toFixed(1);
         const sign = ma7dTrend >= 0 ? '+' : '-';
-        let phaseText = `➡️ Market: Neutral (${sign}${absValue}% 3d/7d)`;
+        let phaseText = `➡️ Market: Neutral (${sign}${absValue}% Vol. MA 3d/7d)`;
 
         // Add Fear & Greed as primary indicator in neutral markets
         if (fngSentiment === 'extreme_greed') {
@@ -765,7 +765,7 @@ Both declining — downward momentum${marketPhaseNote}` + (confidenceLine || '')
       const ma7dTrend = ((ma3dVal - ma7dVal) / ma7dVal) * 100;
 
       if (ma7dTrend > 5) {
-        let phaseText = `📈 Market: Bullish (+${ma7dTrend.toFixed(1)}% 3d/7d)`;
+        let phaseText = `📈 Market: Bullish (+${ma7dTrend.toFixed(1)}% Vol. MA 3d/7d)`;
         if (fngSentiment === 'extreme_greed') {
           phaseText += `\n⚠️ Sentiment: Extreme Greed (${fngValue})\n🌡️ overheating?\n📊 max optimism`;
         } else if (fngSentiment === 'greed') {
@@ -775,7 +775,7 @@ Both declining — downward momentum${marketPhaseNote}` + (confidenceLine || '')
         }
         marketPhaseNote = `\n${phaseText}`;
       } else if (ma7dTrend < -5) {
-        let phaseText = `📉 Market: Bearish (-${Math.abs(ma7dTrend).toFixed(1)}% 3d/7d)`;
+        let phaseText = `📉 Market: Bearish (-${Math.abs(ma7dTrend).toFixed(1)}% Vol. MA 3d/7d)`;
         if (fngSentiment === 'extreme_fear') {
           phaseText += `\n🔻 Sentiment: Extreme Fear (${fngValue})\n💀 capitulation?\n📊 max selling pressure`;
         } else if (fngSentiment === 'fear') {
@@ -788,7 +788,7 @@ Both declining — downward momentum${marketPhaseNote}` + (confidenceLine || '')
         const aboveBelow = ma7dTrend >= 0 ? 'above' : 'below';
         const absValue = Math.abs(ma7dTrend).toFixed(1);
         const sign = ma7dTrend >= 0 ? '+' : '-';
-        let phaseText = `➡️ Market: Neutral (${sign}${absValue}% 3d/7d)`;
+        let phaseText = `➡️ Market: Neutral (${sign}${absValue}% Vol. MA 3d/7d)`;
         if (fngSentiment === 'extreme_greed') {
           phaseText += `\n⚠️ Sentiment: Extreme Greed (${fngValue})\n🎯 correction?\n📊 high sentiment`;
         } else if (fngSentiment === 'extreme_fear') {
@@ -955,6 +955,20 @@ function formatMAPct(num) {
 }
 
 /**
+ * Fetch ATH/ATL data for distance calculation
+ */
+async function fetchAthAtl() {
+  try {
+    const res = await fetch('/api/ath-atl', { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    console.warn('📊 Failed to fetch ATH/ATL:', e);
+    return null;
+  }
+}
+
+/**
  * Fetch taostats aggregates (for MA data)
  */
 async function fetchTaostatsAggregates() {
@@ -1005,6 +1019,7 @@ async function updateVolumeSignal(currentVolume, priceChange24h) {
     }
     tooltip += maLines.join('\n');
   }
+
   // Add last updated to tooltip
   if (lastUpdatedStr) {
     tooltip += `\n\nLast updated: ${lastUpdatedStr}`;
