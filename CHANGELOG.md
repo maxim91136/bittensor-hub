@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.25.4 (2025-12-08)
+### Fixed
+- **Market Phase Colors**: Corrected color mapping for market conditions
+  - Bearish (negative values): Now displays red text + red border
+  - Bullish (positive values): Now displays green text + green border
+  - Neutral: Yellow text + yellow border
+  - Applies to both dark and light mode
+  - Previously bearish text was incorrectly showing in green
+
+### Improved
+- **Visual Clarity**: Market phase sentiment now instantly recognizable by color
+- **Consistency**: Color scheme now matches market sentiment across all elements
+
 ## v1.0.0-rc.25.3.2 (2025-12-08)
 ### Changed
 - **Documentation Overhaul**: Complete README update to RC25.3.2
