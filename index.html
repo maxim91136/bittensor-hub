@@ -291,24 +291,24 @@
       </div>
     </div>
 
-  <!-- API Status Card -->
-    <div class="stat-card" id="apiStatusCard">
-      <span
-        class="info-badge" translate="no" aria-hidden="true"
-        data-tooltip="<div>Status of all data sources powering the dashboard</div><br/><div><span class='tooltip-chip ok'>OK</span> Bittensor SDK</div><div><span class='tooltip-chip ok'>OK</span> Taostats</div><div><span class='tooltip-chip ok'>OK</span> CoinGecko</div>"
-        data-tooltip-html="true">
-        i
-      </span>
+    <div class="stat-card">
+      <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Total number of neurons in the network">i</span>
       <div class="stat-icon" aria-hidden="true">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <title>API</title>
-          <circle cx="12" cy="12" r="9" stroke="#22c55e" stroke-width="1.2" fill="none"/>
-          <polyline points="5,13 8,13 9,9 11,17 13,7 15,13 19,13" stroke="#22c55e" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <title>Neurons</title>
+          <circle cx="6" cy="12" r="2" fill="#22c55e"/>
+          <circle cx="12" cy="6" r="2" fill="#16a34a"/>
+          <circle cx="18" cy="12" r="2" fill="#22c55e"/>
+          <circle cx="12" cy="18" r="2" fill="#16a34a"/>
+          <line x1="6" y1="12" x2="12" y2="6" stroke="#111318" stroke-width="1.1"/>
+          <line x1="12" y1="6" x2="18" y2="12" stroke="#111318" stroke-width="1.1"/>
+          <line x1="18" y1="12" x2="12" y2="18" stroke="#111318" stroke-width="1.1"/>
+          <line x1="12" y1="18" x2="6" y2="12" stroke="#111318" stroke-width="1.1"/>
         </svg>
       </div>
-      <div class="stat-content stat-content-centered">
-        <div class="stat-label">API</div>
-        <div class="stat-value" id="apiStatus">Checking…</div>
+      <div class="stat-content">
+        <div class="stat-label">Neurons</div>
+  <div class="stat-value" id="totalNeurons">—</div>
       </div>
     </div>
       <div class="stat-card">
@@ -356,24 +356,24 @@
       </div>
     </div>
 
-    <div class="stat-card">
-      <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Total number of neurons in the network">i</span>
+  <!-- API Status Card -->
+    <div class="stat-card" id="apiStatusCard">
+      <span
+        class="info-badge" translate="no" aria-hidden="true"
+        data-tooltip="<div>Status of all data sources powering the dashboard</div><br/><div><span class='tooltip-chip ok'>OK</span> Bittensor SDK</div><div><span class='tooltip-chip ok'>OK</span> Taostats</div><div><span class='tooltip-chip ok'>OK</span> CoinGecko</div>"
+        data-tooltip-html="true">
+        i
+      </span>
       <div class="stat-icon" aria-hidden="true">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <title>Neurons</title>
-          <circle cx="6" cy="12" r="2" fill="#22c55e"/>
-          <circle cx="12" cy="6" r="2" fill="#16a34a"/>
-          <circle cx="18" cy="12" r="2" fill="#22c55e"/>
-          <circle cx="12" cy="18" r="2" fill="#16a34a"/>
-          <line x1="6" y1="12" x2="12" y2="6" stroke="#111318" stroke-width="1.1"/>
-          <line x1="12" y1="6" x2="18" y2="12" stroke="#111318" stroke-width="1.1"/>
-          <line x1="18" y1="12" x2="12" y2="18" stroke="#111318" stroke-width="1.1"/>
-          <line x1="12" y1="18" x2="6" y2="12" stroke="#111318" stroke-width="1.1"/>
+          <title>API</title>
+          <circle cx="12" cy="12" r="9" stroke="#22c55e" stroke-width="1.2" fill="none"/>
+          <polyline points="5,13 8,13 9,9 11,17 13,7 15,13 19,13" stroke="#22c55e" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="stat-content">
-        <div class="stat-label">Neurons</div>
-  <div class="stat-value" id="totalNeurons">—</div>
+      <div class="stat-content stat-content-centered">
+        <div class="stat-label">API</div>
+        <div class="stat-value" id="apiStatus">Checking…</div>
       </div>
     </div>
   </div>
