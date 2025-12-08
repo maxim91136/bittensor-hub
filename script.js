@@ -3431,9 +3431,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   async function loadTopWalletsDisplay() {
     try {
-      const response = await fetch('/api/top_wallets');
-      if (!response.ok) throw new Error('Failed to fetch top wallets');
-      const data = await response.json();
+      // Fetch current data and history in parallel
+      const [currentRes, historyRes] = await Promise.all([
+        fetch('/api/top_wallets'),
+        fetch('/api/top_wallets_history?limit=2')
+      ]);
+
+      if (!currentRes.ok) throw new Error('Failed to fetch top wallets');
+      const data = await currentRes.json();
 
       const wallets = data.wallets || [];
       if (wallets.length === 0) {
@@ -3441,22 +3446,59 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
 
-      // Display TOP 10
-      const rows = wallets.slice(0, 10).map((w) => {
-        const rank = w.rank || '—';
+      // Build previous ranking map from history
+      let prevRankMap = {}; // address/id -> previous rank (1-based)
+      try {
+        if (historyRes.ok) {
+          const historyData = await historyRes.json();
+          const history = historyData.history || [];
+          // Get the second-to-last snapshot (previous state)
+          if (history.length >= 2) {
+            const prevSnapshot = history[history.length - 2];
+            // History stores in 'entries' or 'top_wallets' array
+            const prevWallets = prevSnapshot.entries || prevSnapshot.top_wallets || [];
+            prevWallets.forEach((w, idx) => {
+              // Use 'id' (address) from history snapshot
+              const key = w.id || w.address;
+              if (key) prevRankMap[key] = idx + 1;
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load wallet history for ranking:', e);
+      }
+
+      // Display TOP 10 with ranking changes
+      const rows = wallets.slice(0, 10).map((w, idx) => {
+        const rank = idx + 1;
+        const address = w.address;
         const identity = w.identity || null;
         const addressShort = w.address_short || 'Unknown';
         const balance = w.balance_total != null ? `${w.balance_total.toLocaleString(undefined, {maximumFractionDigits: 0})} τ` : '—';
         const dominance = w.dominance != null ? `${w.dominance.toFixed(2)}%` : '—';
         const stakedPercent = w.staked_percent != null ? `${w.staked_percent.toFixed(1)}%` : '—';
 
+        // Calculate rank change
+        let changeHtml = '';
+        const prevRank = prevRankMap[address];
+
+        if (prevRank === undefined && Object.keys(prevRankMap).length > 0) {
+          changeHtml = ' <span class="rank-new">NEW</span>';
+        } else if (prevRank > rank) {
+          const diff = prevRank - rank;
+          changeHtml = ` <span class="rank-up">▲${diff}</span>`;
+        } else if (prevRank < rank) {
+          const diff = rank - prevRank;
+          changeHtml = ` <span class="rank-down">▼${diff}</span>`;
+        }
+
         // Show identity if available, otherwise just address
-        const walletDisplay = identity 
+        const walletDisplay = identity
           ? `<span class="wallet-identity">${identity}</span><span class="wallet-address">${addressShort}</span>`
           : `<span class="wallet-address wallet-address-only">${addressShort}</span>`;
 
         return `<tr>
-          <td class="rank-col">${rank}</td>
+          <td class="rank-col">${rank}${changeHtml}</td>
           <td class="wallet-col">${walletDisplay}</td>
           <td class="balance-col">${balance}</td>
           <td class="dominance-col">${dominance}</td>
