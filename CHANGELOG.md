@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.26.4 (2025-12-08)
+### Fixed
+- **Correct Timestamp Sources**: Each tooltip uses its proper API timestamp
+- **Block Height/Halving**: Now use `last_issuance_ts` from Network API
+- **No False Timestamps**: Removed misleading Taostats timestamps from Network API data
+
 ## v1.0.0-rc.26.3 (2025-12-08)
 ### Added
 - **Last Updated Timestamps**: All key tooltips now show data freshness
