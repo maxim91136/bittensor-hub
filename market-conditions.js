@@ -1,4 +1,15 @@
 /**
+ * Format compact volume in dollars (e.g., $1.2M, $45.3M)
+ */
+function formatCompactVolume(num) {
+  if (num === null || num === undefined) return '—';
+  if (Math.abs(num) >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
+  if (Math.abs(num) >= 1e6) return '$' + (num / 1e6).toFixed(1) + 'M';
+  if (Math.abs(num) >= 1e3) return '$' + (num / 1e3).toFixed(0) + 'k';
+  return '$' + Number(num).toLocaleString();
+}
+
+/**
  * Update the new Market Conditions Card with all volume signal data
  */
 async function updateMarketConditionsCard(currentVolume, priceChange24h) {
@@ -35,12 +46,23 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
     signalMetric.querySelector('.metric-value').textContent = labels[signal] || 'Neutral';
   }
 
-  // Update volume change
+  // Update volume with dollar value and change
   const volumeMetric = card.querySelector('#marketVolume');
-  if (volumeMetric && volumeData) {
-    const volChange = volumeData.change || 0;
-    const volStr = volChange >= 0 ? `+${volChange.toFixed(1)}%` : `${volChange.toFixed(1)}%`;
-    volumeMetric.querySelector('.metric-value').textContent = volStr;
+  if (volumeMetric) {
+    // Format current volume in dollars (compact)
+    const volumeValueEl = volumeMetric.querySelector('#marketVolumeValue');
+    if (volumeValueEl && currentVolume) {
+      const formatted = formatCompactVolume(currentVolume);
+      volumeValueEl.textContent = formatted;
+    }
+
+    // Format volume change percentage
+    const volumeChangeEl = volumeMetric.querySelector('#marketVolumeChange');
+    if (volumeChangeEl && volumeData) {
+      const volChange = volumeData.change || 0;
+      const volStr = volChange >= 0 ? `+${volChange.toFixed(1)}%` : `${volChange.toFixed(1)}%`;
+      volumeChangeEl.textContent = volStr;
+    }
   }
 
   // Update price change
