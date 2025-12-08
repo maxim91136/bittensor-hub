@@ -3557,6 +3557,7 @@ body.light-bg .map-preview-card .map-attribution {
   font-size: 0.96em;
   color: var(--text);
   table-layout: fixed;
+  font-family: 'Courier New', Consolas, monospace;
 }
 
 .validators-display-table thead {
@@ -3580,15 +3581,15 @@ body.light-bg .map-preview-card .map-attribution {
   overflow: hidden;
 }
 
-/* 5 columns: #(8%), Validator(28%), Stake(24%), Dom%(20%), Noms(20%) */
+/* 5 columns: Rank(12%), Validator(26%), Stake(24%), Dom%(19%), Noms(19%) */
 .validators-display-table th:nth-child(1),
 .validators-display-table td:nth-child(1) {
-  width: 8%;
+  width: 12%;
 }
 
 .validators-display-table th:nth-child(2),
 .validators-display-table td:nth-child(2) {
-  width: 28%;
+  width: 26%;
 }
 
 .validators-display-table th:nth-child(3),
@@ -3598,12 +3599,12 @@ body.light-bg .map-preview-card .map-attribution {
 
 .validators-display-table th:nth-child(4),
 .validators-display-table td:nth-child(4) {
-  width: 20%;
+  width: 19%;
 }
 
 .validators-display-table th:nth-child(5),
 .validators-display-table td:nth-child(5) {
-  width: 20%;
+  width: 19%;
 }
 
 .validators-display-table tbody tr {
@@ -3658,6 +3659,24 @@ body.light-bg .map-preview-card .map-attribution {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
   font-variant-numeric: tabular-nums;
+}
+
+/* Rank change indicators */
+.validators-display-table .rank-up {
+  color: #22c55e;
+  text-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+
+.validators-display-table .rank-down {
+  color: #ef4444;
+  text-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+}
+
+.validators-display-table .rank-new {
+  color: #3b82f6;
+  font-size: 0.75em;
+  font-weight: 800;
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
 }
 
 /* Champion gold accent - #1 Validator */

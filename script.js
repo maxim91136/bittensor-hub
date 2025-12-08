@@ -3337,9 +3337,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   async function loadTopValidatorsDisplay() {
     try {
-      const response = await fetch('/api/top_validators');
-      if (!response.ok) throw new Error('Failed to fetch top validators');
-      const data = await response.json();
+      // Fetch current data and history in parallel
+      const [currentRes, historyRes] = await Promise.all([
+        fetch('/api/top_validators'),
+        fetch('/api/top_validators_history?limit=2')
+      ]);
+
+      if (!currentRes.ok) throw new Error('Failed to fetch top validators');
+      const data = await currentRes.json();
 
       const topValidators = data.top_validators || [];
       if (topValidators.length === 0) {
@@ -3347,16 +3352,52 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
 
-      // Display TOP 10
+      // Build previous ranking map from history
+      let prevRankMap = {}; // hotkey/id -> previous rank (1-based)
+      try {
+        if (historyRes.ok) {
+          const historyData = await historyRes.json();
+          const history = historyData.history || [];
+          // Get the second-to-last snapshot (previous state)
+          if (history.length >= 2) {
+            const prevSnapshot = history[history.length - 2];
+            const prevValidators = prevSnapshot.top_validators || [];
+            prevValidators.forEach((v, idx) => {
+              // Use 'id' (hotkey) from history snapshot
+              const key = v.id || v.hotkey;
+              if (key) prevRankMap[key] = idx + 1;
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load validator history for ranking:', e);
+      }
+
+      // Display TOP 10 with ranking changes
       const rows = topValidators.slice(0, 10).map((v, idx) => {
         const rank = idx + 1;
+        const hotkey = v.hotkey;
         const name = v.name || `Validator ${rank}`;
         const stake = v.stake_formatted || '—';
         const dominance = v.dominance != null ? `${v.dominance}%` : '—';
         const nominators = v.nominators != null ? v.nominators.toLocaleString() : '—';
 
+        // Calculate rank change
+        let changeHtml = '';
+        const prevRank = prevRankMap[hotkey];
+
+        if (prevRank === undefined && Object.keys(prevRankMap).length > 0) {
+          changeHtml = ' <span class="rank-new">NEW</span>';
+        } else if (prevRank > rank) {
+          const diff = prevRank - rank;
+          changeHtml = ` <span class="rank-up">▲${diff}</span>`;
+        } else if (prevRank < rank) {
+          const diff = rank - prevRank;
+          changeHtml = ` <span class="rank-down">▼${diff}</span>`;
+        }
+
         return `<tr>
-          <td class="rank-col">${rank}</td>
+          <td class="rank-col">${rank}${changeHtml}</td>
           <td class="validator-col">${name}</td>
           <td class="stake-col">${stake}</td>
           <td class="dominance-col">${dominance}</td>
