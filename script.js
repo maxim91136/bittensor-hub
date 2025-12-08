@@ -3244,31 +3244,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (!displayTable || !displayList) return;
 
-  // Load and display top 10 subnets on page load
+  // Load and display top 10 subnets with ranking changes
   async function loadTopSubnetsDisplay() {
     try {
-      const response = await fetch('/api/top_subnets');
-      if (!response.ok) throw new Error('Failed to fetch top subnets');
-      const data = await response.json();
+      // Fetch current data and history in parallel
+      const [currentRes, historyRes] = await Promise.all([
+        fetch('/api/top_subnets'),
+        fetch('/api/top_subnets_history?limit=2')
+      ]);
 
-      const topSubnets = data.top_subnets || [];
+      if (!currentRes.ok) throw new Error('Failed to fetch top subnets');
+      const currentData = await currentRes.json();
+      const topSubnets = currentData.top_subnets || [];
+
       if (topSubnets.length === 0) {
-        displayList.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;">No subnet data available</td></tr>';
+        displayList.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">No subnet data available</td></tr>';
         return;
       }
 
-      // Display TOP 10 (all of them)
+      // Build previous ranking map from history
+      let prevRankMap = {}; // netuid -> previous rank (1-based)
+      try {
+        if (historyRes.ok) {
+          const historyData = await historyRes.json();
+          const history = historyData.history || [];
+          // Get the second-to-last snapshot (previous state)
+          if (history.length >= 2) {
+            const prevSnapshot = history[history.length - 2];
+            const prevSubnets = prevSnapshot.top_subnets || [];
+            prevSubnets.forEach((s, idx) => {
+              prevRankMap[s.netuid] = idx + 1;
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load subnet history for ranking:', e);
+      }
+
+      // Display TOP 10 with ranking changes
       const rows = topSubnets.slice(0, 10).map((subnet, idx) => {
-        const netuid = subnet.netuid || idx;
-        const name = subnet.subnet_name || `SN${subnet.netuid}`;
-        const share = ((subnet.taostats_emission_share || 0) * 100).toFixed(4);
-        const daily = (subnet.estimated_emission_daily || 0).toFixed(4);
+        const rank = idx + 1;
+        const netuid = subnet.netuid;
+        const name = subnet.subnet_name || subnet.taostats_name || `SN${netuid}`;
+        const share = ((subnet.taostats_emission_share || 0) * 100).toFixed(2);
+        const daily = (subnet.estimated_emission_daily || 0).toFixed(2);
+
+        // Calculate rank change
+        let changeHtml = '';
+        const prevRank = prevRankMap[netuid];
+
+        if (prevRank === undefined && Object.keys(prevRankMap).length > 0) {
+          changeHtml = ' <span class="rank-new">NEW</span>';
+        } else if (prevRank > rank) {
+          const diff = prevRank - rank;
+          changeHtml = ` <span class="rank-up">▲${diff}</span>`;
+        } else if (prevRank < rank) {
+          const diff = rank - prevRank;
+          changeHtml = ` <span class="rank-down">▼${diff}</span>`;
+        }
 
         return `<tr>
-          <td class="rank-col">${netuid}</td>
-          <td class="subnet-col">${name}</td>
+          <td class="rank-col">${rank}${changeHtml}</td>
+          <td class="subnet-col"><span class="sn-id">SN${netuid}</span> ${name}</td>
           <td class="share-col">${share}%</td>
-          <td class="daily-col">${daily} τ</td>
+          <td class="daily-col">${daily}τ</td>
         </tr>`;
       }).join('');
 

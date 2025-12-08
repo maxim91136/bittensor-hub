@@ -283,7 +283,7 @@
 /* Desktop: Kleinerer Titel */
 @media (min-width: 1000px) {
   .market-title {
-    font-size: 1.3em;
+    font-size: 1.0em;
   }
 }
 
@@ -294,7 +294,7 @@
   }
 
   .market-title {
-    font-size: 0.95em;
+    font-size: 1.05em;
   }
 
   .market-last-updated {
@@ -367,7 +367,7 @@
   }
 
   .market-title {
-    font-size: 0.85em;
+    font-size: 0.98em;
   }
 
   .market-last-updated {
