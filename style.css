@@ -710,6 +710,16 @@ body.light-bg #maxSupplyScribble {
   color: var(--accent);
   display: flex;
   align-items: center;
+  justify-content: center;
+}
+
+.price-icon.tao-logo {
+  margin-right: 4px;
+}
+
+.price-icon.tao-logo svg {
+  width: 20px;
+  height: 20px;
 }
 
 .skeleton-text {
