@@ -7,10 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ## v1.0.0-rc.27.3.1 (2025-12-09)
 ### Added
-- **System Failure Easter Egg**: Triple-click on refresh countdown triggers Matrix-style effect
-  - Full-screen red Matrix rain animation
-  - Glitching "SYSTEM FAILURE" text with CRT scan lines
-  - Triple-click or ESC to restore system
+- **New Easter Egg**: Hidden Matrix-themed surprise - can you find it?
 - **Enhanced Refresh Indicator**: Clickable with hover effects and glow
   - Single-click refreshes dashboard instantly
   - Responsive sizing for all screen sizes
