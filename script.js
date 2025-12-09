@@ -2556,8 +2556,10 @@ function toggleRefreshPause() {
     if (typeof window.showMatrixGlitch === 'function') {
       window.showMatrixGlitch({ duration: 800, intensity: 3 });
     }
-    MatrixSound.play('refresh-beep');
+    MatrixSound.play('glitch');
     renderRefreshIndicator();
+    // Show Matrix-style "SYSTEM FAILURE" Easter Egg
+    showSystemFailureEasterEgg();
   } else {
     // Resume - restart the auto-refresh
     refreshCountdown = REFRESH_SECONDS;
@@ -2565,6 +2567,196 @@ function toggleRefreshPause() {
     startAutoRefresh();
     MatrixSound.play('refresh-beep');
   }
+}
+
+// ===== Matrix "SYSTEM FAILURE" Easter Egg =====
+function showSystemFailureEasterEgg() {
+  // Remove existing if present
+  const existing = document.getElementById('systemFailureOverlay');
+  if (existing) existing.remove();
+
+  // Create fullscreen overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'systemFailureOverlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 999998;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: systemFailureFadeIn 0.3s ease-out;
+    cursor: pointer;
+  `;
+
+  // Add CSS animations if not already present
+  if (!document.getElementById('systemFailureStyles')) {
+    const style = document.createElement('style');
+    style.id = 'systemFailureStyles';
+    style.textContent = `
+      @keyframes systemFailureFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes systemFailureFadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+      @keyframes systemFailureGlitch {
+        0%, 100% { transform: translate(0); filter: none; }
+        10% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+        20% { transform: translate(2px, -1px); }
+        30% { transform: translate(-1px, 2px); filter: hue-rotate(-90deg); }
+        40% { transform: translate(1px, -2px); }
+        50% { transform: translate(-2px, -1px); filter: brightness(1.5); }
+        60% { transform: translate(2px, 1px); }
+        70% { transform: translate(0, -2px); filter: hue-rotate(180deg); }
+        80% { transform: translate(-1px, 0); }
+        90% { transform: translate(1px, 1px); filter: saturate(2); }
+      }
+      @keyframes systemFailureBlink {
+        0%, 49% { opacity: 1; }
+        50%, 100% { opacity: 0.3; }
+      }
+      @keyframes systemFailureScan {
+        0% { top: 0; }
+        100% { top: 100%; }
+      }
+      @keyframes matrixRainFall {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100vh); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Matrix rain canvas background
+  const canvas = document.createElement('canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.cssText = 'position: absolute; top: 0; left: 0; opacity: 0.3;';
+  overlay.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  const chars = 'SYSTEMFAILURE01アイウエオカキクケコ';
+  const fontSize = 14;
+  const columns = Math.floor(canvas.width / fontSize);
+  const drops = Array(columns).fill(1);
+
+  const matrixInterval = setInterval(() => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#f00';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }, 50);
+
+  // Scan line effect
+  const scanLine = document.createElement('div');
+  scanLine.style.cssText = `
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(transparent, rgba(255, 0, 0, 0.4), transparent);
+    animation: systemFailureScan 2s linear infinite;
+    pointer-events: none;
+  `;
+  overlay.appendChild(scanLine);
+
+  // Main "SYSTEM FAILURE" text
+  const failureText = document.createElement('div');
+  failureText.style.cssText = `
+    position: relative;
+    z-index: 10;
+    font-family: 'Courier New', monospace;
+    font-size: clamp(24px, 8vw, 72px);
+    font-weight: bold;
+    color: #f00;
+    text-shadow:
+      0 0 10px #f00,
+      0 0 20px #f00,
+      0 0 40px #f00,
+      0 0 80px #900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    animation: systemFailureGlitch 0.3s infinite, systemFailureBlink 1s infinite;
+    text-align: center;
+    padding: 0 20px;
+  `;
+  failureText.textContent = 'SYSTEM FAILURE';
+  overlay.appendChild(failureText);
+
+  // Sub text
+  const subText = document.createElement('div');
+  subText.style.cssText = `
+    position: relative;
+    z-index: 10;
+    font-family: 'Courier New', monospace;
+    font-size: clamp(10px, 2vw, 16px);
+    color: #f00;
+    margin-top: 20px;
+    opacity: 0.7;
+    letter-spacing: 0.3em;
+  `;
+  subText.textContent = '[ CLICK TO RESTORE ]';
+  overlay.appendChild(subText);
+
+  // Error details (Matrix style)
+  const errorDetails = document.createElement('div');
+  errorDetails.style.cssText = `
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: #f00;
+    opacity: 0.5;
+    text-align: left;
+    line-height: 1.6;
+  `;
+  errorDetails.innerHTML = `
+    > ERR_MATRIX_BREACH: 0xDEADBEEF<br>
+    > NEURAL_LINK: DISCONNECTED<br>
+    > TIMESTAMP: ${new Date().toISOString()}<br>
+    > STATUS: AWAITING_USER_INPUT
+  `;
+  overlay.appendChild(errorDetails);
+
+  document.body.appendChild(overlay);
+
+  // Click to close and resume
+  overlay.onclick = () => {
+    clearInterval(matrixInterval);
+    overlay.style.animation = 'systemFailureFadeOut 0.3s ease-out forwards';
+    setTimeout(() => {
+      overlay.remove();
+      // Resume the system
+      refreshPaused = false;
+      refreshCountdown = REFRESH_SECONDS;
+      renderRefreshIndicator();
+      startAutoRefresh();
+      MatrixSound.play('boot-ready');
+    }, 300);
+  };
+
+  // Play dramatic sound
+  MatrixSound.play('glitch');
 }
 
 function startAutoRefresh() {
@@ -2595,6 +2787,21 @@ function startAutoRefresh() {
     el.onclick = handleRefreshClick;
   }
 }
+
+// Initialize refresh indicator click handler on DOM ready
+(function initRefreshControls() {
+  function setup() {
+    const refreshIndicator = document.getElementById('refresh-indicator');
+    if (refreshIndicator) {
+      refreshIndicator.onclick = handleRefreshClick;
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
 
 // ===== Initialization of Price Chart =====
 function createPriceChart(priceHistory, range) {

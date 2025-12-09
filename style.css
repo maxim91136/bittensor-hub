@@ -2329,27 +2329,39 @@ body.light-bg .fng-card.fng-red .barometer-class {
   }
 }
 
-/* --- Refresh Indicator (Kompakt & Dezent) --- */
+/* --- Refresh Indicator (Klickbar & Interaktiv) --- */
 .refresh-indicator {
-  width: 18px; /* a bit smaller to satisfy the request */
-  height: 18px;
+  width: 30px;
+  height: 30px;
   margin-right: 10px;
   margin-left: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  opacity: 0.8;
-  transition: opacity 0.2s;
+  opacity: 0.95;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+.refresh-indicator:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.2);
+}
+.refresh-indicator:active {
+  transform: scale(0.92);
 }
 .refresh-indicator svg {
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   display: block;
 }
-/* Slightly thicker stroke for larger icons so it doesn't look thin */
 .refresh-indicator svg circle {
-  stroke-width: 2px; /* thinner so the ring scales down well */
+  stroke-width: 2.2px;
 }
 .refresh-indicator .refresh-label {
   position: absolute;
@@ -2357,35 +2369,34 @@ body.light-bg .fng-card.fng-red .barometer-class {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8em; /* slightly smaller label */
-  font-weight: 600;
+  font-size: 0.75em;
+  font-weight: 700;
   color: #22c55e;
-  -webkit-text-fill-color: #22c55e; /* Safari fallback */
+  -webkit-text-fill-color: #22c55e;
   pointer-events: none;
   letter-spacing: -0.5px;
 }
 @media (min-width: 600px) {
   .refresh-indicator {
-    width: 26px; /* desktop: reduced to match smaller default */
-    height: 26px;
+    width: 32px;
+    height: 32px;
   }
   .refresh-indicator svg {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
   }
   .refresh-indicator .refresh-label {
-    font-size: 0.9em; /* slightly smaller on wide screens */
+    font-size: 0.8em;
   }
 }
 @media (max-width: 420px) {
-  /* On very small screens, shrink label to avoid overlap */
   .refresh-indicator {
-    width: 16px;
-    height: 16px;
+    width: 26px;
+    height: 26px;
     margin-right: 8px;
   }
-  .refresh-indicator svg { width: 16px; height: 16px; }
-  .refresh-indicator .refresh-label { font-size: 0.68em; }
+  .refresh-indicator svg { width: 22px; height: 22px; }
+  .refresh-indicator .refresh-label { font-size: 0.85em; }
 }
 @media (max-width: 700px) {
   .stats-grid {
