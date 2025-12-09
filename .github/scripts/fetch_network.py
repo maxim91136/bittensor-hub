@@ -152,62 +152,18 @@ def fetch_metrics() -> Dict[str, Any]:
     except Exception:
         history = []
 
-    # Add new 15-minute snapshot with validation
     # Realistic bounds: current issuance should be between 10M and 15M TAO (adjustable as network grows)
     MIN_REALISTIC_ISSUANCE = 10_000_000  # 10M TAO - we're past this
     MAX_REALISTIC_ISSUANCE = 15_000_000  # 15M TAO - well before halving
 
-    try:
-        now = datetime.now(timezone.utc)
-        ts = int(now.timestamp())
-        if total_issuance_human is not None:
-            new_issuance = float(total_issuance_human)
-
-            # Validate new sample before adding
-            is_valid = True
-            reject_reason = None
-
-            # Check absolute bounds
-            if not (MIN_REALISTIC_ISSUANCE <= new_issuance <= MAX_REALISTIC_ISSUANCE):
-                is_valid = False
-                reject_reason = f"outside bounds [{MIN_REALISTIC_ISSUANCE/1e6:.1f}M, {MAX_REALISTIC_ISSUANCE/1e6:.1f}M]"
-
-            # Check against last sample: issuance should never decrease, and shouldn't jump more than 1000 TAO/15min (~100k/day max)
-            if is_valid and history:
-                last_issuance = history[-1].get('issuance', 0)
-                delta = new_issuance - last_issuance
-                max_delta_per_interval = 1000  # TAO per 15min interval (very generous)
-
-                if delta < -10:  # Allow tiny floating point variance
-                    is_valid = False
-                    reject_reason = f"issuance decreased by {abs(delta):.2f} TAO"
-                elif delta > max_delta_per_interval:
-                    is_valid = False
-                    reject_reason = f"issuance jumped by {delta:.2f} TAO (max {max_delta_per_interval})"
-
-            if is_valid:
-                # Append snapshot; drop duplicates if same second
-                if history and history[-1].get('ts') == ts:
-                    history[-1]['issuance'] = new_issuance
-                else:
-                    history.append({'ts': ts, 'issuance': new_issuance})
-            else:
-                print(f"⚠️  Rejected invalid sample: {new_issuance:.2f} TAO - {reject_reason}", file=sys.stderr)
-
-            # Keep at most N entries: 15min sampling -> 96 entries/day -> 30d ~ 2880
-            max_entries = 2880
-            if len(history) > max_entries:
-                history = history[-max_entries:]
-    except Exception as e:
-        print(f"⚠️  Error adding snapshot: {e}", file=sys.stderr)
-        history = history
-
     # =====================================================================
-    # SANITIZE HISTORY: Remove only the actual corrupt samples
-    # Strategy: Identify samples that are clearly wrong (drops indicate the
-    # NEXT sample after a good run is corrupt, not the samples after it).
+    # SANITIZE HISTORY FIRST: Remove corrupt samples before validating new sample
+    # Strategy:
+    # 1. Remove samples outside absolute bounds (10M-15M)
+    # 2. Remove samples ABOVE current chain issuance (impossible - issuance only goes up)
+    # 3. Remove samples that cause drops (the sample before a drop is corrupt)
     # =====================================================================
-    def sanitize_history(hist: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def sanitize_history(hist: List[Dict[str, Any]], current_chain_issuance: float = None) -> List[Dict[str, Any]]:
         if len(hist) < 2:
             return hist
 
@@ -227,7 +183,26 @@ def fetch_metrics() -> Dict[str, Any]:
                 print(f"✅ Sanitized history: removed {removed_bounds} out-of-bounds samples", file=sys.stderr)
             return cleaned
 
-        # Second pass: identify and remove samples that cause drops
+        # Second pass: remove samples ABOVE current chain issuance
+        # This is impossible since issuance can only increase - any sample higher
+        # than current chain value is definitely corrupt
+        removed_future = 0
+        if current_chain_issuance is not None and current_chain_issuance > 0:
+            # Allow small tolerance for timing differences
+            max_valid = current_chain_issuance + 50  # 50 TAO tolerance
+            before_count = len(cleaned)
+            cleaned = [h for h in cleaned if h.get('issuance', 0) <= max_valid]
+            removed_future = before_count - len(cleaned)
+            if removed_future > 0:
+                print(f"⚠️  Removed {removed_future} samples above current chain issuance ({current_chain_issuance:.2f} TAO)", file=sys.stderr)
+
+        if len(cleaned) < 2:
+            total = removed_bounds + removed_future
+            if total > 0:
+                print(f"✅ Sanitized history: removed {total} corrupt samples", file=sys.stderr)
+            return cleaned
+
+        # Third pass: identify and remove samples that cause drops
         # When issuance drops, the sample BEFORE the drop is likely corrupt
         # (since issuance can never decrease)
         removed_drops = 0
@@ -249,14 +224,61 @@ def fetch_metrics() -> Dict[str, Any]:
             else:
                 i += 1
 
-        total_removed = removed_bounds + removed_drops
+        total_removed = removed_bounds + removed_future + removed_drops
         if total_removed > 0:
-            print(f"✅ Sanitized history: removed {total_removed} corrupt samples ({removed_bounds} out-of-bounds, {removed_drops} drops)", file=sys.stderr)
+            print(f"✅ Sanitized history: removed {total_removed} corrupt samples ({removed_bounds} out-of-bounds, {removed_future} above-chain, {removed_drops} drops)", file=sys.stderr)
             print(f"   History size: {len(hist)} → {len(cleaned)} samples", file=sys.stderr)
 
         return cleaned
 
-    history = sanitize_history(history)
+    # Pass current chain issuance to sanitize samples that are impossibly high
+    history = sanitize_history(history, total_issuance_human)
+
+    # Add new 15-minute snapshot with validation (AFTER sanitization so we compare against clean history)
+    try:
+        now = datetime.now(timezone.utc)
+        ts = int(now.timestamp())
+        if total_issuance_human is not None:
+            new_issuance = float(total_issuance_human)
+
+            # Validate new sample before adding
+            is_valid = True
+            reject_reason = None
+
+            # Check absolute bounds
+            if not (MIN_REALISTIC_ISSUANCE <= new_issuance <= MAX_REALISTIC_ISSUANCE):
+                is_valid = False
+                reject_reason = f"outside bounds [{MIN_REALISTIC_ISSUANCE/1e6:.1f}M, {MAX_REALISTIC_ISSUANCE/1e6:.1f}M]"
+
+            # Check against last sample in sanitized history
+            if is_valid and history:
+                last_issuance = history[-1].get('issuance', 0)
+                delta = new_issuance - last_issuance
+                max_delta_per_interval = 1000  # TAO per 15min interval (very generous)
+
+                if delta < -10:  # Allow tiny floating point variance
+                    is_valid = False
+                    reject_reason = f"issuance decreased by {abs(delta):.2f} TAO"
+                elif delta > max_delta_per_interval:
+                    is_valid = False
+                    reject_reason = f"issuance jumped by {delta:.2f} TAO (max {max_delta_per_interval})"
+
+            if is_valid:
+                # Append snapshot; drop duplicates if same second
+                if history and history[-1].get('ts') == ts:
+                    history[-1]['issuance'] = new_issuance
+                else:
+                    history.append({'ts': ts, 'issuance': new_issuance})
+                print(f"✅ Added sample: {new_issuance:.2f} TAO", file=sys.stderr)
+            else:
+                print(f"⚠️  Rejected invalid sample: {new_issuance:.2f} TAO - {reject_reason}", file=sys.stderr)
+
+            # Keep at most N entries: 15min sampling -> 96 entries/day -> 30d ~ 2880
+            max_entries = 2880
+            if len(history) > max_entries:
+                history = history[-max_entries:]
+    except Exception as e:
+        print(f"⚠️  Error adding snapshot: {e}", file=sys.stderr)
 
     # Compute per-interval normalized (TAO/day) deltas from the 15m-ish history
     def compute_per_interval_deltas(hist: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
