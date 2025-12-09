@@ -152,56 +152,112 @@ def fetch_metrics() -> Dict[str, Any]:
     except Exception:
         history = []
 
-    # Add new 15-minute snapshot
+    # Add new 15-minute snapshot with validation
+    # Realistic bounds: current issuance should be between 10M and 15M TAO (adjustable as network grows)
+    MIN_REALISTIC_ISSUANCE = 10_000_000  # 10M TAO - we're past this
+    MAX_REALISTIC_ISSUANCE = 15_000_000  # 15M TAO - well before halving
+
     try:
         now = datetime.now(timezone.utc)
         ts = int(now.timestamp())
         if total_issuance_human is not None:
-            # Append snapshot; no date-based deduplication - but drop duplicates if same second
-            if history and history[-1].get('ts') == ts:
-                history[-1]['issuance'] = float(total_issuance_human)
+            new_issuance = float(total_issuance_human)
+
+            # Validate new sample before adding
+            is_valid = True
+            reject_reason = None
+
+            # Check absolute bounds
+            if not (MIN_REALISTIC_ISSUANCE <= new_issuance <= MAX_REALISTIC_ISSUANCE):
+                is_valid = False
+                reject_reason = f"outside bounds [{MIN_REALISTIC_ISSUANCE/1e6:.1f}M, {MAX_REALISTIC_ISSUANCE/1e6:.1f}M]"
+
+            # Check against last sample: issuance should never decrease, and shouldn't jump more than 1000 TAO/15min (~100k/day max)
+            if is_valid and history:
+                last_issuance = history[-1].get('issuance', 0)
+                delta = new_issuance - last_issuance
+                max_delta_per_interval = 1000  # TAO per 15min interval (very generous)
+
+                if delta < -10:  # Allow tiny floating point variance
+                    is_valid = False
+                    reject_reason = f"issuance decreased by {abs(delta):.2f} TAO"
+                elif delta > max_delta_per_interval:
+                    is_valid = False
+                    reject_reason = f"issuance jumped by {delta:.2f} TAO (max {max_delta_per_interval})"
+
+            if is_valid:
+                # Append snapshot; drop duplicates if same second
+                if history and history[-1].get('ts') == ts:
+                    history[-1]['issuance'] = new_issuance
+                else:
+                    history.append({'ts': ts, 'issuance': new_issuance})
             else:
-                history.append({'ts': ts, 'issuance': float(total_issuance_human)})
+                print(f"⚠️  Rejected invalid sample: {new_issuance:.2f} TAO - {reject_reason}", file=sys.stderr)
+
             # Keep at most N entries: 15min sampling -> 96 entries/day -> 30d ~ 2880
             max_entries = 2880
             if len(history) > max_entries:
                 history = history[-max_entries:]
-    except Exception:
+    except Exception as e:
+        print(f"⚠️  Error adding snapshot: {e}", file=sys.stderr)
         history = history
 
     # =====================================================================
-    # SANITIZE HISTORY: Fix samples where issuance dropped (data anomalies)
-    # The total issuance can NEVER decrease - any drops are API/data errors.
-    # Strategy: When a drop is detected, add the drop amount to all subsequent
-    # samples to restore the correct values.
+    # SANITIZE HISTORY: Remove corrupt samples instead of trying to fix them
+    # Strategy: Delete samples that violate constraints (drops, unrealistic jumps,
+    # out-of-bounds values). This produces cleaner data for emission calculations.
     # =====================================================================
     def sanitize_history(hist: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if len(hist) < 2:
             return hist
-        
-        sanitized = [dict(h) for h in hist]  # deep copy
-        cumulative_correction = 0.0
-        drops_fixed = 0
-        
-        for i in range(1, len(sanitized)):
-            # Apply cumulative correction from previous drops
-            sanitized[i]['issuance'] += cumulative_correction
-            
-            # Check if there's still a drop after correction
-            delta = sanitized[i]['issuance'] - sanitized[i-1]['issuance']
-            if delta < 0:
-                # This is a drop - add the drop amount to correction
-                drop_amount = abs(delta)
-                cumulative_correction += drop_amount
-                sanitized[i]['issuance'] += drop_amount
-                drops_fixed += 1
-                print(f"⚠️  Fixed issuance drop of {drop_amount:.2f} TAO at index {i}", file=sys.stderr)
-        
-        if drops_fixed > 0:
-            print(f"✅ Sanitized {drops_fixed} issuance drops, total correction: {cumulative_correction:.2f} TAO", file=sys.stderr)
-        
-        return sanitized
-    
+
+        # First pass: remove samples outside absolute bounds
+        cleaned = []
+        removed_bounds = 0
+        for h in hist:
+            iss = h.get('issuance', 0)
+            if MIN_REALISTIC_ISSUANCE <= iss <= MAX_REALISTIC_ISSUANCE:
+                cleaned.append(dict(h))
+            else:
+                removed_bounds += 1
+                print(f"⚠️  Removed out-of-bounds sample: {iss:.2f} TAO", file=sys.stderr)
+
+        if len(cleaned) < 2:
+            return cleaned
+
+        # Second pass: remove samples that cause unrealistic deltas
+        # Work backwards to identify which sample is corrupt when there's a discontinuity
+        final = [cleaned[0]]
+        removed_deltas = 0
+        max_delta = 1000  # TAO per interval (very generous for ~15min)
+
+        for i in range(1, len(cleaned)):
+            prev_iss = final[-1]['issuance']
+            curr_iss = cleaned[i]['issuance']
+            delta = curr_iss - prev_iss
+
+            # Check for drops or unrealistic jumps
+            if delta < -10:  # Drop (allowing tiny float variance)
+                removed_deltas += 1
+                print(f"⚠️  Removed sample with drop: {curr_iss:.2f} TAO (delta: {delta:.2f})", file=sys.stderr)
+                continue
+            elif delta > max_delta:
+                # Big jump - could be current or previous that's wrong
+                # Heuristic: if current is closer to expected trend, keep it
+                # For now, just remove the outlier (current)
+                removed_deltas += 1
+                print(f"⚠️  Removed sample with jump: {curr_iss:.2f} TAO (delta: {delta:.2f})", file=sys.stderr)
+                continue
+
+            final.append(cleaned[i])
+
+        total_removed = removed_bounds + removed_deltas
+        if total_removed > 0:
+            print(f"✅ Sanitized history: removed {total_removed} corrupt samples ({removed_bounds} out-of-bounds, {removed_deltas} bad deltas)", file=sys.stderr)
+            print(f"   History size: {len(hist)} → {len(final)} samples", file=sys.stderr)
+
+        return final
+
     history = sanitize_history(history)
 
     # Compute per-interval normalized (TAO/day) deltas from the 15m-ish history
