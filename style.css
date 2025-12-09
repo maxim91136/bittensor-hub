@@ -2391,12 +2391,13 @@ body.light-bg .fng-card.fng-red .barometer-class {
 }
 @media (max-width: 420px) {
   .refresh-indicator {
-    width: 26px;
-    height: 26px;
-    margin-right: 8px;
+    width: 22px;
+    height: 22px;
+    margin-right: 6px;
+    margin-left: 4px;
   }
-  .refresh-indicator svg { width: 22px; height: 22px; }
-  .refresh-indicator .refresh-label { font-size: 0.85em; }
+  .refresh-indicator svg { width: 18px; height: 18px; }
+  .refresh-indicator .refresh-label { font-size: 0.68em; }
 }
 @media (max-width: 700px) {
   .stats-grid {
