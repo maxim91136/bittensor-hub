@@ -22,7 +22,7 @@ def fetch_block_time(num_blocks=25, max_attempts=4):
     """Fetch last N blocks and calculate average block time."""
     if not TAOSTATS_API_KEY:
         print("❌ TAOSTATS_API_KEY not set", file=sys.stderr)
-        return None
+        return None, False
     
     headers = {
         "accept": "application/json",
@@ -70,6 +70,11 @@ def fetch_block_time(num_blocks=25, max_attempts=4):
                 # Shouldn't happen, but guard
                 break
 
+            # Check if we're still rate limited after all retries
+            if resp.status_code == 429:
+                print("❌ Still rate limited after all retries", file=sys.stderr)
+                return None, True
+
             data = resp.json()
             
             blocks = data.get("data", [])
@@ -92,7 +97,7 @@ def fetch_block_time(num_blocks=25, max_attempts=4):
         
         if len(blocks) < 2:
             print("❌ Not enough blocks returned", file=sys.stderr)
-            return None
+            return None, rate_limited
         
         print(f"✅ Using {len(blocks)} blocks for analysis", file=sys.stderr)
         
@@ -113,7 +118,7 @@ def fetch_block_time(num_blocks=25, max_attempts=4):
         
         if not deltas:
             print("❌ Could not calculate block time deltas", file=sys.stderr)
-            return None
+            return None, rate_limited
         
         # Calculate statistics
         avg_block_time = sum(deltas) / len(deltas)
