@@ -294,13 +294,48 @@ def fetch_metrics() -> Dict[str, Any]:
     emission_7d = None
     emission_sd_7d = None
     emission_30d = None
-    
+
     import math
     now_ts = int(datetime.now(timezone.utc).timestamp())
-    
+
+    # =====================================================================
+    # DYNAMIC EMISSION BOUNDS: Adjust filter based on halving level
+    # Base emission is 7200 TAO/day, halves at each threshold
+    # =====================================================================
+    def get_emission_bounds(current_issuance: float, thresholds: List[int]) -> tuple:
+        """
+        Calculate reasonable emission bounds based on current halving level.
+        Returns (min_emission, max_emission) in TAO/day.
+        """
+        base_emission = 7200.0  # TAO/day before first halving
+
+        # Count how many halvings have occurred
+        halvings_passed = 0
+        if current_issuance is not None:
+            for th in thresholds:
+                if current_issuance >= th:
+                    halvings_passed += 1
+                else:
+                    break
+
+        # Expected emission after halvings
+        expected_emission = base_emission / (2 ** halvings_passed)
+
+        # Set bounds with generous margins (±40% of expected)
+        # This allows for normal variance while filtering obvious anomalies
+        min_emission = expected_emission * 0.6
+        max_emission = expected_emission * 1.4
+
+        return min_emission, max_emission
+
+    # Get current issuance for determining halving level
+    current_iss = total_issuance_human
+    halving_thresholds = result.get('halvingThresholds', [])
+    EMISSION_MIN, EMISSION_MAX = get_emission_bounds(current_iss, halving_thresholds)
+
     # emission_daily = time-weighted mean per_day for last 24h
-    # Filter anomalies: only use values in reasonable range (5000-9000 TAO/day)
-    deltas_last_24h = [d for d in per_interval_deltas if d['ts'] >= (now_ts - 86400) and 5000 <= d['per_day'] <= 9000]
+    # Filter anomalies: only use values in reasonable range (dynamic based on halving)
+    deltas_last_24h = [d for d in per_interval_deltas if d['ts'] >= (now_ts - 86400) and EMISSION_MIN <= d['per_day'] <= EMISSION_MAX]
     # require at least 3 interval samples in the last 24h to compute a reliable daily estimate
     if len(deltas_last_24h) >= 3:
         # use winsorized mean for last 24h to smooth out spikes
@@ -308,12 +343,12 @@ def fetch_metrics() -> Dict[str, Any]:
     
     # =====================================================================
     # FIXED: Emission calculation using winsorized mean of interval rates
-    # 
+    #
     # Problem with first/last method: Data anomalies (drops, gaps) cause
     # incorrect averages even after sanitization.
-    # 
+    #
     # New method: Use winsorized mean of per-interval rates, filtering out
-    # anomalous values (< 5000 or > 9000 TAO/day).
+    # anomalous values using dynamic bounds based on current halving level.
     # =====================================================================
     
     def compute_emission_for_period(hist: List[Dict[str, Any]], days: int) -> tuple:
@@ -328,9 +363,9 @@ def fetch_metrics() -> Dict[str, Any]:
         
         cutoff_ts = now_ts - (days * 86400)
         
-        # Get per-interval rates for this period, filtering anomalies
-        period_rates = [d['per_day'] for d in per_interval_deltas 
-                       if d['ts'] >= cutoff_ts and 5000 <= d['per_day'] <= 9000]
+        # Get per-interval rates for this period, filtering anomalies (dynamic bounds)
+        period_rates = [d['per_day'] for d in per_interval_deltas
+                       if d['ts'] >= cutoff_ts and EMISSION_MIN <= d['per_day'] <= EMISSION_MAX]
         
         if len(period_rates) < 3:
             return None, None, 0, 0
@@ -364,13 +399,13 @@ def fetch_metrics() -> Dict[str, Any]:
     rate_7d, sd_7d, samples_7d, days_7d = compute_emission_for_period(history, 7)
     
     # Check data quality: we need at least 4 days of actual data for 7d average
-    # AND the emission rate should be reasonable (between 5000-9000 TAO/day)
+    # AND the emission rate should be reasonable (within dynamic halving-aware bounds)
     # AND standard deviation should be low (< 500 indicates consistent data)
     # High SD (> 1000) indicates data gaps or problems in the early days
     sd_threshold = 500  # TAO/day - normal variance is ~50-100
     data_is_reliable = (sd_7d is not None and sd_7d < sd_threshold) or samples_7d < 10
-    
-    if rate_7d is not None and days_7d >= 4 and 5000 <= rate_7d <= 9000 and data_is_reliable:
+
+    if rate_7d is not None and days_7d >= 4 and EMISSION_MIN <= rate_7d <= EMISSION_MAX and data_is_reliable:
         emission_7d = rate_7d
         emission_sd_7d = sd_7d
         emission_7d_actual_days = days_7d
@@ -380,18 +415,18 @@ def fetch_metrics() -> Dict[str, Any]:
         for fallback_days in [4, 3, 2]:
             rate_fb, sd_fb, samples_fb, days_fb = compute_emission_for_period(history, fallback_days)
             # Lower SD threshold for shorter periods since they're more recent/reliable
-            if rate_fb is not None and days_fb >= (fallback_days * 0.7) and 5000 <= rate_fb <= 9000:
+            if rate_fb is not None and days_fb >= (fallback_days * 0.7) and EMISSION_MIN <= rate_fb <= EMISSION_MAX:
                 emission_7d = rate_fb
                 emission_sd_7d = sd_fb
                 emission_7d_actual_days = days_fb
                 break
-    
+
     # 30-day emission (will work better once we have more history)
     # For now, with only ~7 days of data, we should use emission_7d as fallback
     # Only use 30d calculation when we have >= 14 days of clean data
     rate_30d, sd_30d, samples_30d, days_30d = compute_emission_for_period(history, 30)
     # Require at least 14 days AND low variance (same SD threshold as 7d)
-    if rate_30d is not None and days_30d >= 14 and 5000 <= rate_30d <= 9000 and (sd_30d is None or sd_30d < sd_threshold):
+    if rate_30d is not None and days_30d >= 14 and EMISSION_MIN <= rate_30d <= EMISSION_MAX and (sd_30d is None or sd_30d < sd_threshold):
         emission_30d = rate_30d
     else:
         # Use 7d as fallback for 30d until we have enough clean history
@@ -437,8 +472,8 @@ def fetch_metrics() -> Dict[str, Any]:
         avg_for_projection = emission_daily
         projection_method = 'emission_daily_low_confidence'
     else:
-        # Filter anomalies: only use values in reasonable range (5000-9000 TAO/day)
-        vals = [d['per_day'] for d in per_interval_deltas if isinstance(d.get('per_day'), (int, float)) and 5000 <= d['per_day'] <= 9000]
+        # Filter anomalies: only use values in reasonable range (dynamic based on halving)
+        vals = [d['per_day'] for d in per_interval_deltas if isinstance(d.get('per_day'), (int, float)) and EMISSION_MIN <= d['per_day'] <= EMISSION_MAX]
         if vals:
             avg_for_projection = sum(vals) / len(vals)
             projection_method = 'mean_from_intervals'
