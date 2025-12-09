@@ -8,10 +8,10 @@ Started: November 3, 2025
 
 This project provides a compact dashboard for visualizing and monitoring key Bittensor metrics. It is designed for anyone interested in understanding the Bittensor ecosystem.
 
-**Latest release:** `v1.0.0-rc.26.4` — see [RELEASE_NOTES/v1.0.0-rc.26.4.md](RELEASE_NOTES/v1.0.0-rc.26.4.md) and [CHANGELOG.md](CHANGELOG.md) for details.
+**Latest release:** `v1.0.0-rc.27` — see [RELEASE_NOTES/v1.0.0-rc.27.md](RELEASE_NOTES/v1.0.0-rc.27.md) and [CHANGELOG.md](CHANGELOG.md) for details.
 
-> 🎯 **RC26.4 Highlight**: Correct timestamp sources for all tooltips.
-> 📊 Each data point shows its actual last update time from its source API.
+> 🎯 **RC27 Highlight**: Fixed emission calculation bug & added halving support.
+> ⚡ Dynamic emission bounds auto-adjust for each halving event.
 > 📱 Mobile-optimized with compact, responsive design.
 
 ## Features
