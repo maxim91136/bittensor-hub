@@ -2488,13 +2488,25 @@ async function refreshDashboard() {
 const REFRESH_SECONDS = 60;
 let refreshCountdown = REFRESH_SECONDS;
 let refreshTimer = null;
+let refreshPaused = false;
+let refreshClickTimestamps = [];
 
 function renderRefreshIndicator() {
   const el = document.getElementById('refresh-indicator');
   if (!el) return;
-  const radius = 7;
-  const stroke = 2.2;
-  const circ = 2 * Math.PI * radius;
+
+  // If paused, show "System failure" state
+  if (refreshPaused) {
+    el.innerHTML = `
+      <span class="failure-text">SYS_FAIL</span>
+    `;
+    el.title = 'System failure - Triple-click to resume';
+    el.classList.add('system-failure');
+    el.style.cursor = 'pointer';
+    return;
+  }
+
+  el.classList.remove('system-failure');
   const progress = (refreshCountdown / REFRESH_SECONDS);
   el.innerHTML = `
     <svg viewBox="0 0 20 20">
@@ -2505,14 +2517,62 @@ function renderRefreshIndicator() {
     </svg>
     <span class="refresh-label">${refreshCountdown}</span>
   `;
-  el.title = `Auto-refresh in ${refreshCountdown}s`;
-  el.style.pointerEvents = "none";
+  el.title = `Auto-refresh in ${refreshCountdown}s - Triple-click to pause`;
+  el.style.cursor = 'pointer';
+}
+
+function handleRefreshClick() {
+  const now = Date.now();
+  refreshClickTimestamps.push(now);
+
+  // Keep only clicks within last 600ms
+  refreshClickTimestamps = refreshClickTimestamps.filter(t => now - t < 600);
+
+  // Triple-click detection
+  if (refreshClickTimestamps.length >= 3) {
+    refreshClickTimestamps = [];
+    toggleRefreshPause();
+    return;
+  }
+
+  // Single click - reset countdown and refresh (if not paused)
+  if (!refreshPaused) {
+    refreshCountdown = REFRESH_SECONDS;
+    refreshDashboard();
+    renderRefreshIndicator();
+  }
+}
+
+function toggleRefreshPause() {
+  refreshPaused = !refreshPaused;
+
+  if (refreshPaused) {
+    // Stop the timer
+    if (refreshTimer) {
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+    // Play glitch effect for dramatic "crash"
+    if (typeof window.showMatrixGlitch === 'function') {
+      window.showMatrixGlitch({ duration: 800, intensity: 3 });
+    }
+    MatrixSound.play('refresh-beep');
+    renderRefreshIndicator();
+  } else {
+    // Resume - restart the auto-refresh
+    refreshCountdown = REFRESH_SECONDS;
+    renderRefreshIndicator();
+    startAutoRefresh();
+    MatrixSound.play('refresh-beep');
+  }
 }
 
 function startAutoRefresh() {
+  if (refreshPaused) return;
   renderRefreshIndicator();
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(() => {
+    if (refreshPaused) return;
     refreshCountdown--;
     if (refreshCountdown <= 0) {
       refreshCountdown = REFRESH_SECONDS;
@@ -2532,11 +2592,7 @@ function startAutoRefresh() {
   }, 1000);
   const el = document.getElementById('refresh-indicator');
   if (el) {
-    el.onclick = () => {
-      refreshCountdown = REFRESH_SECONDS;
-      refreshDashboard();
-      renderRefreshIndicator();
-    };
+    el.onclick = handleRefreshClick;
   }
 }
 

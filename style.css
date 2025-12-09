@@ -4199,3 +4199,48 @@ body.light-bg .tooltip-chip.partial {
   border-color: rgba(202, 138, 4, 0.4);
 }
 
+/* --- System Failure Easter Egg --- */
+.refresh-indicator.system-failure {
+  animation: failure-blink 0.5s ease-in-out infinite;
+}
+
+.refresh-indicator .failure-text {
+  color: #ef4444;
+  -webkit-text-fill-color: #ef4444;
+  font-family: 'Courier New', monospace;
+  font-size: 6px;
+  font-weight: bold;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+}
+
+@media (min-width: 600px) {
+  .refresh-indicator .failure-text {
+    font-size: 7px;
+  }
+}
+
+@keyframes failure-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Glitch effect for system failure trigger */
+@keyframes failure-glitch {
+  0% { transform: translate(0); filter: hue-rotate(0deg); }
+  10% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+  20% { transform: translate(2px, -1px); filter: hue-rotate(180deg); }
+  30% { transform: translate(-1px, 2px); filter: hue-rotate(270deg); }
+  40% { transform: translate(1px, -2px); filter: hue-rotate(360deg); }
+  50% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+  60% { transform: translate(2px, -1px); filter: hue-rotate(180deg); }
+  70% { transform: translate(-1px, 2px); filter: hue-rotate(270deg); }
+  80% { transform: translate(1px, -2px); filter: hue-rotate(0deg); }
+  90% { transform: translate(-2px, 1px); }
+  100% { transform: translate(0); filter: hue-rotate(0deg); }
+}
+
+.glitch-effect {
+  animation: failure-glitch 0.3s ease-in-out;
+}
+
