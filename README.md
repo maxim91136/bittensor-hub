@@ -8,11 +8,11 @@ Started: November 3, 2025
 
 This project provides a compact dashboard for visualizing and monitoring key Bittensor metrics. It is designed for anyone interested in understanding the Bittensor ecosystem.
 
-**Latest release:** `v1.0.0-rc.27` — see [RELEASE_NOTES/v1.0.0-rc.27.md](RELEASE_NOTES/v1.0.0-rc.27.md) and [CHANGELOG.md](CHANGELOG.md) for details.
+**Latest release:** `v1.0.0-rc.27.3.1` — see [CHANGELOG.md](CHANGELOG.md) for details.
 
-> 🎯 **RC27 Highlight**: Fixed emission calculation bug & added halving support.
-> ⚡ Dynamic emission bounds auto-adjust for each halving event.
-> 📱 Mobile-optimized with compact, responsive design.
+> 🥚 **RC27.3.1 Highlight**: New Easter Egg! Triple-click the refresh countdown...
+> 🔴 Matrix-style "SYSTEM FAILURE" screen with red code rain
+> 📱 Enhanced refresh indicator with click-to-refresh
 
 ## Features
 
@@ -88,6 +88,11 @@ Track position changes across all Top 10 cards with visual indicators:
 - Mobile-first layout
 - Touch-friendly tooltips
 - Optimized for all screen sizes
+
+### 🥚 Easter Eggs
+- **"Wake up, Neo..."** - Random Matrix message appears after page load
+- **System Failure** - Triple-click the refresh countdown for a surprise
+- More hidden features to discover...
 
 ### ♿ Accessibility
 - `prefers-reduced-motion` support

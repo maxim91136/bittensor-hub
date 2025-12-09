@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.27.3.1 (2025-12-09)
+### Added
+- **System Failure Easter Egg**: Triple-click on refresh countdown triggers Matrix-style effect
+  - Full-screen red Matrix rain animation
+  - Glitching "SYSTEM FAILURE" text with CRT scan lines
+  - Triple-click or ESC to restore system
+- **Enhanced Refresh Indicator**: Clickable with hover effects and glow
+  - Single-click refreshes dashboard instantly
+  - Responsive sizing for all screen sizes
+
+### Improved
+- **Mobile Optimization**: Smaller refresh indicator on narrow screens (22px @ <420px)
+
 ## v1.0.0-rc.27 (2025-12-09)
 ### Fixed
 - **Emission Calculation Bug**: Fixed 752k TAO/day display caused by missing anomaly filter
