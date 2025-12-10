@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.28 (2025-12-10)
+### Added
+- **Binance API Integration**: Real-time price data (<1s delay vs 20+ min from Taostats)
+  - Primary source for TAO price, 24h change, and volume
+  - Fallback chain: Binance → Taostats → CoinGecko
+- **TAO vs BTC Comparison**: Toggle to compare TAO and BTC performance over time
+- **EUR Currency Support**: Toggle to display prices in Euros
+  - Synced toggle on both price pill and chart
+  - Live EUR/USD conversion rate from Binance
+- **Max Price Range**: View full price history (~600 days since Binance listing)
+- **Daily Chunking for History Data**: Improved storage efficiency
+  - Network history, issuance history, taostats history
+  - Automatic fallback to legacy keys for backwards compatibility
+
+### Performance
+- **Faster Data Updates**: Workflow intervals reduced from 15min to 5min
+- **Reduced API Calls**: Fear & Greed fetch reduced to 2x daily
+
+### Fixed
+- **Max Chart Labels**: Proper "Apr '24" format for long time ranges, 12 evenly spaced labels
+- **Mobile Responsive**: Chart toggles (EUR/BTC) wrap properly on narrow screens
+- **Leaderboard Tables**: Improved mobile display for Subnets, Validators, Wallets
+- **Price Consistency**: Market Conditions now uses Binance 24h change (same as pill)
+
+### Changed
+- **Price Source**: Binance is now primary (real-time), Taostats is fallback
+- **Disclaimer**: Updated to reflect Binance as "Price Data" source
+
 ## v1.0.0-rc.27.4.1 (2025-12-10)
 ### Fixed
 - **Leaderboard Ranking Changes**: ▲ ▼ NEW indicators now display correctly
