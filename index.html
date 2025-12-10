@@ -183,6 +183,45 @@
     </div>
   </div>
 
+  <!-- Price Chart Card - Position #2 after Market Conditions -->
+  <section class="dashboard-card loading" aria-labelledby="price-heading">
+    <div class="card-header">
+      <h2 id="price-heading">TAO Price History</h2>
+      <div class="chart-controls">
+        <div class="time-range-toggle">
+          <button class="time-btn" data-range="1">1D</button>
+          <button class="time-btn active" data-range="3">3D</button>
+          <button class="time-btn" data-range="7">7D</button>
+          <button class="time-btn" data-range="30">30D</button>
+          <button class="time-btn" data-range="60">60D</button>
+          <button class="time-btn" data-range="90">90D</button>
+          <button class="time-btn" data-range="365">1Y</button>
+          <button class="time-btn" data-range="max">Max</button>
+        </div>
+        <div class="chart-toggles">
+          <button id="eurToggle" class="time-btn" title="Show prices in EUR">EUR</button>
+          <button id="btcToggle" class="time-btn compare-toggle" title="Compare TAO vs BTC">BTC</button>
+          <button id="ethToggle" class="time-btn compare-toggle" title="Compare TAO vs ETH">ETH</button>
+          <button id="solToggle" class="time-btn compare-toggle" title="Compare TAO vs SOL">SOL</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="priceChart" aria-label="Price History Chart"></canvas>
+      <div class="chart-skeleton"></div>
+    </div>
+    <div id="priceRangeNote" class="chart-note" aria-live="polite"></div>
+    <!-- ATH/ATL Pills below chart -->
+    <div class="ath-atl-pills-row" style="display: flex; justify-content: space-between; gap: 12px; margin: 18px 0 0 0;">
+      <div id="atlPill" class="ath-atl-pill atl-pill" style="flex:1; background:rgba(239,68,68,0.04); color:#ef4444; border:1px solid rgba(239,68,68,0.13); border-radius:14px; padding:4px 10px; font-size:0.92em; font-weight:500; text-align:left;">
+        ATL: <span id="atlValue" style="font-size:0.97em;">—</span> <span id="atlDate" style="font-size:0.85em; font-weight:400; opacity:0.7;"></span>
+      </div>
+      <div id="athPill" class="ath-atl-pill ath-pill" style="flex:1; background:rgba(34,197,94,0.04); color:#22c55e; border:1px solid rgba(34,197,94,0.13); border-radius:14px; padding:4px 10px; font-size:0.92em; font-weight:500; text-align:left;">
+        ATH: <span id="athValue" style="font-size:0.97em;">—</span> <span id="athDate" style="font-size:0.85em; font-weight:400; opacity:0.7;"></span>
+      </div>
+    </div>
+  </section>
+
   <div class="stats-grid">
     <!-- 1. Subnets -->
     <div class="stat-card" id="subnetsCard">
@@ -468,44 +507,6 @@
       </div>
     </section>
 
-  <!-- Only one price chart card is shown -->
-    <section class="dashboard-card loading" aria-labelledby="price-heading">
-      <div class="card-header">
-        <h2 id="price-heading">TAO Price History</h2>
-        <div class="chart-controls">
-          <div class="time-range-toggle">
-            <button class="time-btn" data-range="1">1D</button>
-            <button class="time-btn active" data-range="3">3D</button>
-            <button class="time-btn" data-range="7">7D</button>
-            <button class="time-btn" data-range="30">30D</button>
-            <button class="time-btn" data-range="60">60D</button>
-            <button class="time-btn" data-range="90">90D</button>
-            <button class="time-btn" data-range="365">1Y</button>
-            <button class="time-btn" data-range="max">Max</button>
-          </div>
-          <div class="chart-toggles">
-            <button id="eurToggle" class="time-btn" title="Show prices in EUR">EUR</button>
-            <button id="btcToggle" class="time-btn compare-toggle" title="Compare TAO vs BTC">BTC</button>
-            <button id="ethToggle" class="time-btn compare-toggle" title="Compare TAO vs ETH">ETH</button>
-            <button id="solToggle" class="time-btn compare-toggle" title="Compare TAO vs SOL">SOL</button>
-          </div>
-        </div>
-      </div>
-      <div class="chart-container">
-        <canvas id="priceChart" aria-label="Price History Chart"></canvas>
-        <div class="chart-skeleton"></div>
-      </div>
-      <div id="priceRangeNote" class="chart-note" aria-live="polite"></div>
-      <!-- ATH/ATL Pills below chart -->
-      <div class="ath-atl-pills-row" style="display: flex; justify-content: space-between; gap: 12px; margin: 18px 0 0 0;">
-        <div id="atlPill" class="ath-atl-pill atl-pill" style="flex:1; background:rgba(239,68,68,0.04); color:#ef4444; border:1px solid rgba(239,68,68,0.13); border-radius:14px; padding:4px 10px; font-size:0.92em; font-weight:500; text-align:left;">
-          ATL: <span id="atlValue" style="font-size:0.97em;">—</span> <span id="atlDate" style="font-size:0.85em; font-weight:400; opacity:0.7;"></span>
-        </div>
-        <div id="athPill" class="ath-atl-pill ath-pill" style="flex:1; background:rgba(34,197,94,0.04); color:#22c55e; border:1px solid rgba(34,197,94,0.13); border-radius:14px; padding:4px 10px; font-size:0.92em; font-weight:500; text-align:left;">
-          ATH: <span id="athValue" style="font-size:0.97em;">—</span> <span id="athDate" style="font-size:0.85em; font-weight:400; opacity:0.7;"></span>
-        </div>
-      </div>
-    </section>
       <div class="last-update" id="lastUpdate"></div>
 
     <!-- Container for Fear & Greed and Miner Map Cards -->
