@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.28.1 (2025-12-10)
+### Documentation
+- **README.md**: Updated for RC28 features
+  - Added Price Chart section with new features
+  - Updated Network Metrics with real-time pricing info
+  - Updated Data Sources with Binance API details
+
 ## v1.0.0-rc.28 (2025-12-10)
 ### Added
 - **Binance API Integration**: Real-time price data (<1s delay vs 20+ min from Taostats)

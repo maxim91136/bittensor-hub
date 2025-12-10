@@ -8,19 +8,30 @@ Started: November 3, 2025
 
 This project provides a compact dashboard for visualizing and monitoring key Bittensor metrics. It is designed for anyone interested in understanding the Bittensor ecosystem.
 
-**Latest release:** `v1.0.0-rc.27.3.1` — see [CHANGELOG.md](CHANGELOG.md) for details.
+**Latest release:** `v1.0.0-rc.28.1` — see [CHANGELOG.md](CHANGELOG.md) for details.
 
-> 🥚 **RC27.3.1 Highlight**: New Easter Egg hidden somewhere...
-> 🔄 Enhanced refresh indicator with click-to-refresh
-> 📱 Mobile-optimized sizing
+> 🚀 **RC28 Highlights**:
+> - Real-time prices from Binance API (<1s delay)
+> - TAO vs BTC comparison toggle
+> - EUR currency support (pill + chart)
+> - Max price range (600+ days history)
 
 ## Features
 
 ### 📊 Network Metrics
 - **TAO price** with 24h change indicator and breathing animation
+- **Real-time pricing** from Binance API (<1 second delay)
+- **EUR/USD toggle** on price pill and chart (synced, persisted)
 - **Circulating Supply** tracking against the 21M cap
 - **Total Issuance** from on-chain data via Bittensor SDK
 - **Active Neurons** count across all subnets
+
+### 📈 Price Chart (RC28+)
+- **Multiple time ranges**: 1D, 7D, 30D, 90D, Max (~600 days)
+- **TAO vs BTC comparison**: Toggle to compare performance side-by-side
+- **EUR currency support**: View prices in Euros with live conversion
+- **Data sources**: Binance (primary), Taostats, CoinGecko (fallbacks)
+- **Smart labels**: Automatic date formatting based on time range
 
 ### 🎯 Market Conditions Intelligence (RC25+)
 Real-time market analysis card combining multiple data sources into actionable intelligence:
@@ -146,7 +157,9 @@ For questions or feedback, please open an [Issue](https://github.com/maxim91136/
 This dashboard is an independent, community-run project provided for informational purposes only and is not affiliated with, endorsed by, or certified by the Opentensor Foundation.
 
 - Primary data is acquired on-chain via the repository's network API (`/api/network`).
-- Price and supplementary supply metrics may be provided by third-party services (e.g. Taostats, CoinGecko) as fallbacks; these can be subject to rate limits and may not always be real-time.
+- **Price data** is sourced from Binance API (real-time, <1s delay) with Taostats and CoinGecko as fallbacks.
+- **EUR/USD conversion** rates are fetched live from Binance EURUSDT ticker.
+- Price and supplementary supply metrics may be provided by third-party services; these can be subject to rate limits.
 - This project is not financial, legal, or investment advice. Always verify critical information using authoritative sources and consult a professional before acting on any data shown here.
 - All data is provided "as-is" without warranty of any kind; the project maintainer disclaims liability for losses resulting from the use of this site.
 - This site uses Cloudflare for security and performance; personal data is not stored by the project unless explicitly submitted by you.
