@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.27.4.1 (2025-12-10)
+### Fixed
+- **Leaderboard Ranking Changes**: ▲ ▼ NEW indicators now display correctly
+  - Fixed history data parsing (uses `entries` array with `id` field)
+  - Changed comparison from last 30 min to last 24h for meaningful changes
+  - Applies to: Subnets, Validators, Wallets leaderboards
+
 ## v1.0.0-rc.27.4 (2025-12-10)
 ### Fixed
 - **Bittensor SDK v10.0 Compatibility**: Full migration to SDK v10.0 breaking changes
