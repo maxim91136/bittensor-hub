@@ -3734,7 +3734,7 @@ document.addEventListener('DOMContentLoaded', () => {
     body,
     header,
     refreshIndicator,
-    ...Array.from(document.querySelectorAll('.dashboard-card, .stat-card, .market-conditions-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, #soundToggleBtn, .stat-value, .info-badge, .pill-value, .disclaimer-card, .site-footer'))
+    ...Array.from(document.querySelectorAll('.dashboard-card, .stat-card, .market-conditions-card, .price-pill, .halving-pill, .ath-atl-pill, .whitepaper-btn, #bgToggleBtn, #soundToggleBtn, .stat-value, .info-badge, .pill-value, .disclaimer-card, .site-footer, .pill-currency-toggle'))
   ];
   function setLightMode(active) {
     elementsToToggle.forEach(el => {

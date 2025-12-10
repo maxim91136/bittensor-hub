@@ -627,38 +627,53 @@ body.light-bg #maxSupplyScribble {
 
 /* Currency toggle button in price pill */
 .pill-currency-toggle {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
   border-radius: 4px;
-  color: #888;
-  font-size: 0.75em;
+  color: #aaa;
+  font-size: 0.85em;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 3px 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-left: 4px;
+  margin-left: 6px;
 }
 .pill-currency-toggle:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.25);
   color: #fff;
 }
 .pill-currency-toggle.active {
-  background: rgba(34,197,94,0.3);
-  border-color: rgba(34,197,94,0.5);
+  background: rgba(34,197,94,0.35);
+  border-color: rgba(34,197,94,0.6);
   color: #22c55e;
+}
+/* Light Mode: currency toggle */
+.pill-currency-toggle.light-bg {
+  background: rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.25);
+  color: #555;
+}
+.pill-currency-toggle.light-bg:hover {
+  background: rgba(0,0,0,0.15);
+  color: #222;
+}
+.pill-currency-toggle.light-bg.active {
+  background: rgba(22,163,74,0.2);
+  border-color: rgba(22,163,74,0.5);
+  color: #16a34a;
 }
 
 /* Mobile: compact currency toggle */
 @media (max-width: 480px) {
   .pill-currency-toggle {
-    padding: 1px 4px;
-    font-size: 0.7em;
-    margin-left: 2px;
+    padding: 2px 5px;
+    font-size: 0.75em;
+    margin-left: 3px;
   }
   .price-pill {
-    gap: 4px;
+    gap: 5px;
     padding-left: 10px;
-    padding-right: 8px;
+    padding-right: 10px;
   }
   .price-pill .price-change {
     font-size: 0.8em;
