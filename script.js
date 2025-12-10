@@ -384,6 +384,7 @@ let priceChart = null;
 let lastPrice = null;
 let currentPriceRange = localStorage.getItem('priceRange') || '3';
 let isLoadingPrice = false;
+let showBtcComparison = localStorage.getItem('showBtcComparison') === 'true';
 // Track whether main dashboard init has completed
 window._dashboardInitialized = false;
 // Guard to prevent concurrent init runs
@@ -1623,6 +1624,29 @@ async function fetchPriceHistory(range = '7') {
   return null;
 }
 
+// BTC price history for TAO vs BTC comparison
+async function fetchBtcPriceHistory(range = '7') {
+  const key = parseInt(range, 10) || 7;
+  const cacheKey = `btc_${key}`;
+  const cached = getCachedPrice?.(cacheKey);
+  if (cached) return cached;
+
+  const interval = key <= 7 ? '' : '&interval=daily';
+  const endpoint = `${COINGECKO_API}/coins/bitcoin/market_chart?vs_currency=usd&days=${key}${interval}`;
+  try {
+    const res = await fetch(endpoint, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.prices?.length) return null;
+    if (window._debug) console.debug(`BTC price history (${key}d):`, data.prices.length, 'points');
+    setCachedPrice?.(cacheKey, data.prices);
+    return data.prices;
+  } catch (e) {
+    if (window._debug) console.debug('BTC price history fetch failed:', e);
+    return null;
+  }
+}
+
 async function fetchCirculatingSupply() {
   const taostats = await fetchTaostats();
   if (taostats && taostats.circulating_supply) {
@@ -2842,55 +2866,131 @@ function startAutoRefresh() {
 })();
 
 // ===== Initialization of Price Chart =====
-function createPriceChart(priceHistory, range) {
+function createPriceChart(priceHistory, range, btcHistory = null) {
   const canvas = document.getElementById('priceChart');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  
+
   // Format labels based on timeframe
   const rangeNum = parseInt(range, 10) || 7;
   const labels = priceHistory.map(([timestamp]) => {
     const date = new Date(timestamp);
     if (rangeNum <= 1) {
-      // 1D: Show hours only (e.g., "14:00")
       return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
     } else if (rangeNum <= 3) {
-      // 3D: Show day + time (e.g., "Nov 29 14:00")
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + 
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
              date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
     } else {
-      // 7D+: Show month/day (e.g., "11/29")
       return `${date.getMonth()+1}/${date.getDate()}`;
     }
   });
-  const data = priceHistory.map(([_, price]) => price);
 
   // Only destroy if chart object and method exist
   if (window.priceChart && typeof window.priceChart.destroy === 'function') {
     window.priceChart.destroy();
   }
 
+  // Build datasets
+  const datasets = [];
+
+  // If BTC comparison enabled, normalize both to % change
+  if (showBtcComparison && btcHistory && btcHistory.length > 0) {
+    // Normalize TAO: % change from first value
+    const taoStart = priceHistory[0]?.[1] || 1;
+    const taoNormalized = priceHistory.map(([_, price]) => ((price - taoStart) / taoStart) * 100);
+
+    // Align BTC data to TAO timestamps
+    const btcMap = new Map(btcHistory.map(([ts, price]) => [Math.floor(ts / 60000), price]));
+    const btcAligned = priceHistory.map(([ts]) => {
+      const key = Math.floor(ts / 60000);
+      // Find closest BTC price within 30 min window
+      for (let i = 0; i <= 30; i++) {
+        if (btcMap.has(key - i)) return btcMap.get(key - i);
+        if (btcMap.has(key + i)) return btcMap.get(key + i);
+      }
+      return null;
+    });
+
+    // Normalize BTC: % change from first valid value
+    const btcStartIdx = btcAligned.findIndex(v => v !== null);
+    const btcStart = btcAligned[btcStartIdx] || 1;
+    const btcNormalized = btcAligned.map(price => price !== null ? ((price - btcStart) / btcStart) * 100 : null);
+
+    datasets.push({
+      label: 'TAO %',
+      data: taoNormalized,
+      borderColor: '#22c55e',
+      backgroundColor: 'rgba(34,197,94,0.1)',
+      tension: 0.2,
+      pointRadius: 0,
+      fill: true,
+      yAxisID: 'y'
+    });
+
+    datasets.push({
+      label: 'BTC %',
+      data: btcNormalized,
+      borderColor: '#f7931a',
+      backgroundColor: 'rgba(247,147,26,0.05)',
+      tension: 0.2,
+      pointRadius: 0,
+      fill: false,
+      borderDash: [5, 5],
+      yAxisID: 'y'
+    });
+  } else {
+    // Standard TAO price chart (USD)
+    const data = priceHistory.map(([_, price]) => price);
+    datasets.push({
+      label: 'TAO Price',
+      data,
+      borderColor: '#22c55e',
+      backgroundColor: 'rgba(34,197,94,0.1)',
+      tension: 0.2,
+      pointRadius: 0,
+      fill: true
+    });
+  }
+
+  const showLegend = showBtcComparison && btcHistory && btcHistory.length > 0;
+
   window.priceChart = new Chart(ctx, {
     type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: 'TAO Price',
-        data,
-        borderColor: '#22c55e',
-        backgroundColor: 'rgba(34,197,94,0.1)',
-        tension: 0.2,
-        pointRadius: 0,
-        fill: true
-      }]
-    },
+    data: { labels, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: {
+          display: showLegend,
+          position: 'top',
+          labels: { color: '#aaa', font: { size: 11 } }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const val = context.parsed.y;
+              if (showLegend) {
+                return `${context.dataset.label}: ${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
+              }
+              return `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+          }
+        }
+      },
       scales: {
-        x: { display: true, grid: { display: false } },
-        y: { display: true, grid: { color: '#222' } }
+        x: { display: true, grid: { display: false }, ticks: { color: '#888' } },
+        y: {
+          display: true,
+          grid: { color: '#222' },
+          ticks: {
+            color: '#888',
+            callback: function(value) {
+              if (showLegend) return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+              return `$${value.toLocaleString()}`;
+            }
+          }
+        }
       }
     }
   });
@@ -3098,8 +3198,9 @@ async function initDashboard() {
 
   const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
   const priceHistory = await fetchPriceHistory(currentPriceRange);
+  const btcHistory = showBtcComparison ? await fetchBtcPriceHistory(currentPriceRange) : null;
   if (priceHistory) {
-    createPriceChart(priceHistory, currentPriceRange);
+    createPriceChart(priceHistory, currentPriceRange, btcHistory);
   }
     startHalvingCountdown();
     startAutoRefresh();
@@ -3334,7 +3435,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Time range buttons for the chart
-    document.querySelectorAll('.time-btn').forEach(btn => {
+    document.querySelectorAll('.time-btn[data-range]').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const range = btn.getAttribute('data-range'); // "7", "30", "365"
         if (range === currentPriceRange) return; // No reload if same
@@ -3352,8 +3453,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Load data and redraw chart
         const priceHistory = await fetchPriceHistory(currentPriceRange);
+        const btcHistory = showBtcComparison ? await fetchBtcPriceHistory(currentPriceRange) : null;
         if (priceHistory) {
-          createPriceChart(priceHistory, currentPriceRange);
+          createPriceChart(priceHistory, currentPriceRange, btcHistory);
         }
         // Hide skeleton
         if (priceCard) priceCard.classList.remove('loading');
@@ -3362,10 +3464,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ensure the correct active button is set from persisted preference (if any)
     try {
-      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.time-btn[data-range]').forEach(b => b.classList.remove('active'));
       const activeBtn = document.querySelector(`.time-btn[data-range="${currentPriceRange}"]`);
       if (activeBtn) activeBtn.classList.add('active');
     } catch (e) { /* ignore */ }
+
+    // BTC comparison toggle button
+    const btcToggle = document.getElementById('btcToggle');
+    if (btcToggle) {
+      // Set initial state from localStorage
+      if (showBtcComparison) btcToggle.classList.add('active');
+
+      btcToggle.addEventListener('click', async () => {
+        showBtcComparison = !showBtcComparison;
+        localStorage.setItem('showBtcComparison', showBtcComparison);
+        btcToggle.classList.toggle('active', showBtcComparison);
+
+        // Reload chart with/without BTC
+        const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
+        if (priceCard) priceCard.classList.add('loading');
+
+        const priceHistory = await fetchPriceHistory(currentPriceRange);
+        const btcHistory = showBtcComparison ? await fetchBtcPriceHistory(currentPriceRange) : null;
+        if (priceHistory) {
+          createPriceChart(priceHistory, currentPriceRange, btcHistory);
+        }
+
+        if (priceCard) priceCard.classList.remove('loading');
+      });
+    }
 
     // Info badge tooltip for API status card: preserve any existing (HTML) tooltip
     // Only set a default if the attribute is missing or suspiciously short (regression guard).
