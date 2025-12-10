@@ -317,7 +317,8 @@ def fetch_top_subnets() -> Dict[str, object]:
 
     subtensor = bt.Subtensor(network=NETWORK)
     try:
-        subnets = subtensor.get_subnets()
+        # SDK v10.0: get_subnets() → get_all_subnet_netuids()
+        subnets = subtensor.get_all_subnet_netuids()
         # Normalize subnets into a Python list to avoid numpy/scalar issues
         try:
             subnets = list(subnets)
@@ -421,14 +422,15 @@ def fetch_top_subnets() -> Dict[str, object]:
     for netuid in subnets:
         try:
             # Coerce netuid into a plain int to avoid passing numpy/int-like
-            # types into `subtensor.metagraph` which may perform boolean
+            # types into bt.Metagraph which may perform boolean
             # checks on inputs and trigger ambiguous-truth errors.
             try:
                 netuid_i = int(netuid)
             except Exception:
                 netuid_i = netuid
 
-            metagraph = subtensor.metagraph(netuid_i)
+            # SDK v10.0: subtensor.metagraph() → bt.Metagraph class
+            metagraph = bt.Metagraph(netuid=netuid_i, network=NETWORK, lite=True)
 
             # Normalize `uids` into a plain Python list. Some metagraphs
             # return numpy arrays or other sequences which are ambiguous

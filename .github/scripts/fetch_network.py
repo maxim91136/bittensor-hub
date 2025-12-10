@@ -19,7 +19,8 @@ def fetch_metrics() -> Dict[str, Any]:
         block = None
 
     try:
-        subnets = subtensor.get_subnets()
+        # SDK v10.0: get_subnets() → get_all_subnet_netuids()
+        subnets = subtensor.get_all_subnet_netuids()
         total_subnets = len(subnets)
     except Exception as e:
         print(f"Subnet fetch failed: {e}", file=sys.stderr)
@@ -30,7 +31,8 @@ def fetch_metrics() -> Dict[str, Any]:
     total_neurons = 0
     for netuid in subnets:
         try:
-            metagraph = subtensor.metagraph(netuid)
+            # SDK v10.0: metagraph() → Metagraph class
+            metagraph = bt.Metagraph(netuid=netuid, network=NETWORK, lite=True)
             # Count validators
             if hasattr(metagraph, 'validator_permit'):
                 total_validators += sum(1 for uid in metagraph.uids if metagraph.validator_permit[uid])
