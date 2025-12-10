@@ -1,10 +1,42 @@
+// Helper: Get date string for chunk key (YYYY-MM-DD)
+function getChunkKey(date = new Date()) {
+  const d = new Date(date);
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  return `taostats_history_${yyyy}-${mm}-${dd}`;
+}
+
+// Helper: Get chunk keys for last N days
+function getChunkKeys(days = 7) {
+  const keys = [];
+  const now = new Date();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now);
+    d.setUTCDate(d.getUTCDate() - i);
+    keys.push(getChunkKey(d));
+  }
+  return keys;
+}
+
+// Helper: Parse KV value to array
+function parseHistory(raw) {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === 'object') return [parsed];
+  } catch (e) { /* ignore */ }
+  return [];
+}
+
 export async function onRequest(context) {
   const cors = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': '*',
     'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'public, max-age=60, s-maxage=120'
+    'Cache-Control': 'public, max-age=30, s-maxage=60'
   };
 
   if (context.request.method === 'OPTIONS') {
@@ -18,14 +50,56 @@ export async function onRequest(context) {
 
   try {
     if (context.request.method === 'GET') {
-      const raw = await KV.get('taostats_history');
-      if (!raw) {
+      const url = new URL(context.request.url);
+      const days = Math.min(parseInt(url.searchParams.get('days') || '7', 10), 30);
+      const limit = parseInt(url.searchParams.get('limit') || '0', 10);
+
+      // Try to load chunked data first
+      const chunkKeys = getChunkKeys(days);
+      const chunks = await Promise.all(chunkKeys.map(k => KV.get(k)));
+
+      let combined = [];
+      let usedChunks = false;
+
+      for (let i = 0; i < chunks.length; i++) {
+        if (chunks[i]) {
+          usedChunks = true;
+          combined = combined.concat(parseHistory(chunks[i]));
+        }
+      }
+
+      // Fallback to legacy single key if no chunks found
+      if (!usedChunks) {
+        const legacyRaw = await KV.get('taostats_history');
+        if (legacyRaw) {
+          combined = parseHistory(legacyRaw);
+        }
+      }
+
+      if (combined.length === 0) {
         return new Response(JSON.stringify({ error: 'No Taostats history found', _source: 'taostats', _status: 'empty' }), {
           status: 404,
           headers: cors
         });
       }
-      return new Response(raw, { status: 200, headers: cors });
+
+      // Sort by timestamp and deduplicate
+      const seen = new Set();
+      combined = combined
+        .filter(e => {
+          const k = e?._timestamp || JSON.stringify(e);
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        })
+        .sort((a, b) => new Date(a._timestamp || 0) - new Date(b._timestamp || 0));
+
+      // Apply limit if specified
+      if (limit > 0 && combined.length > limit) {
+        combined = combined.slice(-limit);
+      }
+
+      return new Response(JSON.stringify(combined), { status: 200, headers: cors });
     }
 
     if (context.request.method === 'POST') {
@@ -38,7 +112,7 @@ export async function onRequest(context) {
         }
       }
 
-      // Parse incoming JSON. Accept an object or an array.
+      // Parse incoming JSON
       let payload;
       try {
         payload = await context.request.json();
@@ -48,53 +122,66 @@ export async function onRequest(context) {
 
       // Normalize to array of entries
       const newEntries = Array.isArray(payload) ? payload : [payload];
-      // Read existing
-      let current = [];
-      const raw = await KV.get('taostats_history');
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            current = parsed;
-          } else if (parsed && typeof parsed === 'object') {
-            // Support older/legacy buckets that stored a single object
-            current = [parsed];
-          }
-        } catch (e) {
-          // ignore parse error and start fresh
-        }
-      }
 
-      // Merge sequentially: we keep current oldest->newest, then append newer ones
-      const seen = new Set();
-      for (const e of current) {
-        const k = (e && e._timestamp) ? e._timestamp : JSON.stringify(e);
-        seen.add(k);
-      }
+      // Add timestamps if missing
       for (const e of newEntries) {
-        const k = (e && e._timestamp) ? e._timestamp : JSON.stringify(e);
-        if (seen.has(k)) continue;
-        // ensure entry has a timestamp
         if (e && !e._timestamp) {
           e._timestamp = new Date().toISOString();
         }
+      }
+
+      // Write to today's chunk only (much smaller race window)
+      const todayKey = getChunkKey();
+
+      // Read today's chunk
+      let current = parseHistory(await KV.get(todayKey));
+
+      // Merge with deduplication
+      const seen = new Set(current.map(e => e?._timestamp || JSON.stringify(e)));
+      for (const e of newEntries) {
+        const k = e?._timestamp || JSON.stringify(e);
+        if (seen.has(k)) continue;
         current.push(e);
         seen.add(k);
       }
 
-      // Bound max entries
-      const maxEntries = parseInt(context.env?.HISTORY_MAX_ENTRIES || '10000', 10);
-      if (current.length > maxEntries) current = current.slice(-maxEntries);
+      // Sort by timestamp
+      current.sort((a, b) => new Date(a._timestamp || 0) - new Date(b._timestamp || 0));
 
+      // Bound max entries per chunk (1 day = ~288 entries at 5min intervals)
+      const maxPerChunk = parseInt(context.env?.CHUNK_MAX_ENTRIES || '500', 10);
+      if (current.length > maxPerChunk) current = current.slice(-maxPerChunk);
+
+      // Write to today's chunk
+      await KV.put(todayKey, JSON.stringify(current));
+
+      // Also write to legacy key for backward compatibility (parallel operation)
       try {
-        await KV.put('taostats_history', JSON.stringify(current));
+        const legacyRaw = await KV.get('taostats_history');
+        let legacy = parseHistory(legacyRaw);
+        const legacySeen = new Set(legacy.map(e => e?._timestamp || JSON.stringify(e)));
+        for (const e of newEntries) {
+          const k = e?._timestamp || JSON.stringify(e);
+          if (legacySeen.has(k)) continue;
+          legacy.push(e);
+        }
+        legacy.sort((a, b) => new Date(a._timestamp || 0) - new Date(b._timestamp || 0));
+        const maxLegacy = parseInt(context.env?.HISTORY_MAX_ENTRIES || '10000', 10);
+        if (legacy.length > maxLegacy) legacy = legacy.slice(-maxLegacy);
+        await KV.put('taostats_history', JSON.stringify(legacy));
       } catch (e) {
-        return new Response(JSON.stringify({ error: 'Failed to write KV', details: e.message }), { status: 500, headers: cors });
+        // Legacy write failed, but chunk succeeded - continue
+        console.error('Legacy KV write failed:', e.message);
       }
 
-      return new Response(JSON.stringify({ success: true, written: newEntries.length, total: current.length }), { status: 200, headers: cors });
+      return new Response(JSON.stringify({
+        success: true,
+        written: newEntries.length,
+        chunk: todayKey,
+        chunkTotal: current.length
+      }), { status: 200, headers: cors });
     }
-    // unsupported method
+
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: cors });
   } catch (e) {
     return new Response(JSON.stringify({ error: 'Failed to fetch/append Taostats history', details: e.message }), {
