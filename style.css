@@ -3493,38 +3493,16 @@ body.light-bg .map-preview-card .map-attribution {
   color: #888;
 }
 
-/* Responsive adjustments */
+/* ===== Responsive Styles für Subnets-Tabelle (4 Spalten) ===== */
 @media (max-width: 768px) {
   .subnets-display-table {
     font-size: 0.88em;
+    table-layout: auto;
   }
 
   .subnets-display-table th,
   .subnets-display-table td {
-    padding: 10px 4px;
-  }
-
-  .subnets-display-table th.rank-col {
-    width: 14%;
-    padding: 10px 2px;
-  }
-
-  .subnets-display-table th.change-col {
-    width: 10%;
-    padding: 10px 2px;
-  }
-
-  .subnets-display-table th.subnet-col {
-    width: 30%;
-    padding-left: 4px;
-  }
-
-  .subnets-display-table th.share-col {
-    width: 23%;
-  }
-
-  .subnets-display-table th.daily-col {
-    width: 23%;
+    padding: 10px 5px;
   }
 
   .subnets-display-table .sn-id {
@@ -3532,9 +3510,25 @@ body.light-bg .map-preview-card .map-attribution {
   }
 }
 
+@media (max-width: 600px) {
+  .subnets-display-table {
+    font-size: 0.82em;
+  }
+
+  .subnets-display-table th,
+  .subnets-display-table td {
+    padding: 10px 3px;
+  }
+
+  .subnets-display-table .rank-col {
+    min-width: 50px;
+    max-width: 70px;
+  }
+}
+
 @media (max-width: 480px) {
   .subnets-display-table {
-    font-size: 0.78em;
+    font-size: 0.75em;
   }
 
   .subnets-display-table th,
@@ -3542,36 +3536,13 @@ body.light-bg .map-preview-card .map-attribution {
     padding: 8px 2px;
   }
 
-  .subnets-display-table th.rank-col {
-    width: 14%;
-    padding: 8px 1px;
-  }
-
-  .subnets-display-table th.change-col {
-    width: 10%;
-    padding: 8px 1px;
-  }
-
-  .subnets-display-table th.subnet-col {
-    width: 30%;
-    padding-left: 2px;
-  }
-
-  .subnets-display-table th.share-col {
-    width: 22%;
-  }
-
-  .subnets-display-table th.daily-col {
-    width: 24%;
-  }
-
-  .subnets-display-table .change-col {
-    font-size: 0.8em;
-    padding: 8px 1px;
+  .subnets-display-table .rank-col {
+    min-width: 45px;
+    max-width: 60px;
   }
 
   .subnets-display-table .rank-new {
-    font-size: 0.65em;
+    font-size: 0.7em;
   }
 }
 
