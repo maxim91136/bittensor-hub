@@ -3140,14 +3140,16 @@ function createPriceChart(priceHistory, range, comparisonData = {}) {
       });
     }
 
-    // Add ETH comparison (gray/silver)
+    // Add ETH comparison (gray/silver, darker in light mode)
     if (showEthComparison && ethHistory?.length) {
       const ethNormalized = normalizeToPercent(alignToTao(ethHistory));
+      const isLightMode = document.body.classList.contains('light-bg');
+      const ethColor = isLightMode ? '#555' : '#b0b0b0';
       datasets.push({
         label: 'ETH %',
         data: ethNormalized,
-        borderColor: '#b0b0b0',
-        backgroundColor: 'rgba(160,160,160,0.05)',
+        borderColor: ethColor,
+        backgroundColor: isLightMode ? 'rgba(85,85,85,0.05)' : 'rgba(160,160,160,0.05)',
         tension: 0.2,
         pointRadius: 0,
         fill: false,
