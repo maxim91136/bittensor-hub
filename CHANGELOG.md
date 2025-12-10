@@ -3,7 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
--
+### Infrastructure
+- **Cloudflare Workers Paid Plan**: Upgraded from free tier due to KV storage and request limits
+  - Enables larger history datasets and more frequent updates
+  - Supports chunked daily storage for issuance, network, and taostats history
 
 ## v1.0.0-rc.28.1 (2025-12-10)
 ### Documentation
