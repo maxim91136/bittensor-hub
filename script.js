@@ -1766,10 +1766,18 @@ function updateTaoPrice(priceData) {
   const priceEl = document.getElementById('taoPrice');
   const changeEl = document.getElementById('priceChange');
   const pricePill = document.getElementById('taoPricePill');
-  
+
+  // Store for re-rendering when EUR toggle changes
+  window._lastPriceData = priceData;
+
   if (!priceEl) return;
     if (priceData.price) {
-      priceEl.textContent = formatPrice(priceData.price);
+      // Show EUR or USD based on toggle
+      const displayPrice = showEurPrices && eurUsdRate
+        ? priceData.price / eurUsdRate
+        : priceData.price;
+      const symbol = showEurPrices ? '€' : '$';
+      priceEl.textContent = `${symbol}${displayPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       priceEl.classList.remove('skeleton-text');
       if (changeEl && priceData.change24h !== undefined && priceData.change24h !== null) {
         const change = priceData.change24h;
@@ -2507,6 +2515,11 @@ async function refreshDashboard() {
   window._priceSource = taoPrice?._source || null;
   if (window._debug) console.log('DEBUG lastUpdated:', lastUpdated, 'taoPrice.last_updated:', taoPrice?.last_updated, 'source:', taoPrice?._source);
 
+  // Fetch EUR rate if needed for pill display
+  if (showEurPrices && !eurUsdRate) {
+    await fetchEurUsdRate();
+  }
+
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
 
@@ -3143,6 +3156,11 @@ async function initDashboard() {
   window._lastUpdated = lastUpdated;
   window._priceSource = taoPrice?._source || null;
 
+  // Fetch EUR rate if needed for pill display
+  if (showEurPrices && !eurUsdRate) {
+    await fetchEurUsdRate();
+  }
+
   await updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
 
@@ -3646,6 +3664,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const btcHistory = showBtcComparison ? await fetchBtcPriceHistory(currentPriceRange) : null;
         if (priceHistory) {
           createPriceChart(priceHistory, currentPriceRange, btcHistory);
+        }
+
+        // Also update the price pill with new currency
+        if (window._lastPriceData) {
+          updateTaoPrice(window._lastPriceData);
         }
 
         if (priceCard) priceCard.classList.remove('loading');
