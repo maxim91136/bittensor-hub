@@ -2385,6 +2385,13 @@ body.light-bg .fng-card.fng-red .barometer-class {
   border-color: rgba(153, 69, 255, 0.4);
 }
 
+/* Light mode: darker ETH for better contrast */
+body.light-bg .time-btn.compare-toggle.active[id="ethToggle"] {
+  color: #555 !important;
+  background: rgba(85, 85, 85, 0.15) !important;
+  border-color: rgba(85, 85, 85, 0.4);
+}
+
 /* Mobile: wrap time buttons and toggles */
 @media (max-width: 600px) {
   .chart-controls {
