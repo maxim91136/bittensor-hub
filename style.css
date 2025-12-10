@@ -2279,6 +2279,33 @@ body.light-bg .fng-card.fng-red .barometer-class {
   background: var(--glow);
 }
 
+/* Chart toggle buttons (EUR, BTC) */
+.chart-toggles {
+  display: inline-flex;
+  gap: clamp(4px, 1vw, 6px);
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid #333;
+}
+
+/* Mobile: wrap time buttons and move toggles to new row */
+@media (max-width: 600px) {
+  .time-range-toggle {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .chart-toggles {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+    padding-left: 0;
+    padding-top: 8px;
+    margin-top: 4px;
+    border-left: none;
+    border-top: 1px solid #333;
+  }
+}
+
 /* Duplicate dynamic-tooltip block removed (canonical block defined earlier incl. .wide/.persistent) */
 
 .info-badge {
