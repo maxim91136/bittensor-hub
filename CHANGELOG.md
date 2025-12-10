@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.27.4 (2025-12-10)
+### Fixed
+- **Bittensor SDK v10.0 Compatibility**: Full migration to SDK v10.0 breaking changes
+  - `bt.subtensor()` → `bt.Subtensor()` (PascalCase)
+  - `get_subnets()` → `get_all_subnets_netuid()`
+  - `bt.Metagraph()` class → `subtensor.metagraph(netuid, mechid=0)` method
+
+### Technical
+- Updated `fetch_network.py` and `fetch_top_subnets.py` for SDK v10.0
+- Fixes "Subnets: 0, Validators: 0, Neurons: 0" display issue
+
 ## v1.0.0-rc.27.3.1 (2025-12-09)
 ### Added
 - **New Easter Egg**: Hidden Matrix-themed surprise - can you find it?
