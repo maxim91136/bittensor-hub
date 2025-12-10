@@ -3605,7 +3605,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Fetch current data and history in parallel
       const [currentRes, historyRes] = await Promise.all([
         fetch('/api/top_subnets'),
-        fetch('/api/top_subnets_history?limit=2')
+        fetch('/api/top_subnets_history?limit=96')  // ~24h of history at 15min intervals
       ]);
 
       if (!currentRes.ok) throw new Error('Failed to fetch top subnets');
@@ -3623,9 +3623,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (historyRes.ok) {
           const historyData = await historyRes.json();
           const history = historyData.history || [];
-          // Get the second-to-last snapshot (previous state)
-          if (history.length >= 2) {
-            const prevSnapshot = history[history.length - 2];
+          // Get the oldest snapshot in history (for 24h comparison)
+          if (history.length >= 1) {
+            const prevSnapshot = history[0];  // First = oldest
             // History stores in 'entries' array with 'id' for netuid
             const prevSubnets = prevSnapshot.entries || prevSnapshot.top_subnets || [];
             prevSubnets.forEach((s, idx) => {
@@ -3698,7 +3698,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Fetch current data and history in parallel
       const [currentRes, historyRes] = await Promise.all([
         fetch('/api/top_validators'),
-        fetch('/api/top_validators_history?limit=2')
+        fetch('/api/top_validators_history?limit=96')  // ~24h of history
       ]);
 
       if (!currentRes.ok) throw new Error('Failed to fetch top validators');
@@ -3716,9 +3716,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (historyRes.ok) {
           const historyData = await historyRes.json();
           const history = historyData.history || [];
-          // Get the second-to-last snapshot (previous state)
-          if (history.length >= 2) {
-            const prevSnapshot = history[history.length - 2];
+          // Get the oldest snapshot in history (for 24h comparison)
+          if (history.length >= 1) {
+            const prevSnapshot = history[0];  // First = oldest
             // History stores in 'entries' array with 'id' for hotkey
             const prevValidators = prevSnapshot.entries || prevSnapshot.top_validators || [];
             prevValidators.forEach((v, idx) => {
@@ -3793,7 +3793,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Fetch current data and history in parallel
       const [currentRes, historyRes] = await Promise.all([
         fetch('/api/top_wallets'),
-        fetch('/api/top_wallets_history?limit=2')
+        fetch('/api/top_wallets_history?limit=96')  // ~24h of history
       ]);
 
       if (!currentRes.ok) throw new Error('Failed to fetch top wallets');
@@ -3811,9 +3811,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (historyRes.ok) {
           const historyData = await historyRes.json();
           const history = historyData.history || [];
-          // Get the second-to-last snapshot (previous state)
-          if (history.length >= 2) {
-            const prevSnapshot = history[history.length - 2];
+          // Get the oldest snapshot in history (for 24h comparison)
+          if (history.length >= 1) {
+            const prevSnapshot = history[0];  // First = oldest
             // History stores in 'entries' or 'top_wallets' array
             const prevWallets = prevSnapshot.entries || prevSnapshot.top_wallets || [];
             prevWallets.forEach((w, idx) => {
