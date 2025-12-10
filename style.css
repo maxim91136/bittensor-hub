@@ -2375,14 +2375,14 @@ body.light-bg .fng-card.fng-red .barometer-class {
   border-color: rgba(247, 147, 26, 0.5);
 }
 .time-btn.compare-toggle.active[id="ethToggle"] {
-  color: #a8b5ff !important;
-  background: rgba(98, 126, 234, 0.25) !important;
-  border-color: rgba(98, 126, 234, 0.5);
+  color: #b0b0b0 !important;
+  background: rgba(160, 160, 160, 0.2) !important;
+  border-color: rgba(160, 160, 160, 0.5);
 }
 .time-btn.compare-toggle.active[id="solToggle"] {
-  color: #14f195 !important;
-  background: rgba(20, 241, 149, 0.2) !important;
-  border-color: rgba(20, 241, 149, 0.4);
+  color: #9945ff !important;
+  background: rgba(153, 69, 255, 0.2) !important;
+  border-color: rgba(153, 69, 255, 0.4);
 }
 
 /* Mobile: wrap time buttons and toggles */

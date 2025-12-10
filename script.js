@@ -3140,14 +3140,14 @@ function createPriceChart(priceHistory, range, comparisonData = {}) {
       });
     }
 
-    // Add ETH comparison
+    // Add ETH comparison (gray/silver)
     if (showEthComparison && ethHistory?.length) {
       const ethNormalized = normalizeToPercent(alignToTao(ethHistory));
       datasets.push({
         label: 'ETH %',
         data: ethNormalized,
-        borderColor: '#627eea',
-        backgroundColor: 'rgba(98,126,234,0.05)',
+        borderColor: '#b0b0b0',
+        backgroundColor: 'rgba(160,160,160,0.05)',
         tension: 0.2,
         pointRadius: 0,
         fill: false,
@@ -3156,14 +3156,14 @@ function createPriceChart(priceHistory, range, comparisonData = {}) {
       });
     }
 
-    // Add SOL comparison
+    // Add SOL comparison (purple)
     if (showSolComparison && solHistory?.length) {
       const solNormalized = normalizeToPercent(alignToTao(solHistory));
       datasets.push({
         label: 'SOL %',
         data: solNormalized,
-        borderColor: '#14f195',
-        backgroundColor: 'rgba(20,241,149,0.05)',
+        borderColor: '#9945ff',
+        backgroundColor: 'rgba(153,69,255,0.05)',
         tension: 0.2,
         pointRadius: 0,
         fill: false,
