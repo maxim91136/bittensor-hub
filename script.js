@@ -4070,9 +4070,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const html = [
             '<div>Status of all data sources powering the dashboard</div>',
             '<br/>',
-            '<div><span class="tooltip-chip ok">OK</span> Taostats</div>',
-            '<div><span class="tooltip-chip error">Error</span> CoinGecko</div>',
             '<div><span class="tooltip-chip ok">OK</span> Bittensor SDK</div>',
+            '<div><span class="tooltip-chip ok">OK</span> Taostats</div>',
+            '<div><span class="tooltip-chip ok">OK</span> Binance</div>',
+            '<div><span class="tooltip-chip ok">OK</span> CoinGecko</div>',
             '<div><span class="tooltip-chip ok">OK</span> Alternative.me (F&G)</div>'
           ].join('');
           infoBadge.setAttribute('data-tooltip', html);
