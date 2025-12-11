@@ -2640,12 +2640,14 @@ async function refreshDashboard() {
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
 
-  // Update UI display for last update time in Price Chart card
+  // Update UI display for last update time in Price Chart card (date + time)
   if (lastUpdated) {
     const d = new Date(lastUpdated);
+    const dd = d.getDate().toString().padStart(2, '0');
+    const mo = (d.getMonth() + 1).toString().padStart(2, '0');
     const hh = d.getHours().toString().padStart(2, '0');
     const mm = d.getMinutes().toString().padStart(2, '0');
-    if (priceUpdateEl) priceUpdateEl.textContent = `Updated: ${hh}:${mm}`;
+    if (priceUpdateEl) priceUpdateEl.textContent = `Updated: ${dd}.${mo}. ${hh}:${mm}`;
   } else {
     if (priceUpdateEl) priceUpdateEl.textContent = `Updated: —`;
   }
@@ -3442,6 +3444,19 @@ async function initDashboard() {
   }
   window._lastUpdated = lastUpdated;
   window._priceSource = taoPrice?._source || null;
+
+  // Update price chart footer with last update time (date + time)
+  const priceUpdateEl = document.getElementById('priceLastUpdate');
+  if (lastUpdated) {
+    const d = new Date(lastUpdated);
+    const dd = d.getDate().toString().padStart(2, '0');
+    const mo = (d.getMonth() + 1).toString().padStart(2, '0');
+    const hh = d.getHours().toString().padStart(2, '0');
+    const mm = d.getMinutes().toString().padStart(2, '0');
+    if (priceUpdateEl) priceUpdateEl.textContent = `Updated: ${dd}.${mo}. ${hh}:${mm}`;
+  } else {
+    if (priceUpdateEl) priceUpdateEl.textContent = `Updated: —`;
+  }
 
   // Fetch EUR rate if needed for pill display
   if (showEurPrices && !eurUsdRate) {
