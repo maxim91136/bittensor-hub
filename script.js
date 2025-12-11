@@ -3880,8 +3880,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Persist user's selection so it survives reloads (client-side only)
         try { localStorage.setItem('priceRange', currentPriceRange); } catch (e) { /* ignore */ }
 
-        // Update button UI
-        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        // Update button UI (only time range buttons, not toggles)
+        document.querySelectorAll('.time-btn[data-range]').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
         // Show chart skeleton (optional)
