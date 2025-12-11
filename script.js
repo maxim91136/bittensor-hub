@@ -392,6 +392,38 @@ let showEurPrices = localStorage.getItem('showEurPrices') === 'true';
 let showCandleChart = localStorage.getItem('showCandleChart') === 'true';
 let showVolume = localStorage.getItem('showVolume') === 'true';
 let eurUsdRate = null; // Cached EUR/USD exchange rate
+let isChartRefreshing = false; // Lock to prevent concurrent chart refreshes
+
+// Shared function to refresh the price chart with proper locking
+async function refreshPriceChart() {
+  // Prevent concurrent refreshes
+  if (isChartRefreshing) {
+    if (window._debug) console.debug('Chart refresh already in progress, skipping');
+    return;
+  }
+  isChartRefreshing = true;
+
+  const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
+  if (priceCard) priceCard.classList.add('loading');
+
+  try {
+    const priceHistory = await fetchPriceHistory(currentPriceRange);
+    const [btcHistory, ethHistory, solHistory] = await Promise.all([
+      showBtcComparison ? fetchBtcPriceHistory(currentPriceRange) : null,
+      showEthComparison ? fetchEthPriceHistory(currentPriceRange) : null,
+      showSolComparison ? fetchSolPriceHistory(currentPriceRange) : null
+    ]);
+    if (priceHistory) {
+      createPriceChart(priceHistory, currentPriceRange, { btcHistory, ethHistory, solHistory });
+    }
+  } catch (e) {
+    console.error('Error refreshing price chart:', e);
+  } finally {
+    if (priceCard) priceCard.classList.remove('loading');
+    isChartRefreshing = false;
+  }
+}
+
 // Track whether main dashboard init has completed
 window._dashboardInitialized = false;
 // Guard to prevent concurrent init runs
@@ -1616,14 +1648,21 @@ async function fetchTaoPrice() {
 
 async function fetchPriceHistory(range = '7') {
   const key = normalizeRange(range);
-  const cached = getCachedPrice?.(key);
+
+  // If candle/volume mode is active, we need Binance data (OHLCV)
+  // Use different cache key to avoid conflicts
+  const needsOHLCV = showCandleChart || showVolume;
+  const cacheKey = needsOHLCV ? `${key}_ohlcv` : key;
+
+  const cached = getCachedPrice?.(cacheKey);
   if (cached) return cached;
 
   const isMax = key === 'max';
   const days = isMax ? 1000 : parseInt(key, 10);
 
   // Try Taostats first (preferred source, skip for max)
-  if (!isMax) {
+  // Skip Taostats if we need OHLCV data (candle/volume mode)
+  if (!isMax && !needsOHLCV) {
     try {
       const taostatsEndpoint = `${API_BASE}/price_history?range=${key}`;
       const res = await fetch(taostatsEndpoint, { cache: 'no-store' });
@@ -1632,7 +1671,7 @@ async function fetchPriceHistory(range = '7') {
         if (data?.prices?.length) {
           if (window._debug) console.debug(`Price history from Taostats (${key}d):`, data.prices.length, 'points');
           const result = { prices: data.prices, ohlcv: null, volume: null, source: 'taostats' };
-          setCachedPrice?.(key, result);
+          setCachedPrice?.(cacheKey, result);
           return result;
         }
       }
@@ -1668,7 +1707,7 @@ async function fetchPriceHistory(range = '7') {
           }));
           if (window._debug) console.debug(`Price history from Binance (${key}):`, prices.length, 'points');
           const result = { prices, ohlcv, volume, source: 'binance' };
-          setCachedPrice?.(key, result);
+          setCachedPrice?.(cacheKey, result);
           return result;
         }
       }
@@ -1689,7 +1728,7 @@ async function fetchPriceHistory(range = '7') {
       if (!data?.prices?.length) return null;
       if (window._debug) console.debug(`Price history from CoinGecko (${key}):`, data.prices.length, 'points');
       const result = { prices: data.prices, ohlcv: null, volume: null, source: 'coingecko' };
-      setCachedPrice?.(key, result);
+      setCachedPrice?.(cacheKey, result);
       return result;
     } catch { return null; }
   }
@@ -3870,29 +3909,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // BTC comparison toggle button
     const btcToggle = document.getElementById('btcToggle');
     if (btcToggle) {
-      // Set initial state from localStorage
       if (showBtcComparison) btcToggle.classList.add('active');
-
-      btcToggle.addEventListener('click', async () => {
+      btcToggle.addEventListener('click', () => {
         showBtcComparison = !showBtcComparison;
         localStorage.setItem('showBtcComparison', showBtcComparison);
         btcToggle.classList.toggle('active', showBtcComparison);
-
-        // Reload chart with/without BTC
-        const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
-        if (priceCard) priceCard.classList.add('loading');
-
-        const priceHistory = await fetchPriceHistory(currentPriceRange);
-        const [btcHistory, ethHistory, solHistory] = await Promise.all([
-          showBtcComparison ? fetchBtcPriceHistory(currentPriceRange) : null,
-          showEthComparison ? fetchEthPriceHistory(currentPriceRange) : null,
-          showSolComparison ? fetchSolPriceHistory(currentPriceRange) : null
-        ]);
-        if (priceHistory) {
-          createPriceChart(priceHistory, currentPriceRange, { btcHistory, ethHistory, solHistory });
-        }
-
-        if (priceCard) priceCard.classList.remove('loading');
+        refreshPriceChart();
       });
     }
 
@@ -3921,20 +3943,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Reload chart with EUR conversion
-      const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
-      if (priceCard) priceCard.classList.add('loading');
-
-      const priceHistory = await fetchPriceHistory(currentPriceRange);
-      const [btcHistory, ethHistory, solHistory] = await Promise.all([
-        showBtcComparison ? fetchBtcPriceHistory(currentPriceRange) : null,
-        showEthComparison ? fetchEthPriceHistory(currentPriceRange) : null,
-        showSolComparison ? fetchSolPriceHistory(currentPriceRange) : null
-      ]);
-      if (priceHistory) {
-        createPriceChart(priceHistory, currentPriceRange, { btcHistory, ethHistory, solHistory });
-      }
-
-      if (priceCard) priceCard.classList.remove('loading');
+      refreshPriceChart();
     }
 
     // EUR currency toggle button (chart)
@@ -3960,25 +3969,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const ethToggle = document.getElementById('ethToggle');
     if (ethToggle) {
       if (showEthComparison) ethToggle.classList.add('active');
-      ethToggle.addEventListener('click', async () => {
+      ethToggle.addEventListener('click', () => {
         showEthComparison = !showEthComparison;
         localStorage.setItem('showEthComparison', showEthComparison);
         ethToggle.classList.toggle('active', showEthComparison);
-
-        const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
-        if (priceCard) priceCard.classList.add('loading');
-
-        const priceHistory = await fetchPriceHistory(currentPriceRange);
-        const [btcHistory, ethHistory, solHistory] = await Promise.all([
-          showBtcComparison ? fetchBtcPriceHistory(currentPriceRange) : null,
-          showEthComparison ? fetchEthPriceHistory(currentPriceRange) : null,
-          showSolComparison ? fetchSolPriceHistory(currentPriceRange) : null
-        ]);
-        if (priceHistory) {
-          createPriceChart(priceHistory, currentPriceRange, { btcHistory, ethHistory, solHistory });
-        }
-
-        if (priceCard) priceCard.classList.remove('loading');
+        refreshPriceChart();
       });
     }
 
@@ -3986,25 +3981,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const solToggle = document.getElementById('solToggle');
     if (solToggle) {
       if (showSolComparison) solToggle.classList.add('active');
-      solToggle.addEventListener('click', async () => {
+      solToggle.addEventListener('click', () => {
         showSolComparison = !showSolComparison;
         localStorage.setItem('showSolComparison', showSolComparison);
         solToggle.classList.toggle('active', showSolComparison);
-
-        const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
-        if (priceCard) priceCard.classList.add('loading');
-
-        const priceHistory = await fetchPriceHistory(currentPriceRange);
-        const [btcHistory, ethHistory, solHistory] = await Promise.all([
-          showBtcComparison ? fetchBtcPriceHistory(currentPriceRange) : null,
-          showEthComparison ? fetchEthPriceHistory(currentPriceRange) : null,
-          showSolComparison ? fetchSolPriceHistory(currentPriceRange) : null
-        ]);
-        if (priceHistory) {
-          createPriceChart(priceHistory, currentPriceRange, { btcHistory, ethHistory, solHistory });
-        }
-
-        if (priceCard) priceCard.classList.remove('loading');
+        refreshPriceChart();
       });
     }
 
@@ -4012,25 +3993,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const candleToggle = document.getElementById('candleToggle');
     if (candleToggle) {
       if (showCandleChart) candleToggle.classList.add('active');
-      candleToggle.addEventListener('click', async () => {
+      candleToggle.addEventListener('click', () => {
         showCandleChart = !showCandleChart;
         localStorage.setItem('showCandleChart', showCandleChart);
         candleToggle.classList.toggle('active', showCandleChart);
-
-        const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
-        if (priceCard) priceCard.classList.add('loading');
-
-        const priceHistory = await fetchPriceHistory(currentPriceRange);
-        const [btcHistory, ethHistory, solHistory] = await Promise.all([
-          showBtcComparison ? fetchBtcPriceHistory(currentPriceRange) : null,
-          showEthComparison ? fetchEthPriceHistory(currentPriceRange) : null,
-          showSolComparison ? fetchSolPriceHistory(currentPriceRange) : null
-        ]);
-        if (priceHistory) {
-          createPriceChart(priceHistory, currentPriceRange, { btcHistory, ethHistory, solHistory });
-        }
-
-        if (priceCard) priceCard.classList.remove('loading');
+        refreshPriceChart();
       });
     }
 
@@ -4038,25 +4005,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const volumeToggle = document.getElementById('volumeToggle');
     if (volumeToggle) {
       if (showVolume) volumeToggle.classList.add('active');
-      volumeToggle.addEventListener('click', async () => {
+      volumeToggle.addEventListener('click', () => {
         showVolume = !showVolume;
         localStorage.setItem('showVolume', showVolume);
         volumeToggle.classList.toggle('active', showVolume);
-
-        const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
-        if (priceCard) priceCard.classList.add('loading');
-
-        const priceHistory = await fetchPriceHistory(currentPriceRange);
-        const [btcHistory, ethHistory, solHistory] = await Promise.all([
-          showBtcComparison ? fetchBtcPriceHistory(currentPriceRange) : null,
-          showEthComparison ? fetchEthPriceHistory(currentPriceRange) : null,
-          showSolComparison ? fetchSolPriceHistory(currentPriceRange) : null
-        ]);
-        if (priceHistory) {
-          createPriceChart(priceHistory, currentPriceRange, { btcHistory, ethHistory, solHistory });
-        }
-
-        if (priceCard) priceCard.classList.remove('loading');
+        refreshPriceChart();
       });
     }
 
