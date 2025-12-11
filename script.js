@@ -4680,14 +4680,42 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       if (barEl) barEl.style.width = (data.score || 0) + '%';
 
+      // Score description - plain language explanation
+      const descEl = document.getElementById('decentralizationDescription');
+      if (descEl) {
+        const score = data.score || 0;
+        let desc = '';
+        if (score >= 80) desc = 'Network is well distributed with healthy decentralization';
+        else if (score >= 65) desc = 'Good distribution with room for improvement';
+        else if (score >= 50) desc = 'Moderate concentration - validator stake is highly centralized';
+        else if (score >= 35) desc = 'Concerning concentration - few entities control majority';
+        else desc = 'High centralization risk - immediate attention needed';
+        descEl.textContent = desc;
+      }
+
       // Component scores
       setEl('walletScore', data.components?.wallet_score ?? '—');
       setEl('validatorScore', data.components?.validator_score ?? '—');
       setEl('subnetScore', data.components?.subnet_score ?? '—');
 
+      // Helper to get Nakamoto context
+      const getNakamotoContext = (n) => {
+        if (n == null) return { text: '', cls: '' };
+        if (n <= 3) return { text: 'Critical', cls: 'critical' };
+        if (n <= 7) return { text: 'Low', cls: 'low' };
+        if (n <= 15) return { text: 'Moderate', cls: 'moderate' };
+        return { text: 'Good', cls: 'good' };
+      };
+
       // Validator metrics
       const va = data.validator_analysis || {};
       setEl('validatorNakamoto', va.nakamoto_coefficient ?? '—');
+      const vCtx = getNakamotoContext(va.nakamoto_coefficient);
+      const vCtxEl = document.getElementById('validatorNakamotoContext');
+      if (vCtxEl && vCtx.text) {
+        vCtxEl.textContent = vCtx.text;
+        vCtxEl.className = 'metric-context ' + vCtx.cls;
+      }
       setEl('validatorGini', va.gini != null ? va.gini.toFixed(3) : '—');
       setEl('validatorTop10', va.top_10_concentration != null ? (va.top_10_concentration * 100).toFixed(0) + '%' : '—');
       setEl('totalValidators', va.total_validators ?? '—');
@@ -4695,6 +4723,12 @@ document.addEventListener('DOMContentLoaded', function() {
       // Subnet metrics
       const sa = data.subnet_analysis || {};
       setEl('subnetNakamoto', sa.nakamoto_coefficient ?? '—');
+      const sCtx = getNakamotoContext(sa.nakamoto_coefficient);
+      const sCtxEl = document.getElementById('subnetNakamotoContext');
+      if (sCtxEl && sCtx.text) {
+        sCtxEl.textContent = sCtx.text;
+        sCtxEl.className = 'metric-context ' + sCtx.cls;
+      }
       setEl('subnetHHI', sa.emission_hhi != null ? sa.emission_hhi.toFixed(4) : '—');
       setEl('subnetTop5', sa.top_5_emission_concentration != null ? (sa.top_5_emission_concentration * 100).toFixed(1) + '%' : '—');
       setEl('totalSubnets', sa.total_subnets ?? '—');
