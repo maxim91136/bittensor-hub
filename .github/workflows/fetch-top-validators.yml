@@ -1,4 +1,4 @@
-name: taostats: Validators
+name: taostats - Validators
 
 on:
   schedule:

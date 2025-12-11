@@ -1,4 +1,4 @@
-name: coingecko: Price History
+name: coingecko - Price History
 
 on:
   schedule:
