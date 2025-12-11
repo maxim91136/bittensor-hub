@@ -187,7 +187,16 @@
   </div>
 
   <!-- Price Chart Card - Position #2 after Market Conditions -->
-  <section class="dashboard-card loading" aria-labelledby="price-heading">
+  <section class="dashboard-card loading" aria-labelledby="price-heading" style="position: relative;">
+    <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Real-time TAO price data from Binance API.
+
+• Time Ranges: 1D to Max (~600 days)
+• EUR: Toggle to view prices in Euros
+• BTC/ETH/SOL: Compare TAO performance (% change)
+• Candle: OHLC candlestick chart (TAO only)
+• Vol: Trading volume bars (TAO only)
+
+Note: Candle & Volume require Binance data and are disabled in Compare mode.">i</span>
     <div class="card-header">
       <h2 id="price-heading">TAO Price History</h2>
       <div class="chart-controls">

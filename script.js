@@ -3906,6 +3906,21 @@ document.addEventListener('DOMContentLoaded', () => {
       if (activeBtn) activeBtn.classList.add('active');
     } catch (e) { /* ignore */ }
 
+    // Helper: Disable candle/volume when entering compare mode
+    function disableCandleVolumeIfNeeded() {
+      const hasComparison = showBtcComparison || showEthComparison || showSolComparison;
+      if (hasComparison && (showCandleChart || showVolume)) {
+        showCandleChart = false;
+        showVolume = false;
+        localStorage.setItem('showCandleChart', 'false');
+        localStorage.setItem('showVolume', 'false');
+        const candleToggle = document.getElementById('candleToggle');
+        const volumeToggle = document.getElementById('volumeToggle');
+        if (candleToggle) candleToggle.classList.remove('active');
+        if (volumeToggle) volumeToggle.classList.remove('active');
+      }
+    }
+
     // BTC comparison toggle button
     const btcToggle = document.getElementById('btcToggle');
     if (btcToggle) {
@@ -3914,6 +3929,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showBtcComparison = !showBtcComparison;
         localStorage.setItem('showBtcComparison', showBtcComparison);
         btcToggle.classList.toggle('active', showBtcComparison);
+        disableCandleVolumeIfNeeded();
         refreshPriceChart();
       });
     }
@@ -3973,6 +3989,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showEthComparison = !showEthComparison;
         localStorage.setItem('showEthComparison', showEthComparison);
         ethToggle.classList.toggle('active', showEthComparison);
+        disableCandleVolumeIfNeeded();
         refreshPriceChart();
       });
     }
@@ -3985,6 +4002,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showSolComparison = !showSolComparison;
         localStorage.setItem('showSolComparison', showSolComparison);
         solToggle.classList.toggle('active', showSolComparison);
+        disableCandleVolumeIfNeeded();
         refreshPriceChart();
       });
     }
