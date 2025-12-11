@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30 (2025-12-11)
+### Added
+- **TAO Distribution Card**: New dashboard card showing wealth distribution metrics
+  - Percentile Thresholds: How much TAO needed for Top 1%, 3%, 5%, 10%
+  - Wallet Brackets: Count of wallets with >10k, >1k, >100, >10 TAO
+  - Sample size and last updated timestamp in footer
+  - Credit to @RBS_HODL who pioneered monthly distribution posts
+  - Tooltip explains weekly update schedule due to API rate limits
+
+### Changed
+- **Distribution Fetch Robustness**: Graceful degradation for API failures
+  - Retry logic: Up to 3 attempts per failed request with progressive backoff (30s/60s/90s)
+  - Graceful degradation: If 5,000+ wallets already fetched, continue with partial data
+  - Prevents losing all data on single timeout (previously lost 19k wallets)
+
+### Infrastructure
+- **Weekly Distribution Workflow**: Runs every Sunday 03:00 UTC
+  - Fetches 20,000 top wallets from Taostats API
+  - Calculates percentile thresholds and bracket distributions
+  - Stores results in Cloudflare KV for dashboard consumption
+
 ## v1.0.0-rc.29.2 (2025-12-11)
 ### Fixed
 - **Mobile Pill Spacing**: Tighter gap between halving and price pills on mobile
