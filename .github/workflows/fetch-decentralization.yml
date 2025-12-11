@@ -1,4 +1,4 @@
-name: [kv] Decentralization Score
+name: kv: Decentralization Score
 
 on:
   # Run daily at 04:00 UTC (after other data fetches)

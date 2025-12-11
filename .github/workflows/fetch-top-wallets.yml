@@ -1,4 +1,4 @@
-name: [taostats] Wallets
+name: taostats: Wallets
 
 on:
   schedule:

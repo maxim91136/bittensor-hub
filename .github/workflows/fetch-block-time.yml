@@ -1,4 +1,4 @@
-name: [taostats] Block Time
+name: taostats: Block Time
 
 on:
   schedule:

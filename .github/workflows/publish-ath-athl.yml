@@ -1,4 +1,4 @@
-name: [kv] ATH/ATL Calculator
+name: kv: ATH/ATL Calculator
 on:
   workflow_dispatch:
   schedule:
