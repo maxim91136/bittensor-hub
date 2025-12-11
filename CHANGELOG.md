@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.3 (2025-12-11)
+### Fixed
+- **Nakamoto Coefficient Calculation**: Critical fix for validator Nakamoto
+  - Was calculating 51% threshold against top 100 validators' stake only (~1.8M TAO)
+  - Now uses total network stake (~2.44M TAO) from API
+  - Result: Nakamoto=7 (correct) instead of Nakamoto=3 (wrong)
+  - `calculate_nakamoto()` now accepts optional `total` parameter
+
 ## v1.0.0-rc.30.1 (2025-12-11)
 ### Fixed
 - **API Status Tooltip**: Added missing Binance to data sources list
