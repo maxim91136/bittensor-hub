@@ -10,14 +10,10 @@ export async function onRequest(context) {
   };
 
   try {
-    const { env } = context;
-    const KV = env.METRICS || env.KV;
+    const KV = context.env?.METRICS_KV;
 
     if (!KV) {
-      return new Response(JSON.stringify({
-        error: 'KV not configured',
-        _status: 'error'
-      }), { status: 500, headers: cors });
+      return new Response(JSON.stringify({ error: 'KV not bound' }), { status: 500, headers: cors });
     }
 
     const raw = await KV.get('decentralization_score', { type: 'json' });
