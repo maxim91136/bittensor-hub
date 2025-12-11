@@ -2620,7 +2620,7 @@ async function refreshDashboard() {
   window._taostats = taostats ?? null;
 
   // LAST UPDATE - set BEFORE updateNetworkStats/updateTaoPrice so tooltips have access
-  const lastUpdateEl = document.getElementById('lastUpdate');
+  const priceUpdateEl = document.getElementById('priceLastUpdate');
   let lastUpdated = null;
   if (taoPrice && taoPrice.last_updated) {
     lastUpdated = taoPrice.last_updated;
@@ -2640,16 +2640,14 @@ async function refreshDashboard() {
   updateNetworkStats(networkData);
   updateTaoPrice(taoPrice);
 
-  // Update UI display for last update time
-  let lastUpdateStr = '--:--';
+  // Update UI display for last update time in Price Chart card
   if (lastUpdated) {
     const d = new Date(lastUpdated);
     const hh = d.getHours().toString().padStart(2, '0');
     const mm = d.getMinutes().toString().padStart(2, '0');
-    lastUpdateStr = `${hh}:${mm}`;
-    if (lastUpdateEl) lastUpdateEl.textContent = `Updated: ${lastUpdateStr}`;
+    if (priceUpdateEl) priceUpdateEl.textContent = `Updated: ${hh}:${mm}`;
   } else {
-    if (lastUpdateEl) lastUpdateEl.textContent = `Updated: --:--`;
+    if (priceUpdateEl) priceUpdateEl.textContent = `Updated: —`;
   }
 
   // Get volume from taostats!

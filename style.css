@@ -3189,6 +3189,25 @@ body.light-bg .map-preview-card .map-attribution {
   color: #22c55e !important;
   border-color: rgba(34,197,94,0.13) !important;
 }
+
+/* Price Chart Footer */
+.price-chart-footer {
+  text-align: center;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.price-update {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+body.light-bg .price-chart-footer {
+  border-top-color: rgba(0, 0, 0, 0.05);
+}
+
 .data-sources-grid .source-item.light-bg {
   background: #e2e2e2 !important;
   color: #222 !important;
