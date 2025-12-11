@@ -3928,9 +3928,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Helper: Disable compare toggles when entering candle mode (Volume stays independent)
+    // Helper: Disable compare toggles when entering candle or volume mode
     function disableCompareIfNeeded() {
-      if (!showCandleChart) return; // Only when candle is being enabled
+      if (!showCandleChart && !showVolume) return; // Only when candle or volume is being enabled
       const hasComparison = showBtcComparison || showEthComparison || showSolComparison;
       if (hasComparison) {
         showBtcComparison = false;
@@ -4055,6 +4055,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showVolume = !showVolume;
         localStorage.setItem('showVolume', showVolume);
         volumeToggle.classList.toggle('active', showVolume);
+        disableCompareIfNeeded(); // Disable BTC/ETH/SOL compare when entering volume mode
         refreshPriceChart();
       });
     }
