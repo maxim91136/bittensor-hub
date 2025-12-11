@@ -106,11 +106,15 @@ def fetch_wallets(max_pages=100, page_size=200):
     page = 1
     last_rank = 0
 
-    try:
-        while page <= max_pages:
-            url = f"{ACCOUNT_URL}?limit={page_size}&page={page}&order=balance_total_desc"
-            print(f"📊 Fetching page {page}/{max_pages}... ({len(all_balances)} wallets so far)", file=sys.stderr)
+    consecutive_errors = 0
+    max_consecutive_errors = 3
+    min_wallets_for_graceful = 5000  # If we have this many, don't fail completely
 
+    while page <= max_pages:
+        url = f"{ACCOUNT_URL}?limit={page_size}&page={page}&order=balance_total_desc"
+        print(f"📊 Fetching page {page}/{max_pages}... ({len(all_balances)} wallets so far)", file=sys.stderr)
+
+        try:
             resp = requests.get(url, headers=headers, timeout=60)
 
             # Handle rate limiting
@@ -122,6 +126,7 @@ def fetch_wallets(max_pages=100, page_size=200):
 
             resp.raise_for_status()
             data = resp.json()
+            consecutive_errors = 0  # Reset on success
 
             accounts = data.get("data", [])
             if not accounts:
@@ -163,12 +168,27 @@ def fetch_wallets(max_pages=100, page_size=200):
                 print(f"   ⏳ Rate limit pause (13s)...", file=sys.stderr)
                 time.sleep(13)
 
-        print(f"✅ Fetched {len(all_balances)} wallets (estimated total: {total_wallet_count:,})", file=sys.stderr)
-        return sorted(all_balances, reverse=True)
+        except Exception as e:
+            consecutive_errors += 1
+            print(f"⚠️ Error on page {page}: {e} (attempt {consecutive_errors}/{max_consecutive_errors})", file=sys.stderr)
 
-    except Exception as e:
-        print(f"❌ Failed to fetch accounts: {e}", file=sys.stderr)
-        return None
+            if consecutive_errors >= max_consecutive_errors:
+                # Graceful degradation: if we have enough data, continue with what we have
+                if len(all_balances) >= min_wallets_for_graceful:
+                    print(f"🔄 Graceful degradation: Using {len(all_balances)} wallets already fetched", file=sys.stderr)
+                    break
+                else:
+                    print(f"❌ Not enough data ({len(all_balances)} wallets) - need at least {min_wallets_for_graceful}", file=sys.stderr)
+                    return None
+            else:
+                # Wait longer and retry
+                retry_wait = 30 * consecutive_errors
+                print(f"   ⏳ Waiting {retry_wait}s before retry...", file=sys.stderr)
+                time.sleep(retry_wait)
+                continue
+
+    print(f"✅ Fetched {len(all_balances)} wallets (estimated total: {total_wallet_count:,})", file=sys.stderr)
+    return sorted(all_balances, reverse=True) if all_balances else None
 
 
 def calculate_brackets(balances, total_network_wallets):
