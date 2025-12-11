@@ -4601,16 +4601,16 @@ body.light-bg .distribution-footer {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .decentralization-card {
-  max-width: 420px;
+  /* Full width like Distribution card */
 }
 
 .decentralization-content {
-  padding: 0 1rem 1rem;
+  padding: 0 1.5rem 1.5rem;
 }
 
 .decentralization-score-section {
   text-align: center;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
 }
 
 .decentralization-main-score {
@@ -4621,109 +4621,132 @@ body.light-bg .distribution-footer {
 }
 
 .decentralization-main-score .score-value {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 700;
   color: var(--accent-primary);
   line-height: 1;
 }
 
 .decentralization-main-score .score-max {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   color: var(--text-muted);
 }
 
 .score-rating {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin-top: 0.3rem;
+  margin-top: 0.4rem;
   color: var(--accent-primary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .score-bar-container {
   width: 100%;
-  height: 8px;
+  max-width: 400px;
+  margin: 1rem auto 0;
+  height: 10px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  margin-top: 0.8rem;
+  border-radius: 5px;
   overflow: hidden;
 }
 
 .score-bar {
   height: 100%;
   background: linear-gradient(90deg, #ef4444 0%, #f59e0b 35%, #22c55e 65%, #22c55e 100%);
-  border-radius: 4px;
+  border-radius: 5px;
   transition: width 0.8s ease-out;
 }
 
+/* Component Score Boxes */
 .decentralization-components {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.8rem;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .component-item {
   background: rgba(34, 197, 94, 0.08);
   border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 8px;
-  padding: 0.7rem 0.5rem;
+  border-radius: 10px;
+  padding: 1rem 0.8rem;
   text-align: center;
 }
 
 .component-label {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.4rem;
 }
 
 .component-score {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--accent-primary);
 }
 
-.nakamoto-section {
+/* Detailed Metrics Grid - 3 columns */
+.decentralization-metrics {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.6rem;
-  margin-bottom: 1rem;
-  padding-top: 0.8rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin-bottom: 1.2rem;
+  padding-top: 1.2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.nakamoto-item {
+.metrics-column {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  padding: 0.8rem;
+}
+
+.metrics-column-header {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.metric-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0.7rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
+  padding: 0.4rem 0;
 }
 
-.nakamoto-label {
+.metric-row:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.metric-label {
   font-size: 0.72rem;
   color: var(--text-muted);
 }
 
-.nakamoto-value {
-  font-size: 1rem;
+.metric-value {
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
+/* Footer */
 .decentralization-footer {
   text-align: center;
-  padding-top: 0.5rem;
+  padding-top: 0.8rem;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .decentralization-update {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   opacity: 0.7;
 }
@@ -4735,13 +4758,38 @@ body.light-bg .distribution-footer {
 .score-rating.concerning { color: #f97316; }
 .score-rating.poor { color: #ef4444; }
 
+/* Responsive: Stack columns on mobile */
+@media (max-width: 768px) {
+  .decentralization-metrics {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .decentralization-components {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+  }
+
+  .component-item {
+    padding: 0.7rem 0.4rem;
+  }
+
+  .component-label {
+    font-size: 0.65rem;
+  }
+
+  .component-score {
+    font-size: 1.2rem;
+  }
+}
+
 /* Light mode adjustments */
 body.light-bg .decentralization-card .component-item {
   background: rgba(34, 197, 94, 0.1);
 }
 
-body.light-bg .decentralization-card .nakamoto-item {
-  background: rgba(0, 0, 0, 0.03);
+body.light-bg .decentralization-card .metrics-column {
+  background: rgba(0, 0, 0, 0.02);
 }
 
 body.light-bg .score-bar-container {

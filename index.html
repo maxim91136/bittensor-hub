@@ -583,9 +583,10 @@ Note: Candle & Volume require Binance data and are disabled in Compare mode.">i<
     <section class="dashboard-card decentralization-card" aria-labelledby="decentralization-card-heading">
       <div class="card-header">
         <h2 id="decentralization-card-heading">Network Decentralization</h2>
-        <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Composite score measuring network decentralization across wallets, validators, and subnets. Higher = more decentralized. Updates daily.">i</span>
+        <span class="info-badge" translate="no" aria-hidden="true" data-tooltip="Composite score measuring network decentralization across wallets (40%), validators (35%), and subnets (25%). Nakamoto = minimum entities for 51% control. Higher scores = more decentralized.">i</span>
       </div>
       <div class="decentralization-content">
+        <!-- Main Score -->
         <div class="decentralization-score-section">
           <div class="decentralization-main-score">
             <span class="score-value" id="decentralizationScore">—</span>
@@ -596,30 +597,90 @@ Note: Candle & Volume require Binance data and are disabled in Compare mode.">i<
             <div class="score-bar" id="decentralizationBar" style="width: 0%"></div>
           </div>
         </div>
+
+        <!-- Component Scores Grid -->
         <div class="decentralization-components">
           <div class="component-item">
-            <span class="component-label">Wallets</span>
+            <span class="component-label">Wallets (40%)</span>
             <span class="component-score" id="walletScore">—</span>
           </div>
           <div class="component-item">
-            <span class="component-label">Validators</span>
+            <span class="component-label">Validators (35%)</span>
             <span class="component-score" id="validatorScore">—</span>
           </div>
           <div class="component-item">
-            <span class="component-label">Subnets</span>
+            <span class="component-label">Subnets (25%)</span>
             <span class="component-score" id="subnetScore">—</span>
           </div>
         </div>
-        <div class="nakamoto-section">
-          <div class="nakamoto-item">
-            <span class="nakamoto-label">Validator Nakamoto</span>
-            <span class="nakamoto-value" id="validatorNakamoto">—</span>
+
+        <!-- Detailed Metrics Grid -->
+        <div class="decentralization-metrics">
+          <!-- Validators Column -->
+          <div class="metrics-column">
+            <div class="metrics-column-header">Validators</div>
+            <div class="metric-row">
+              <span class="metric-label">Nakamoto Coefficient</span>
+              <span class="metric-value" id="validatorNakamoto">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Gini Index</span>
+              <span class="metric-value" id="validatorGini">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Top 10 Concentration</span>
+              <span class="metric-value" id="validatorTop10">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Total Validators</span>
+              <span class="metric-value" id="totalValidators">—</span>
+            </div>
           </div>
-          <div class="nakamoto-item">
-            <span class="nakamoto-label">Subnet Nakamoto</span>
-            <span class="nakamoto-value" id="subnetNakamoto">—</span>
+
+          <!-- Subnets Column -->
+          <div class="metrics-column">
+            <div class="metrics-column-header">Subnets</div>
+            <div class="metric-row">
+              <span class="metric-label">Nakamoto Coefficient</span>
+              <span class="metric-value" id="subnetNakamoto">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">HHI Index</span>
+              <span class="metric-value" id="subnetHHI">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Top 5 Concentration</span>
+              <span class="metric-value" id="subnetTop5">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Total Subnets</span>
+              <span class="metric-value" id="totalSubnets">—</span>
+            </div>
+          </div>
+
+          <!-- Wallets Column -->
+          <div class="metrics-column">
+            <div class="metrics-column-header">Wallets</div>
+            <div class="metric-row">
+              <span class="metric-label">Whales (>10k τ)</span>
+              <span class="metric-value" id="whaleCount">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Whale %</span>
+              <span class="metric-value" id="whalePercent">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Top 1% Threshold</span>
+              <span class="metric-value" id="top1Threshold">—</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Total Wallets</span>
+              <span class="metric-value" id="totalWallets">—</span>
+            </div>
           </div>
         </div>
+
+        <!-- Footer -->
         <div class="decentralization-footer">
           <span class="decentralization-update" id="decentralizationUpdate">Updated: —</span>
         </div>

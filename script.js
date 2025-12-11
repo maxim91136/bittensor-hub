@@ -4642,6 +4642,18 @@ document.addEventListener('DOMContentLoaded', function() {
       const data = await res.json();
       if (!data || data.error) return;
 
+      // Helper to format numbers with K suffix
+      const formatK = (n) => {
+        if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'k';
+        return n.toLocaleString();
+      };
+
+      // Helper to set element text
+      const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
       // Main score
       const scoreEl = document.getElementById('decentralizationScore');
       const ratingEl = document.getElementById('decentralizationRating');
@@ -4656,20 +4668,31 @@ document.addEventListener('DOMContentLoaded', function() {
       if (barEl) barEl.style.width = (data.score || 0) + '%';
 
       // Component scores
-      const walletEl = document.getElementById('walletScore');
-      const validatorEl = document.getElementById('validatorScore');
-      const subnetEl = document.getElementById('subnetScore');
+      setEl('walletScore', data.components?.wallet_score ?? '—');
+      setEl('validatorScore', data.components?.validator_score ?? '—');
+      setEl('subnetScore', data.components?.subnet_score ?? '—');
 
-      if (walletEl) walletEl.textContent = data.components?.wallet_score ?? '—';
-      if (validatorEl) validatorEl.textContent = data.components?.validator_score ?? '—';
-      if (subnetEl) subnetEl.textContent = data.components?.subnet_score ?? '—';
+      // Validator metrics
+      const va = data.validator_analysis || {};
+      setEl('validatorNakamoto', va.nakamoto_coefficient ?? '—');
+      setEl('validatorGini', va.gini != null ? va.gini.toFixed(3) : '—');
+      setEl('validatorTop10', va.top_10_concentration != null ? (va.top_10_concentration * 100).toFixed(0) + '%' : '—');
+      setEl('totalValidators', va.total_validators ?? '—');
 
-      // Nakamoto coefficients
-      const valNakEl = document.getElementById('validatorNakamoto');
-      const subNakEl = document.getElementById('subnetNakamoto');
+      // Subnet metrics
+      const sa = data.subnet_analysis || {};
+      setEl('subnetNakamoto', sa.nakamoto_coefficient ?? '—');
+      setEl('subnetHHI', sa.emission_hhi != null ? sa.emission_hhi.toFixed(4) : '—');
+      setEl('subnetTop5', sa.top_5_emission_concentration != null ? (sa.top_5_emission_concentration * 100).toFixed(1) + '%' : '—');
+      setEl('totalSubnets', sa.total_subnets ?? '—');
 
-      if (valNakEl) valNakEl.textContent = data.validator_analysis?.nakamoto_coefficient ?? '—';
-      if (subNakEl) subNakEl.textContent = data.subnet_analysis?.nakamoto_coefficient ?? '—';
+      // Wallet metrics
+      const wa = data.wallet_analysis || {};
+      const whales = wa.whales_10k_plus || {};
+      setEl('whaleCount', whales.count ?? '—');
+      setEl('whalePercent', whales.percentage != null ? whales.percentage.toFixed(2) + '%' : '—');
+      setEl('top1Threshold', wa.top_1_percent?.threshold_tao != null ? wa.top_1_percent.threshold_tao.toFixed(0) + ' τ' : '—');
+      setEl('totalWallets', wa.total_wallets != null ? formatK(wa.total_wallets) : '—');
 
       // Update timestamp
       const updateEl = document.getElementById('decentralizationUpdate');
