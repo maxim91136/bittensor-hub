@@ -2743,6 +2743,7 @@ let refreshCountdown = REFRESH_SECONDS;
 let refreshTimer = null;
 let refreshPaused = false;
 let refreshClickTimestamps = [];
+let autoRefreshCount = 0; // Track number of auto-refreshes for Easter egg timing
 
 function renderRefreshIndicator() {
   const el = document.getElementById('refresh-indicator');
@@ -3059,14 +3060,20 @@ function startAutoRefresh() {
     refreshCountdown--;
     if (refreshCountdown <= 0) {
       refreshCountdown = REFRESH_SECONDS;
-      try {
-        // Trigger Matrix glitch only on automated refresh (not on manual click)
-        if (typeof window.showMatrixGlitch === 'function') {
-          // Use RC20.2-like duration (360ms visible) and minimal intensity
-          window.showMatrixGlitch({ duration: 360, intensity: 1 });
+      autoRefreshCount++;
+      // Trigger Matrix glitch only every 3rd auto-refresh
+      if (autoRefreshCount % 3 === 0) {
+        try {
+          if (typeof window.showMatrixGlitch === 'function') {
+            window.showMatrixGlitch({ duration: 360, intensity: 1 });
+          }
+        } catch (e) {
+          if (window._debug) console.warn('showMatrixGlitch failed', e);
         }
-      } catch (e) {
-        if (window._debug) console.warn('showMatrixGlitch failed', e);
+      }
+      // Trigger "Wake up, Neo" Easter egg after 5th refresh (once, not on glitch refresh)
+      if (autoRefreshCount === 5 && typeof window.triggerNeoEasterEgg === 'function') {
+        window.triggerNeoEasterEgg();
       }
       MatrixSound.play('refresh-beep');
       refreshDashboard();
@@ -4941,12 +4948,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (neoSnippetShown) return;
     neoSnippetShown = true;
 
-    // Create floating snippet in Matrix style
+    // Create floating snippet in Matrix style - bottom left corner
     neoSnippet = document.createElement('div');
     neoSnippet.style.cssText = `
       position: fixed;
-      top: ${20 + Math.random() * 30}%;
-      right: ${10 + Math.random() * 20}px;
+      bottom: ${60 + Math.random() * 40}px;
+      left: ${15 + Math.random() * 20}px;
       background: rgba(0, 0, 0, 0.95);
       color: #0f0;
       font-family: 'Courier New', monospace;
@@ -5308,11 +5315,8 @@ document.addEventListener('DOMContentLoaded', function() {
     overlay.addEventListener('click', closeOverlay);
   }
 
-  // Trigger snippet randomly between 15-45 seconds after page load
-  document.addEventListener('DOMContentLoaded', function() {
-    const delay = 15000 + Math.random() * 30000; // 15-45 seconds
-    setTimeout(showNeoSnippet, delay);
-  });
+  // Expose function globally - triggered after 5th auto-refresh
+  window.triggerNeoEasterEgg = showNeoSnippet;
 })();
 
 // ===== Force Fear & Greed Badge Position on Desktop =====
