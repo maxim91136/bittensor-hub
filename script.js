@@ -3928,6 +3928,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Helper: Disable compare toggles when entering candle mode (Volume stays independent)
+    function disableCompareIfNeeded() {
+      if (!showCandleChart) return; // Only when candle is being enabled
+      const hasComparison = showBtcComparison || showEthComparison || showSolComparison;
+      if (hasComparison) {
+        showBtcComparison = false;
+        showEthComparison = false;
+        showSolComparison = false;
+        localStorage.setItem('showBtcComparison', 'false');
+        localStorage.setItem('showEthComparison', 'false');
+        localStorage.setItem('showSolComparison', 'false');
+        const btcToggle = document.getElementById('btcToggle');
+        const ethToggle = document.getElementById('ethToggle');
+        const solToggle = document.getElementById('solToggle');
+        if (btcToggle) btcToggle.classList.remove('active');
+        if (ethToggle) ethToggle.classList.remove('active');
+        if (solToggle) solToggle.classList.remove('active');
+      }
+    }
+
     // BTC comparison toggle button
     const btcToggle = document.getElementById('btcToggle');
     if (btcToggle) {
@@ -4022,6 +4042,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showCandleChart = !showCandleChart;
         localStorage.setItem('showCandleChart', showCandleChart);
         candleToggle.classList.toggle('active', showCandleChart);
+        disableCompareIfNeeded(); // Disable BTC/ETH/SOL compare when entering candle mode
         refreshPriceChart();
       });
     }
