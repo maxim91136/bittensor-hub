@@ -70,22 +70,16 @@
   justify-content: flex-start;
   gap: 4px;
   text-align: center;
-  min-height: 90px;
 }
 
 /* Align single-value metrics (Signal, Price, Trend) with Volume's main value */
-.market-metric#marketSignal,
-.market-metric#marketPrice,
-.market-metric#marketPhase {
-  justify-content: flex-start;
-  padding-top: 8px;
-}
-
-.market-metric#marketSignal .metric-value,
-.market-metric#marketPrice .metric-value,
-.market-metric#marketPhase .metric-value {
-  margin-top: auto;
-  margin-bottom: auto;
+/* Add invisible spacer at bottom to match Volume's two-line layout */
+.market-metric#marketSignal::after,
+.market-metric#marketPrice::after,
+.market-metric#marketPhase::after {
+  content: '';
+  display: block;
+  height: 1.1em; /* Same height as metric-value-sub */
 }
 
 /* Signal Metric: Label on top (SIGNAL), value below (Caution) */
