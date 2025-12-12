@@ -10,9 +10,7 @@ import {
   formatFull,
   formatExact,
   formatCompact,
-  roundUpTo2,
-  formatPercent,
-  readPercentValue
+  roundUpTo2
 } from './js/modules/utils.js';
 import {
   fetchNetworkData,
@@ -64,6 +62,12 @@ import {
   findNextThresholdIndex,
   rotateToThreshold
 } from './js/modules/halvingCountdown.js';
+import {
+  buildApiStatusHtml,
+  animatePriceChange as _animatePriceChange,
+  updateTaoPrice as _updateTaoPrice,
+  updateMarketCapAndFDV
+} from './js/modules/priceDisplay.js';
 
 // ===== State Management =====
 let lastPrice = null;
@@ -99,6 +103,30 @@ function syncChartConfig() {
     showVolume,
     eurUsdRate
   });
+}
+
+// Wrapper: animatePriceChange with local state
+function animatePriceChange(element, newPrice) {
+  lastPrice = _animatePriceChange(element, newPrice, lastPrice);
+}
+
+// Wrapper: updateTaoPrice with local state
+function updateTaoPrice(priceData) {
+  _updateTaoPrice(priceData, {
+    showEurPrices,
+    eurUsdRate,
+    onPriceUpdate: (price) => {
+      lastPrice = price;
+      tryUpdateMarketCapAndFDV();
+    }
+  });
+}
+
+// Helper: try updating market cap and FDV
+function tryUpdateMarketCapAndFDV() {
+  if (window.circulatingSupply && lastPrice) {
+    updateMarketCapAndFDV(lastPrice, window.circulatingSupply);
+  }
 }
 
 // Wrapper for refreshPriceChart that syncs config and passes fetchers
@@ -204,172 +232,6 @@ window.useFngGraphics = async function(darkPath = '/assets/fng-spoon-black.png',
   }
 };
 
-// ===== Utility Functions =====
-
-// Build HTML for API status tooltip showing per-source chips
-function buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGreed }) {
-  function chip(status) {
-    const cls = status === 'ok' ? 'ok' : (status === 'partial' ? 'partial' : 'error');
-    const label = status === 'ok' ? 'OK' : (status === 'partial' ? 'Partial' : 'Error');
-    return `<span class="tooltip-chip ${cls}">${label}</span>`;
-  }
-
-  // Taostats
-  let taostatsStatus = 'error';
-  if (taostats) {
-    const hasPrice = taostats.price !== undefined && taostats.price !== null;
-    const hasVol = taostats.volume_24h !== undefined && taostats.volume_24h !== null;
-    taostatsStatus = (hasPrice && hasVol) ? 'ok' : 'partial';
-  }
-
-  // CoinGecko (derive from taoPrice._source if available)
-  let coingeckoStatus = 'error';
-  if (taoPrice && taoPrice._source) {
-    if (taoPrice._source === 'coingecko') coingeckoStatus = 'ok';
-    else if (taoPrice._source === 'taostats') coingeckoStatus = 'partial';
-    else coingeckoStatus = (taoPrice.price ? 'ok' : 'error');
-  }
-
-  // Fear & Greed (alternative.me)
-  let fngStatus = 'error';
-  if (fearAndGreed && fearAndGreed.current) {
-    const hasValue = fearAndGreed.current.value !== undefined && fearAndGreed.current.value !== null;
-    fngStatus = hasValue ? 'ok' : 'partial';
-  }
-
-  // Bittensor SDK / network API
-  const networkStatus = networkData ? 'ok' : 'error';
-
-  const lines = [];
-  lines.push('<div>Status of all data sources powering the dashboard</div>');
-  // Order: Bittensor SDK (network), Taostats, CoinGecko, Alternative.me
-  lines.push('<div style="margin-top:8px">' + chip(networkStatus) + ' Bittensor SDK</div>');
-  lines.push('<div>' + chip(taostatsStatus) + ' Taostats</div>');
-  lines.push('<div>' + chip(coingeckoStatus) + ' CoinGecko</div>');
-  lines.push('<div>' + chip(fngStatus) + ' Alternative.me (F&G)</div>');
-  return lines.join('');
-}
-
-// animatePriceChange stays in script.js (uses lastPrice state)
-function animatePriceChange(element, newPrice) {
-  if (lastPrice === null) {
-    lastPrice = newPrice;
-    return;
-  }
-  if (newPrice > lastPrice) {
-    element.classList.add('blink-green');
-  } else if (newPrice < lastPrice) {
-    element.classList.add('blink-red');
-  }
-  setTimeout(() => {
-    element.classList.remove('blink-green', 'blink-red');
-  }, 600);
-  lastPrice = newPrice;
-}
-
-// ===== UI Updates =====
-function updateTaoPrice(priceData) {
-  const priceEl = document.getElementById('taoPrice');
-  const changeEl = document.getElementById('priceChange');
-  const pricePill = document.getElementById('taoPricePill');
-
-  // Store for re-rendering when EUR toggle changes
-  window._lastPriceData = priceData;
-
-  if (!priceEl) return;
-    if (priceData.price) {
-      // Show EUR or USD based on toggle
-      const displayPrice = showEurPrices && eurUsdRate
-        ? priceData.price / eurUsdRate
-        : priceData.price;
-      const symbol = showEurPrices ? '€' : '$';
-      priceEl.textContent = `${symbol}${displayPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      priceEl.classList.remove('skeleton-text');
-      if (changeEl && priceData.change24h !== undefined && priceData.change24h !== null) {
-        const change = priceData.change24h;
-        changeEl.textContent = `${change > 0 ? '↑' : '↓'}${formatPercent(change)} (24h)`;
-        changeEl.style.display = 'inline';
-        changeEl.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
-        
-        // Apply subtle pulse animation to price pill based on 24h change
-        // 3 states: price-up (>+0.5%), price-down (<-0.5%), price-neutral (±0.5%)
-        if (pricePill) {
-          pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
-          if (change > 0.5) {
-            pricePill.classList.add('price-up');
-          } else if (change < -0.5) {
-            pricePill.classList.add('price-down');
-          } else {
-            pricePill.classList.add('price-neutral');
-          }
-        }
-      }
-    } else {
-      priceEl.textContent = 'N/A';
-      if (changeEl) changeEl.style.display = 'none';
-      if (pricePill) pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
-    }
-  lastPrice = priceData.price;
-  tryUpdateMarketCapAndFDV();
-
-  // Price tooltip: show percent changes for available ranges from Taostats (in tooltip only)
-  try {
-    const pill = document.getElementById('taoPricePill') || document.querySelector('.price-pill');
-    if (pill) {
-      const ts = window._taostats ?? null;
-      const parts = [];
-      // Always display lines in a consistent order (1h, 24h, 7d, 30d, 60d, 90d), using placeholders when missing
-      const p1h = readPercentValue(ts, ['percent_change_1h','percent_change_1hr','pct_change_1h','percent_1h_change','percent_change_1Hour','percent_change_1hr']);
-      const p24 = readPercentValue(ts, ['percent_change_24h','percent_change_24hr','pct_change_24h','percent_24h_change','percent_change_24hr']) ?? priceData.change24h ?? null;
-      const p7d = readPercentValue(ts, ['percent_change_7d','percent_change_7day','pct_change_7d','percent_change_7day']);
-      const p30d = readPercentValue(ts, ['percent_change_30d','percent_change_30day','pct_change_30d','percent_change_30day']);
-      const p60d = readPercentValue(ts, ['percent_change_60d','percent_change_60day','pct_change_60d']);
-      const p90d = readPercentValue(ts, ['percent_change_90d','percent_change_90day','pct_change_90d']);
-      parts.push(`1h: ${formatPercent(p1h)}`);
-      parts.push(`24h: ${formatPercent(p24)}`);
-      parts.push(`7d: ${formatPercent(p7d)}`);
-      parts.push(`30d: ${formatPercent(p30d)}`);
-      parts.push(`60d: ${formatPercent(p60d)}`);
-      parts.push(`90d: ${formatPercent(p90d)}`);
-          if (parts.length) {
-            const priceSource = window._priceSource || 'taostats';
-            const lines = ['Price changes:'];
-            parts.forEach(p => lines.push(p));
-            lines.push(`Source: ${priceSource}`);
-            if (window._lastUpdated) lines.push(`Last updated: ${new Date(window._lastUpdated).toLocaleString()}`);
-            pill.setAttribute('data-tooltip', lines.join('\n'));
-      } else {
-        pill.removeAttribute('data-tooltip');
-      }
-    }
-  } catch (err) {
-    if (window._debug) console.debug('Price tooltip construction failed:', err);
-  }
-
-  
-
-  
-
-  
-}
-
-function updateMarketCapAndFDV(price, circulatingSupply) {
-  const marketCapEl = document.getElementById('marketCap');
-  const fdvEl = document.getElementById('fdv');
-  const maxSupply = 21_000_000;
-  if (marketCapEl && price && circulatingSupply) {
-  const marketCap = price * circulatingSupply;
-  const fdv = price * maxSupply;
-  marketCapEl.textContent = `$${formatCompact(marketCap)}`;
-  fdvEl.textContent = `$${formatCompact(fdv)}`;
-  }
-}
-
-function tryUpdateMarketCapAndFDV() {
-  if (window.circulatingSupply && lastPrice) {
-    updateMarketCapAndFDV(lastPrice, window.circulatingSupply);
-  }
-}
 
 async function updateNetworkStats(data) {
   // Keep previous supply snapshot for delta-based emission fallback and crossing detection

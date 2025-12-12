@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.14 (2025-12-12)
+### Code Quality
+- **Price Display Module**: Extracted price UI functions to `js/modules/priceDisplay.js` (~183 lines)
+  - script.js reduced from 2092 → 1954 lines (-138 lines)
+  - `buildApiStatusHtml()` - API status tooltip with chips
+  - `animatePriceChange()` - Price flash animation
+  - `updateTaoPrice()` - Price display with EUR/USD toggle
+  - `updateMarketCapAndFDV()` - Market cap and FDV display
+
+### Summary
+- **Total modularization progress**: script.js 4969 → 1954 lines (-61%)
+
 ## v1.0.0-rc.30.13 (2025-12-12)
 ### Code Quality
 - **Halving Countdown Module**: Extracted countdown logic to `js/modules/halvingCountdown.js` (~106 lines)

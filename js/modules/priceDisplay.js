@@ -1,0 +1,183 @@
+// ===== Price Display Module (ES6) =====
+// UI functions for displaying price, market cap, and API status
+
+import { formatPercent, formatCompact, readPercentValue } from './utils.js';
+
+/**
+ * Build HTML for API status tooltip showing per-source chips
+ * @param {Object} options - Data sources status
+ * @returns {string} HTML string for tooltip
+ */
+export function buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGreed }) {
+  function chip(status) {
+    const cls = status === 'ok' ? 'ok' : (status === 'partial' ? 'partial' : 'error');
+    const label = status === 'ok' ? 'OK' : (status === 'partial' ? 'Partial' : 'Error');
+    return `<span class="tooltip-chip ${cls}">${label}</span>`;
+  }
+
+  // Taostats
+  let taostatsStatus = 'error';
+  if (taostats) {
+    const hasPrice = taostats.price !== undefined && taostats.price !== null;
+    const hasVol = taostats.volume_24h !== undefined && taostats.volume_24h !== null;
+    taostatsStatus = (hasPrice && hasVol) ? 'ok' : 'partial';
+  }
+
+  // CoinGecko (derive from taoPrice._source if available)
+  let coingeckoStatus = 'error';
+  if (taoPrice && taoPrice._source) {
+    if (taoPrice._source === 'coingecko') coingeckoStatus = 'ok';
+    else if (taoPrice._source === 'taostats') coingeckoStatus = 'partial';
+    else coingeckoStatus = (taoPrice.price ? 'ok' : 'error');
+  }
+
+  // Fear & Greed (alternative.me)
+  let fngStatus = 'error';
+  if (fearAndGreed && fearAndGreed.current) {
+    const hasValue = fearAndGreed.current.value !== undefined && fearAndGreed.current.value !== null;
+    fngStatus = hasValue ? 'ok' : 'partial';
+  }
+
+  // Bittensor SDK / network API
+  const networkStatus = networkData ? 'ok' : 'error';
+
+  const lines = [];
+  lines.push('<div>Status of all data sources powering the dashboard</div>');
+  // Order: Bittensor SDK (network), Taostats, CoinGecko, Alternative.me
+  lines.push('<div style="margin-top:8px">' + chip(networkStatus) + ' Bittensor SDK</div>');
+  lines.push('<div>' + chip(taostatsStatus) + ' Taostats</div>');
+  lines.push('<div>' + chip(coingeckoStatus) + ' CoinGecko</div>');
+  lines.push('<div>' + chip(fngStatus) + ' Alternative.me (F&G)</div>');
+  return lines.join('');
+}
+
+/**
+ * Animate price change with color flash
+ * @param {HTMLElement} element - Element to animate
+ * @param {number} newPrice - New price value
+ * @param {number|null} lastPrice - Previous price value
+ * @returns {number} The new price (to be stored as lastPrice)
+ */
+export function animatePriceChange(element, newPrice, lastPrice) {
+  if (lastPrice === null) {
+    return newPrice;
+  }
+  if (newPrice > lastPrice) {
+    element.classList.add('blink-green');
+  } else if (newPrice < lastPrice) {
+    element.classList.add('blink-red');
+  }
+  setTimeout(() => {
+    element.classList.remove('blink-green', 'blink-red');
+  }, 600);
+  return newPrice;
+}
+
+/**
+ * Update TAO price display
+ * @param {Object} priceData - Price data object
+ * @param {Object} options - Display options
+ * @param {boolean} options.showEurPrices - Whether to show EUR prices
+ * @param {number|null} options.eurUsdRate - EUR/USD exchange rate
+ * @param {Function} options.onPriceUpdate - Callback after price update (for market cap)
+ */
+export function updateTaoPrice(priceData, options = {}) {
+  const { showEurPrices = false, eurUsdRate = null, onPriceUpdate = null } = options;
+
+  const priceEl = document.getElementById('taoPrice');
+  const changeEl = document.getElementById('priceChange');
+  const pricePill = document.getElementById('taoPricePill');
+
+  // Store for re-rendering when EUR toggle changes
+  window._lastPriceData = priceData;
+
+  if (!priceEl) return;
+
+  if (priceData.price) {
+    // Show EUR or USD based on toggle
+    const displayPrice = showEurPrices && eurUsdRate
+      ? priceData.price / eurUsdRate
+      : priceData.price;
+    const symbol = showEurPrices ? '€' : '$';
+    priceEl.textContent = `${symbol}${displayPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    priceEl.classList.remove('skeleton-text');
+
+    if (changeEl && priceData.change24h !== undefined && priceData.change24h !== null) {
+      const change = priceData.change24h;
+      changeEl.textContent = `${change > 0 ? '↑' : '↓'}${formatPercent(change)} (24h)`;
+      changeEl.style.display = 'inline';
+      changeEl.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
+
+      // Apply subtle pulse animation to price pill based on 24h change
+      if (pricePill) {
+        pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
+        if (change > 0.5) {
+          pricePill.classList.add('price-up');
+        } else if (change < -0.5) {
+          pricePill.classList.add('price-down');
+        } else {
+          pricePill.classList.add('price-neutral');
+        }
+      }
+    }
+  } else {
+    priceEl.textContent = 'N/A';
+    if (changeEl) changeEl.style.display = 'none';
+    if (pricePill) pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
+  }
+
+  // Callback for market cap update
+  if (onPriceUpdate) onPriceUpdate(priceData.price);
+
+  // Price tooltip: show percent changes for available ranges from Taostats
+  try {
+    const pill = document.getElementById('taoPricePill') || document.querySelector('.price-pill');
+    if (pill) {
+      const ts = window._taostats ?? null;
+      const parts = [];
+      const p1h = readPercentValue(ts, ['percent_change_1h','percent_change_1hr','pct_change_1h','percent_1h_change','percent_change_1Hour','percent_change_1hr']);
+      const p24 = readPercentValue(ts, ['percent_change_24h','percent_change_24hr','pct_change_24h','percent_24h_change','percent_change_24hr']) ?? priceData.change24h ?? null;
+      const p7d = readPercentValue(ts, ['percent_change_7d','percent_change_7day','pct_change_7d','percent_change_7day']);
+      const p30d = readPercentValue(ts, ['percent_change_30d','percent_change_30day','pct_change_30d','percent_change_30day']);
+      const p60d = readPercentValue(ts, ['percent_change_60d','percent_change_60day','pct_change_60d']);
+      const p90d = readPercentValue(ts, ['percent_change_90d','percent_change_90day','pct_change_90d']);
+      parts.push(`1h: ${formatPercent(p1h)}`);
+      parts.push(`24h: ${formatPercent(p24)}`);
+      parts.push(`7d: ${formatPercent(p7d)}`);
+      parts.push(`30d: ${formatPercent(p30d)}`);
+      parts.push(`60d: ${formatPercent(p60d)}`);
+      parts.push(`90d: ${formatPercent(p90d)}`);
+
+      if (parts.length) {
+        const priceSource = window._priceSource || 'taostats';
+        const lines = ['Price changes:'];
+        parts.forEach(p => lines.push(p));
+        lines.push(`Source: ${priceSource}`);
+        if (window._lastUpdated) lines.push(`Last updated: ${new Date(window._lastUpdated).toLocaleString()}`);
+        pill.setAttribute('data-tooltip', lines.join('\n'));
+      } else {
+        pill.removeAttribute('data-tooltip');
+      }
+    }
+  } catch (err) {
+    if (window._debug) console.debug('Price tooltip construction failed:', err);
+  }
+}
+
+/**
+ * Update market cap and FDV display
+ * @param {number} price - Current TAO price
+ * @param {number} circulatingSupply - Circulating supply
+ */
+export function updateMarketCapAndFDV(price, circulatingSupply) {
+  const marketCapEl = document.getElementById('marketCap');
+  const fdvEl = document.getElementById('fdv');
+  const maxSupply = 21_000_000;
+
+  if (marketCapEl && price && circulatingSupply) {
+    const marketCap = price * circulatingSupply;
+    const fdv = price * maxSupply;
+    marketCapEl.textContent = `$${formatCompact(marketCap)}`;
+    fdvEl.textContent = `$${formatCompact(fdv)}`;
+  }
+}
