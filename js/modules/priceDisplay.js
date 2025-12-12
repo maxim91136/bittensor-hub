@@ -85,7 +85,6 @@ export function updateTaoPrice(priceData, options = {}) {
   const { showEurPrices = false, eurUsdRate = null, onPriceUpdate = null } = options;
 
   const priceEl = document.getElementById('taoPrice');
-  const changeEl = document.getElementById('priceChange');
   const pricePill = document.getElementById('taoPricePill');
 
   // Store for re-rendering when EUR toggle changes
@@ -102,27 +101,20 @@ export function updateTaoPrice(priceData, options = {}) {
     priceEl.textContent = `${symbol}${displayPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     priceEl.classList.remove('skeleton-text');
 
-    if (changeEl && priceData.change24h !== undefined && priceData.change24h !== null) {
+    // Apply subtle pulse animation to price pill based on 24h change
+    if (pricePill && priceData.change24h !== undefined && priceData.change24h !== null) {
       const change = priceData.change24h;
-      changeEl.textContent = `${change > 0 ? '↑' : '↓'}${formatPercent(change)} (24h)`;
-      changeEl.style.display = 'inline';
-      changeEl.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
-
-      // Apply subtle pulse animation to price pill based on 24h change
-      if (pricePill) {
-        pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
-        if (change > 0.5) {
-          pricePill.classList.add('price-up');
-        } else if (change < -0.5) {
-          pricePill.classList.add('price-down');
-        } else {
-          pricePill.classList.add('price-neutral');
-        }
+      pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
+      if (change > 0.5) {
+        pricePill.classList.add('price-up');
+      } else if (change < -0.5) {
+        pricePill.classList.add('price-down');
+      } else {
+        pricePill.classList.add('price-neutral');
       }
     }
   } else {
     priceEl.textContent = 'N/A';
-    if (changeEl) changeEl.style.display = 'none';
     if (pricePill) pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
   }
 
