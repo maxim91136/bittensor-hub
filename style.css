@@ -712,10 +712,16 @@ body.light-bg #maxSupplyScribble {
   opacity: 0.6;
 }
 
+/* Ensure pill-tap-hint is truly centered in price-pill */
+.price-pill .pill-tap-hint {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
+
 .price-pill#taoPricePill {
   background: linear-gradient(135deg, rgba(14,165,255,0.1), rgba(14,165,255,0.02));
   border-color: rgba(14,165,255,0.5);
-  gap: clamp(8px, 2vw, 10px);
 }
 
 /* Price pill confidence-style accent based on 24h change */
