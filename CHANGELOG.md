@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.11 (2025-12-12)
+### Code Quality
+- **Tooltip Manager Module**: Extracted tooltip system to `js/modules/tooltipManager.js` (~302 lines)
+  - script.js reduced from 2587 → 2312 lines (-275 lines)
+  - `TooltipManager` class - positioning, show/hide, accessibility
+  - `setupDynamicTooltips()` - event handlers for info-badges, halving-pills, price-pills
+  - Touch/keyboard support with auto-hide and persistent modes
+
+### Summary
+- **Total modularization progress**: script.js 4969 → 2312 lines (-53%)
+
 ## v1.0.0-rc.30.10 (2025-12-12)
 ### Code Quality
 - **Price Fetchers Module**: Extracted API functions to `js/modules/priceFetchers.js` (~347 lines)
