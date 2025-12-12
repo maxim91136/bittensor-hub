@@ -559,9 +559,9 @@ body.light-bg #maxSupplyScribble {
 }
 
 @media (max-width: 480px) {
-  /* Hide date row entirely on mobile - tooltip still has info */
+  /* Smaller date on mobile instead of hiding */
   .halving-date-row {
-    display: none;
+    font-size: 0.52em;
   }
 }
 
@@ -622,14 +622,14 @@ body.light-bg #maxSupplyScribble {
 .price-pill {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 2vw, 10px);
+  gap: clamp(4px, 1.5vw, 8px);
   /* EIGENSTÄNDIG: Komplett getrennt von stat-card CSS-Variablen */
-  padding: clamp(6px, 1.5vw, 8px) clamp(14px, 3.5vw, 18px);
+  padding: clamp(4px, 1.2vw, 6px) clamp(10px, 2.5vw, 14px);
   background: linear-gradient(135deg, rgba(14,165,255,0.08), rgba(14,165,255,0.02));
   border: 1px solid rgba(14,165,255,0.45);
-  border-radius: 22px;
-  /* Moderately larger than cards but not excessive */
-  font-size: clamp(0.8rem, 2vw, 0.95rem);
+  border-radius: 20px;
+  /* Compact sizing */
+  font-size: clamp(0.75rem, 1.8vw, 0.88rem);
   font-weight: 800;
   color: var(--text);
   transition: box-shadow 0.3s ease;

@@ -81,19 +81,18 @@ export function saveLastHalving(threshold, timestamp) {
 }
 
 /**
- * Format timestamp as compact UTC date string
+ * Format timestamp as compact numeric UTC date string
  * @param {number} timestamp - Unix timestamp (ms)
- * @returns {string} Formatted date e.g. "Dec 27 '25 14:35"
+ * @returns {string} Formatted date e.g. "27.12.25 14:35"
  */
 function formatHalvingDateUTC(timestamp) {
   const d = new Date(timestamp);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[d.getUTCMonth()];
-  const day = d.getUTCDate();
-  const year = String(d.getUTCFullYear()).slice(-2); // '25' instead of '2025'
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const year = String(d.getUTCFullYear()).slice(-2);
   const hours = String(d.getUTCHours()).padStart(2, '0');
   const mins = String(d.getUTCMinutes()).padStart(2, '0');
-  return `${month} ${day} '${year} ${hours}:${mins}`;
+  return `${day}.${month}.${year} ${hours}:${mins}`;
 }
 
 /**
