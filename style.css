@@ -4874,3 +4874,10 @@ body.light-bg .decentralization-card .metrics-column {
 body.light-bg .score-bar-container {
   background: rgba(0, 0, 0, 0.1);
 }
+
+/* Learn Bittensor Button */
+.learn-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, #7c7ff7, #9d7cf7);
+}
