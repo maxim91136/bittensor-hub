@@ -3194,8 +3194,4 @@ document.addEventListener('terminalBootDone', () => {
 });
 
 // ===== ES6 Module Exports =====
-export {
-  fetchVolumeHistory,
-  calculateVolumeChange,
-  getVolumeSignal
-};
+// Volume signal functions moved to js/modules/volumeSignal.js
