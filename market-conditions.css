@@ -72,7 +72,7 @@
   text-align: center;
 }
 
-/* Signal Metric: Nur Value + Label, kein Icon */
+/* Signal Metric: Value + Label only, no icon */
 .market-metric#marketSignal {
   flex-direction: column;
   align-items: center;
