@@ -1,12 +1,12 @@
 
 # bittensor-labs
 
-Bittensor-Labs.com ultra-compact Dashboard
+**Live Bittensor network terminal with Matrix aesthetics**
 
 ## Overview
 Started: November 3, 2025
 
-This project provides a compact dashboard for visualizing and monitoring key Bittensor metrics. It is designed for anyone interested in understanding the Bittensor ecosystem.
+A Matrix-styled terminal interface for exploring Bittensor network metrics. Track TAO price, halving countdown, network stats, and market conditions with a unique terminal aesthetic.
 
 **Latest release:** `v1.0.0-rc.30.3.2` — see [CHANGELOG.md](CHANGELOG.md) for details.
 
@@ -20,7 +20,7 @@ This project provides a compact dashboard for visualizing and monitoring key Bit
 
 ### 📊 Network Metrics
 - **TAO price** with 24h change indicator and breathing animation
-- **Real-time pricing** from Binance API (<1 second delay)
+- **Live pricing** from Binance API (<1 second delay)
 - **EUR/USD toggle** on price pill and chart (synced, persisted)
 - **Circulating Supply** tracking against the 21M cap
 - **Total Issuance** from on-chain data via Bittensor SDK
