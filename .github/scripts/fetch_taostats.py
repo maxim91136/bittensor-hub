@@ -1,12 +1,16 @@
 import os
 import sys
 import json
+import time
 import requests
 from datetime import datetime, timezone
 import pathlib
 
 TAOSTATS_API_KEY = os.getenv("TAOSTATS_API_KEY")
 TAOSTATS_URL = os.getenv("TAOSTATS_URL", "https://api.taostats.io/api/price/latest/v1?asset=tao")
+
+MAX_RETRIES = 3
+RETRY_DELAY = 5  # seconds
 
 def _int_env(name, default):
     v = os.getenv(name)
@@ -29,10 +33,36 @@ def fetch_taostats():
         "accept": "application/json",
         "Authorization": TAOSTATS_API_KEY
     }
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            resp = requests.get(TAOSTATS_URL, headers=headers, timeout=10)
+
+            # Handle rate limiting with retry
+            if resp.status_code == 429:
+                if attempt < MAX_RETRIES - 1:
+                    wait_time = RETRY_DELAY * (attempt + 1)
+                    print(f"⚠️ Rate limited (429), waiting {wait_time}s before retry {attempt + 2}/{MAX_RETRIES}...", file=sys.stderr)
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    print(f"❌ Rate limited after {MAX_RETRIES} attempts", file=sys.stderr)
+                    return None
+
+            resp.raise_for_status()
+            data = resp.json()
+            break
+        except requests.exceptions.RequestException as e:
+            if attempt < MAX_RETRIES - 1:
+                wait_time = RETRY_DELAY * (attempt + 1)
+                print(f"⚠️ Request failed: {e}, retrying in {wait_time}s ({attempt + 2}/{MAX_RETRIES})...", file=sys.stderr)
+                time.sleep(wait_time)
+                continue
+            else:
+                print(f"❌ Taostats fetch failed after {MAX_RETRIES} attempts: {e}", file=sys.stderr)
+                return None
+
     try:
-        resp = requests.get(TAOSTATS_URL, headers=headers, timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
         if not data.get("data"):
             raise ValueError("No data in Taostats response")
         item = data["data"][0]
