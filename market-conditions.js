@@ -2,12 +2,14 @@
 import {
   fetchVolumeHistory,
   calculateVolumeChange,
+  getVolumeSignal
+} from './script.js';
+import {
   fetchTaostatsAggregates,
   fetchFearAndGreed,
   fetchAthAtl,
-  fetchTaostats,
-  getVolumeSignal
-} from './script.js';
+  fetchTaostats
+} from './js/modules/api.js';
 
 /**
  * Format compact volume in dollars (e.g., $1.2M, $45.3M)

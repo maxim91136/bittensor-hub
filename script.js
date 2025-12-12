@@ -24,6 +24,15 @@ import {
   setCachedPrice
 } from './js/modules/utils.js';
 import {
+  fetchNetworkData,
+  fetchTaostats,
+  fetchBlockTime,
+  fetchStakingApr,
+  fetchAthAtl,
+  fetchTaostatsAggregates,
+  fetchFearAndGreed
+} from './js/modules/api.js';
+import {
   updateMarketConditionsCard,
   updateTokenEconomicsCard
 } from './market-conditions.js';
@@ -642,33 +651,7 @@ function formatMAPct(num) {
   return num >= 0 ? `+${pct}%` : `${pct}%`;
 }
 
-/**
- * Fetch ATH/ATL data for distance calculation
- */
-async function fetchAthAtl() {
-  try {
-    const res = await fetch('/api/ath-atl', { cache: 'no-store' });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) {
-    console.warn('📊 Failed to fetch ATH/ATL:', e);
-    return null;
-  }
-}
-
-/**
- * Fetch taostats aggregates (for MA data)
- */
-async function fetchTaostatsAggregates() {
-  try {
-    const res = await fetch('/api/taostats_aggregates', { cache: 'no-store' });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) {
-    console.warn('📊 Failed to fetch taostats aggregates:', e);
-    return null;
-  }
-}
+// (fetchAthAtl, fetchTaostatsAggregates moved to api.js)
 
 /**
  * Update volume signal - call this when refreshing data
@@ -796,17 +779,7 @@ window.useFngGraphics = async function(darkPath = '/assets/fng-spoon-black.png',
 
 // ===== Utility Functions =====
 // ===== Fear & Greed UI helpers =====
-async function fetchFearAndGreed() {
-  try {
-    const res = await fetch('/api/fear_and_greed_index', { cache: 'no-store' });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data;
-  } catch (e) {
-    if (window._debug) console.debug('fetchFearAndGreed failed', e);
-    return null;
-  }
-}
+// (fetchFearAndGreed moved to api.js)
 
 function mapFngToClass(classification) {
   if (!classification) return 'fng-neutral';
@@ -1066,58 +1039,7 @@ function animatePriceChange(element, newPrice) {
 }
 
 // ===== API Fetchers =====
-async function fetchNetworkData() {
-  try {
-    const res = await fetch(`${API_BASE}/network`);
-    if (!res.ok) throw new Error(`Network API error: ${res.status}`);
-    const data = await res.json();
-    return data;
-  } catch (err) {
-    console.error('❌ fetchNetworkData:', err);
-    return null;
-  }
-}
-
-async function fetchTaostats() {
-  try {
-    const res = await fetch(`${API_BASE}/taostats`);
-    if (!res.ok) throw new Error(`Taostats API error: ${res.status}`);
-    const data = await res.json();
-    if (!data || !data.circulating_supply || !data.price) throw new Error('No valid Taostats data');
-    return {
-      ...data,
-      last_updated: data.last_updated || data._timestamp || null,
-      _source: 'taostats'
-    };
-  } catch (err) {
-    console.warn('⚠️ Taostats fetch failed:', err);
-    return null;
-  }
-}
-
-// Fetch Block Time data from our API
-async function fetchBlockTime() {
-  try {
-    const res = await fetch(`${API_BASE}/block_time`);
-    if (!res.ok) throw new Error(`Block Time API error: ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.warn('⚠️ Block Time fetch failed:', err);
-    return null;
-  }
-}
-
-// Fetch Staking APR data from our API
-async function fetchStakingApr() {
-  try {
-    const res = await fetch(`${API_BASE}/staking_apy`);
-    if (!res.ok) throw new Error(`Staking APR API error: ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.warn('⚠️ Staking APR fetch failed:', err);
-    return null;
-  }
-}
+// (fetchNetworkData, fetchTaostats, fetchBlockTime, fetchStakingApr moved to api.js)
 
 async function fetchTaoPrice() {
   // Try Binance first (real-time, <1s delay)
@@ -5144,9 +5066,5 @@ document.addEventListener('terminalBootDone', () => {
 export {
   fetchVolumeHistory,
   calculateVolumeChange,
-  fetchTaostatsAggregates,
-  fetchFearAndGreed,
-  fetchAthAtl,
-  fetchTaostats,
   getVolumeSignal
 };
