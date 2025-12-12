@@ -86,7 +86,7 @@
 .market-metric#marketSignal {
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 4px;
 }
 
@@ -97,12 +97,10 @@
 .market-metric#marketSignal .metric-label {
   font-size: 0.85em;
   margin: 0;
-  order: 1;
 }
 
 .market-metric#marketSignal .metric-value {
   font-size: 2em;
-  order: 2;
   margin: 0;
 }
 
