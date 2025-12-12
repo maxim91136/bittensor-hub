@@ -1697,12 +1697,10 @@ body.light-bg .fng-card.fng-red .barometer-class {
   letter-spacing: 0.02em;
 }
 
-/* Halving pill two-row layout */
+/* Halving pill layout - date in top-right corner */
 .halving-content {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
+  align-items: center;
 }
 
 .halving-countdown-row {
@@ -1710,12 +1708,16 @@ body.light-bg .fng-card.fng-red .barometer-class {
   align-items: center;
 }
 
+/* Position "Last:" absolutely in top-right corner */
 .halving-date-row {
+  position: absolute;
+  top: 4px;
+  right: 10px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.7em;
-  opacity: 0.65;
+  gap: 3px;
+  font-size: 0.6em;
+  opacity: 0.6;
 }
 
 .halving-date-label {
@@ -1727,22 +1729,20 @@ body.light-bg .fng-card.fng-red .barometer-class {
   font-weight: 600;
 }
 
-/* Reposition pill-tap-hint in halving pill for two-row layout */
-.halving-pill .pill-tap-hint {
-  bottom: 2px;
-}
-
-/* Wider halving pill on tablet/desktop for two-row layout */
+/* Wider halving pill on tablet/desktop */
 @media (min-width: 600px) {
   .halving-pill {
-    min-width: 240px;
-    padding: 12px 20px 18px 20px;
+    min-width: 220px;
+    padding: 14px 18px 14px 14px;
+  }
+  .halving-date-row {
+    font-size: 0.65em;
   }
 }
 
 @media (min-width: 900px) {
   .halving-pill {
-    min-width: 280px;
+    min-width: 240px;
   }
 }
 
