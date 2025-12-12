@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.8 (2025-12-12)
+### Code Quality
+- **Volume Signal Module**: Extracted Ampelsystem to `js/modules/volumeSignal.js` (~601 lines)
+  - script.js reduced from 3800 → 3197 lines (-603 lines)
+  - `fetchVolumeHistory()` - History data fetching
+  - `calculateVolumeChange()` - 24h volume comparison
+  - `getVolumeSignal()` - Traffic light logic (green/red/yellow/orange/white)
+  - `applyVolumeSignal()` - DOM updates with glow animation
+  - `updateVolumeSignal()` - Main update function
+  - `applyVolumeConfig()` - Runtime config
+- **Dependency Fix**: Updated `market-conditions.js` to import from new module location
+
+### Summary
+- **Total modularization progress**: script.js 4969 → 3197 lines (-36%)
+
 ## v1.0.0-rc.30.7 (2025-12-12)
 ### Code Quality
 - **Fear & Greed Module**: Extracted F&G UI logic to `js/modules/fearAndGreed.js` (~195 lines)
