@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.13 (2025-12-12)
+### Code Quality
+- **Halving Countdown Module**: Extracted countdown logic to `js/modules/halvingCountdown.js` (~106 lines)
+  - script.js reduced from 2161 → 2092 lines (-69 lines)
+  - `startHalvingCountdown()` - Timer initialization
+  - `generateHalvingThresholds()` - Calculate halving supply thresholds
+  - `findNextThresholdIndex()` - Find active halving event
+  - `rotateToThreshold()` - Calculate projected halving date
+  - `updateHalvingCountdown()` - DOM update with countdown display
+
+### Summary
+- **Total modularization progress**: script.js 4969 → 2092 lines (-58%)
+
 ## v1.0.0-rc.30.12 (2025-12-12)
 ### Code Quality
 - **Refresh Controls Module**: Extracted auto-refresh system to `js/modules/refreshControls.js` (~204 lines)

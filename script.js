@@ -58,6 +58,12 @@ import {
   startAutoRefresh,
   ensureAutoRefreshStarted
 } from './js/modules/refreshControls.js';
+import {
+  startHalvingCountdown,
+  generateHalvingThresholds,
+  findNextThresholdIndex,
+  rotateToThreshold
+} from './js/modules/halvingCountdown.js';
 
 // ===== State Management =====
 let lastPrice = null;
@@ -1099,81 +1105,6 @@ async function initDashboard() {
   }
 }
 
-// ===== Halving Countdown =====
-function startHalvingCountdown() {
-  if (window.halvingInterval) clearInterval(window.halvingInterval);
-  updateHalvingCountdown();
-  window.halvingInterval = setInterval(updateHalvingCountdown, 1000);
-}
-// calculateHalvingDate removed: we compute halving date inline to maintain a single source of truth
-
-/**
- * Generate fixed halving thresholds for the token supply.
- * Example: for maxSupply=21_000_000 and maxEvents=6 it returns [10.5M, 15.75M, ...]
- */
-function generateHalvingThresholds(maxSupply = 21_000_000, maxEvents = 6) {
-  const arr = [];
-  for (let n = 1; n <= maxEvents; n++) {
-    const threshold = Math.round(maxSupply * (1 - 1 / Math.pow(2, n)));
-    arr.push(threshold);
-  }
-  return arr;
-}
-
-// Helper: find next threshold index where currentSupply < thresholds[index]
-function findNextThresholdIndex(thresholds = [], currentSupply = 0) {
-  if (!Array.isArray(thresholds) || thresholds.length === 0) return 0;
-  for (let i = 0; i < thresholds.length; i++) {
-    if (currentSupply < thresholds[i]) return i;
-  }
-  return thresholds.length - 1; // if already past all thresholds, return last index
-}
-
-// Helper: set halvingDate to the given threshold index using emissionPerDay
-function rotateToThreshold(thresholds, index, currentSupply, emissionPerDay) {
-  if (!Array.isArray(thresholds) || thresholds.length === 0) return null;
-  const idx = Math.max(0, Math.min(index, thresholds.length - 1));
-  const threshold = thresholds[idx];
-  if (!emissionPerDay || emissionPerDay <= 0) return null;
-  const remaining = Math.max(0, threshold - (currentSupply || 0));
-  const daysToHalving = remaining / emissionPerDay;
-  if (!Number.isFinite(daysToHalving)) return null;
-  return new Date(Date.now() + daysToHalving * 24 * 60 * 60 * 1000);
-}
-function updateHalvingCountdown() {
-  const el = document.getElementById('halvingCountdown');
-  if (!el) return;
-  // If we just had a halving, show 'Halved!' for the brief animation window
-  if (window._lastHalving && (Date.now() - window._lastHalving.at) < 8000) {
-    el.textContent = 'Halved!';
-    return;
-  }
-  // If we recently had a halving and are within the "since" window, show a human-friendly 'since' text
-  if (window._lastHalving && (Date.now() - window._lastHalving.at) < window._showSinceMs) {
-    const diffMs = Date.now() - window._lastHalving.at;
-    const hrs = Math.floor(diffMs / (1000 * 60 * 60));
-    const mins = Math.floor((diffMs / (1000 * 60)) % 60);
-    if (hrs > 0) el.textContent = `Halved ${hrs}h ${mins}m ago`;
-    else el.textContent = `Halved ${mins}m ago`;
-    return;
-  }
-  if (!window.halvingDate) {
-    el.textContent = 'Calculating...';
-    return;
-  }
-  const now = new Date();
-  const diff = window.halvingDate - now;
-  if (diff <= 0) {
-    el.textContent = 'Halved!';
-    return;
-  }
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
-  // Show days, hours, minutes, and seconds
-  el.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-}
 // Prevent link clicks on info-badge controls
 
 document.addEventListener('DOMContentLoaded', () => {
