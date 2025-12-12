@@ -64,7 +64,7 @@ export function applyVolumeConfig(cfg) {
 /**
  * Fetch taostats history for volume change calculation
  */
-async function fetchVolumeHistory() {
+export async function fetchVolumeHistory() {
   // Use cached history if fresh
   if (_volumeHistory && (Date.now() - _volumeHistoryTs) < VOLUME_HISTORY_TTL) {
     return _volumeHistory;
@@ -90,7 +90,7 @@ async function fetchVolumeHistory() {
  * Compares current volume with volume from ~24h ago (or oldest available)
  * Returns: { change: number, confidence: 'high'|'medium'|'low', samples: number }
  */
-function calculateVolumeChange(history, currentVolume) {
+export function calculateVolumeChange(history, currentVolume) {
   if (!Array.isArray(history) || history.length < 2 || !currentVolume) return null;
 
   // Find entry from ~24h ago (or use oldest available)
@@ -149,7 +149,7 @@ function calculateVolumeChange(history, currentVolume) {
  * 🟠 ORANGE: Volume ↑ + Price stable = Potential breakout incoming
  * ⚪ NEUTRAL: No significant change
  */
-function getVolumeSignal(volumeData, priceChange, currentVolume = null, aggregates = null, fngData = null, lastPrice = null) {
+export function getVolumeSignal(volumeData, priceChange, currentVolume = null, aggregates = null, fngData = null, lastPrice = null) {
   // Handle missing data
   if (volumeData === null || priceChange === null) {
     return { signal: 'neutral', tooltip: 'Insufficient data for signal' };

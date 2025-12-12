@@ -3,7 +3,7 @@ import {
   fetchVolumeHistory,
   calculateVolumeChange,
   getVolumeSignal
-} from './script.js';
+} from './js/modules/volumeSignal.js';
 import {
   fetchTaostatsAggregates,
   fetchFearAndGreed,
