@@ -1730,10 +1730,13 @@ body.light-bg .fng-card.fng-red .barometer-class {
   font-weight: 600;
 }
 
-/* Wider halving pill on tablet/desktop */
+/* Equal width pills on tablet/desktop */
 @media (min-width: 600px) {
-  .halving-pill {
+  .halving-pill,
+  .price-pill {
     min-width: 220px;
+  }
+  .halving-pill {
     padding: 14px 18px 14px 14px;
   }
   .halving-date-row {
@@ -1742,7 +1745,8 @@ body.light-bg .fng-card.fng-red .barometer-class {
 }
 
 @media (min-width: 900px) {
-  .halving-pill {
+  .halving-pill,
+  .price-pill {
     min-width: 240px;
   }
 }
