@@ -23,6 +23,26 @@ function formatCompactVolume(num) {
 }
 
 /**
+ * Format MA value in dollars (e.g., $119.2M)
+ */
+function formatMADollar(num) {
+  if (num === null || num === undefined) return '—';
+  if (Math.abs(num) >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
+  if (Math.abs(num) >= 1e6) return '$' + (num / 1e6).toFixed(1) + 'M';
+  if (Math.abs(num) >= 1e3) return '$' + (num / 1e3).toFixed(0) + 'k';
+  return '$' + Number(num).toLocaleString();
+}
+
+/**
+ * Format MA percentage change (e.g., -1.4%, +0.9%)
+ */
+function formatMAPct(num) {
+  if (num === null || num === undefined) return '';
+  const pct = (num * 100).toFixed(1);
+  return num > 0 ? `+${pct}%` : `${pct}%`;
+}
+
+/**
  * Update the new Market Conditions Card with all volume signal data
  */
 async function updateMarketConditionsCard(currentVolume, priceChange24h) {
