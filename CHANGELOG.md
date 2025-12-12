@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.3.2 (2025-12-12)
+### Fixed
+- **Market Conditions Signal Metric**: Redesigned for cleaner layout
+  - Removed icon (was causing spacing issues)
+  - Changed to standard vertical layout: Label (SIGNAL) on top, Value (Caution/Bullish/etc) below
+  - Matches the visual structure of other metrics (Volume, Price, Trend)
+  - Font sizes: Label 0.85em, Value 2em (desktop); Label 0.7em, Value 1.5em (mobile)
+
 ## v1.0.0-rc.30.3.1 (2025-12-12)
 ### Documentation
 - **README Update**: Comprehensive documentation for RC30 features

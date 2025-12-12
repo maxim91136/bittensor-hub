@@ -8,7 +8,7 @@ Started: November 3, 2025
 
 This project provides a compact dashboard for visualizing and monitoring key Bittensor metrics. It is designed for anyone interested in understanding the Bittensor ecosystem.
 
-**Latest release:** `v1.0.0-rc.30.3.1` — see [CHANGELOG.md](CHANGELOG.md) for details.
+**Latest release:** `v1.0.0-rc.30.3.2` — see [CHANGELOG.md](CHANGELOG.md) for details.
 
 > 🚀 **RC30 Highlights**:
 > - **TAO Distribution**: See what percentile you're in (Top 1% = 395τ, Top 10% = 25τ)
