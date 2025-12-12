@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.6 (2025-12-12)
+### Code Quality
+- **Major Module Extraction**: script.js reduced from 4969 → 3995 lines (-974 lines, -20%)
+  - Created `js/modules/seasonalEffects.js` (~310 lines)
+    - Holiday Snowfall, NYE Sparkles, Spring Birds/Bees, Autumn Leaves
+    - `initAllSeasonalEffects()` consolidates all seasonal initializers
+  - Created `js/modules/easterEggs.js` (~410 lines)
+    - `showSystemFailureEasterEgg()` - Matrix SYSTEM FAILURE overlay
+    - `triggerNeoEasterEgg()` - "Wake up, Neo" + Morpheus quotes typewriter
+
+### Fixed
+- **Footer Date**: Abbreviated "November" to "Nov." for mobile layout
+- **VERSION File**: Now correctly reflects current RC version
+
 ## v1.0.0-rc.30.5 (2025-12-12)
 ### Added
 - **Favicon**: Proper SVG favicon file
