@@ -1,3 +1,18 @@
+// ===== ES6 Module Imports =====
+import * as MatrixSound from './js/modules/matrixSound.js';
+import './js/modules/terminalBoot.js'; // Side-effect: runs boot animation
+import {
+  API_BASE,
+  BINANCE_API,
+  COINGECKO_API,
+  REFRESH_INTERVAL,
+  PRICE_CACHE_TTL,
+  PRICE_CACHE_TTL_MAX
+} from './js/modules/config.js';
+import {
+  updateMarketConditionsCard,
+  updateTokenEconomicsCard
+} from './market-conditions.js';
 
 // ===== State Management =====
 let priceChart = null;
@@ -5172,3 +5187,66 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('DOMContentLoaded', repositionFngBadge);
   window.addEventListener('resize', repositionFngBadge);
 })();
+
+// ===== Terminal Boot Event Handlers =====
+// If the terminal boot hides or races with our dashboard init, ensure we re-run init
+document.addEventListener('terminalBootDone', async () => {
+  try {
+    // If dashboard already initialized, do nothing
+    if (window._dashboardInitialized) return;
+    // If an init is in progress, wait a bit and return
+    if (window._dashboardInitInProgress) return;
+    // Try to initialize dashboard now that terminal overlay is gone
+    await initDashboard();
+    // Also ensure other key UI pieces are refreshed in case they failed earlier
+    try { await updateAthAtlPills(); } catch (e) {}
+    try { await updateBlockTime(); } catch (e) {}
+    try { await updateStakingApr(); } catch (e) {}
+  } catch (err) {
+    if (window._debug) console.warn('terminalBootDone handler error', err);
+  }
+});
+
+// Ensure auto-refresh runs even if init failed (so periodic retries happen)
+function ensureAutoRefreshStarted() {
+  try {
+    if (typeof refreshTimer === 'undefined' || refreshTimer === null) {
+      startAutoRefresh();
+    }
+  } catch (e) {
+    if (window._debug) console.warn('ensureAutoRefreshStarted error', e);
+  }
+}
+
+// After terminal boot, double-check key UI elements and trigger a refresh if still empty
+document.addEventListener('terminalBootDone', () => {
+  ensureAutoRefreshStarted();
+  // short delay to let any pending UI updates settle
+  setTimeout(() => {
+    try {
+      const priceEl = document.getElementById('taoPrice');
+      const changeEl = document.getElementById('priceChange');
+      const halvingEl = document.getElementById('halvingCountdown');
+      const needRefresh = (
+        !priceEl || priceEl.textContent.trim() === '' || priceEl.classList.contains('skeleton-text')
+      );
+      if (needRefresh) {
+        if (window._debug) console.log('terminalBootDone fallback: triggering refreshDashboard()');
+        refreshDashboard();
+      }
+    } catch (e) {
+      if (window._debug) console.warn('terminalBootDone fallback check failed', e);
+    }
+  }, 1200);
+});
+
+// ===== ES6 Module Exports =====
+export {
+  fetchVolumeHistory,
+  calculateVolumeChange,
+  fetchTaostatsAggregates,
+  fetchFearAndGreed,
+  fetchAthAtl,
+  fetchTaostats,
+  getVolumeSignal
+};

@@ -1,3 +1,14 @@
+// ===== ES6 Module Imports =====
+import {
+  fetchVolumeHistory,
+  calculateVolumeChange,
+  fetchTaostatsAggregates,
+  fetchFearAndGreed,
+  fetchAthAtl,
+  fetchTaostats,
+  getVolumeSignal
+} from './script.js';
+
 /**
  * Format compact volume in dollars (e.g., $1.2M, $45.3M)
  */
@@ -256,19 +267,8 @@ async function updateTokenEconomicsCard() {
     console.warn('Failed to update Token Economics card:', error);
   }
 }
-
-// Hook into init and refresh to update Token Economics Card
-if (typeof window !== 'undefined') {
-  // Add to refresh cycle
-  const originalRefresh = window.refreshDashboard;
-  if (originalRefresh) {
-    window.refreshDashboard = async function() {
-      await originalRefresh.apply(this, arguments);
-      try {
-        await updateTokenEconomicsCard();
-      } catch (e) {
-        console.warn('Failed to update Token Economics card:', e);
-      }
-    };
-  }
-}
+// ===== ES6 Module Exports =====
+export {
+  updateMarketConditionsCard,
+  updateTokenEconomicsCard
+};
