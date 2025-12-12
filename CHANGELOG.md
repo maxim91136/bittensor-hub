@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.4 (2025-12-12)
+### Changed
+- **Rebranding**: Dashboard → Terminal
+  - Tagline updated: "the incentive layer terminal"
+  - README and meta descriptions updated
+  - "Real-time pricing" → "Live pricing" (more accurate)
+
+### Added
+- **Footer Bittensor Branding**: Official Bittensor logotype in footer
+  - "Built on Bittensor" with white SVG logo
+  - Footer date: November 3, 2025 (exact launch date)
+  - Added bittensor-brand/ assets directory
+
+### Fixed
+- **MA Formatters Missing**: Market Conditions card not displaying MA values
+  - Added `formatMADollar()` and `formatMAPct()` to market-conditions.js
+  - Values now display correctly (e.g., "$5.2B", "+2.3%")
+
+### Code Quality
+- **Module Extraction**: Created `js/modules/uiUpdates.js`
+  - Extracted `updateAthAtlPills()`, `updateBlockTime()`, `updateStakingApr()`
+  - script.js reduced: 5069 → 4969 lines (-100 lines)
+
 ## v1.0.0-rc.30.3.2 (2025-12-12)
 ### Fixed
 - **Market Conditions Signal Metric**: Redesigned for cleaner layout
