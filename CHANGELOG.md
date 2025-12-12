@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.10 (2025-12-12)
+### Code Quality
+- **Price Fetchers Module**: Extracted API functions to `js/modules/priceFetchers.js` (~347 lines)
+  - script.js reduced from 2877 → 2587 lines (-290 lines)
+  - `fetchTaoPrice()` - TAO price with Binance→Taostats→CoinGecko fallback
+  - `fetchPriceHistory()` - Price/OHLCV history for charts
+  - `fetchBtc/Eth/SolPriceHistory()` - Comparison data
+  - `fetchEurUsdRate()` - Currency conversion
+  - `fetchCirculatingSupply()` - Supply data
+
+### Cleanup
+- Removed unused `promo/` directory
+
+### Summary
+- **Total modularization progress**: script.js 4969 → 2587 lines (-48%)
+
 ## v1.0.0-rc.30.9 (2025-12-12)
 ### Code Quality
 - **Price Chart Module**: Extracted chart logic to `js/modules/priceChart.js` (~420 lines)
