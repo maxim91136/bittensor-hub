@@ -72,27 +72,26 @@
   text-align: center;
 }
 
-/* Signal Metric: Kompaktes vertikales Layout */
+/* Signal Metric: Nur Value + Label, kein Icon */
 .market-metric#marketSignal {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .market-metric#marketSignal .metric-icon {
-  font-size: 1.8em;
-  margin-bottom: 2px;
+  display: none;
 }
 
 .market-metric#marketSignal .metric-label {
-  font-size: 0.7em;
+  font-size: 0.75em;
   margin: 0;
   order: 2;
 }
 
 .market-metric#marketSignal .metric-value {
-  font-size: 1.5em;
+  font-size: 1.8em;
   order: 1;
   margin: 0;
 }
@@ -415,15 +414,15 @@
   }
 
   .market-metric#marketSignal {
-    gap: 2px;
-  }
-
-  .market-metric#marketSignal .metric-icon {
-    font-size: 1.5em;
+    gap: 3px;
   }
 
   .market-metric#marketSignal .metric-value {
-    font-size: 1.3em;
+    font-size: 1.5em;
+  }
+
+  .market-metric#marketSignal .metric-label {
+    font-size: 0.7em;
   }
 
   .market-phase-section {
