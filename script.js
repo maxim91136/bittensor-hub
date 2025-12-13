@@ -518,16 +518,16 @@ async function updateNetworkStats(data) {
           data.halving_estimates.slice(0, 3).forEach(h => {
           const step = h.step !== undefined ? `#${h.step}` : '';
           const t = formatNumber(h.threshold);
-          // Format ETA as UTC date+time: DD.MM.YY HH:MM UTC
+          // Format ETA as ISO UTC date+time: YYYY-MM-DD HH:MM UTC
           let eta = 'N/A';
           if (h.eta) {
             const d = new Date(h.eta);
-            const day = String(d.getUTCDate()).padStart(2, '0');
+            const year = d.getUTCFullYear();
             const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-            const year = String(d.getUTCFullYear()).slice(-2);
+            const day = String(d.getUTCDate()).padStart(2, '0');
             const hours = String(d.getUTCHours()).padStart(2, '0');
             const mins = String(d.getUTCMinutes()).padStart(2, '0');
-            eta = `${day}.${month}.${year} ${hours}:${mins} UTC`;
+            eta = `${year}-${month}-${day} ${hours}:${mins} UTC`;
           }
           const used = h.emission_used !== undefined ? `${formatExact(h.emission_used)} TAO/day` : 'N/A';
           halvingLines.push(`${step} ${t} → ${eta} → ${used}`);
