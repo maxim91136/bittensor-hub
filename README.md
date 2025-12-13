@@ -11,10 +11,12 @@ A Matrix-styled terminal for exploring Bittensor network metrics. Track TAO pric
 **Latest release:** `v1.0.0-rc.30.34` — see [Releases](https://github.com/maxim91136/bittensor-labs/releases) for details.
 
 > 🚀 **RC30 Highlights**:
+> - **7 Data Sources**: Bittensor SDK, Taostats, Binance, CoinGecko, CoinMarketCap, Alternative.me, DexScreener
+> - **Tooltip Transparency**: Every stat card shows Source + Last Updated timestamp
 > - **TAO Distribution**: See what percentile you're in (Top 1% = 395τ, Top 10% = 25τ)
 > - **Decentralization Score**: Institutional-grade metrics (Nakamoto Coefficient, Gini Index, HHI)
-> - **Network Health**: Validator & Subnet decentralization analysis
-> - **Critical Fix**: Nakamoto Coefficient now uses total network stake (was showing 3, now correctly shows 7)
+> - **Fear & Greed Hybrid**: CMC for current value (frequent updates) + Alternative.me for historical
+> - **Matrix Terminal Badge**: `21_000_000 τ` max supply display in header
 
 ## Features
 
@@ -25,6 +27,7 @@ A Matrix-styled terminal for exploring Bittensor network metrics. Track TAO pric
 - **Circulating Supply** tracking against the 21M cap
 - **Total Issuance** from on-chain data via Bittensor SDK
 - **Active Neurons** count across all subnets
+- **Tooltip Transparency**: Every stat card shows data source + last updated timestamp
 
 ### 📈 Price Chart (RC29+)
 - **Candlestick Chart**: Professional OHLC visualization with green/red candles
@@ -92,7 +95,7 @@ Real-time market analysis card combining multiple data sources into actionable i
 
 **Market Phase Analysis**:
 - Contextual phase detection (Bullish/Bearish/Neutral)
-- Fear & Greed Index integration from Alternative.me
+- Fear & Greed Index integration (CMC current + Alternative.me historical)
 - Weekend activity context
 - Clear explanations in expandable section
 
@@ -120,10 +123,11 @@ Real-time market analysis card combining multiple data sources into actionable i
 - **Emission curve visualization** showing TAO distribution over time
 
 ### 😱 Fear & Greed Index
-- Real-time sentiment tracking from Alternative.me
+- **Hybrid data source**: CoinMarketCap (current, frequent updates) + Alternative.me (historical)
 - Spoon gauge visualization (0-100 scale)
-- Historical timeline showing sentiment trends
+- Historical timeline: Now → Yesterday → Week → Month
 - Integration with Market Conditions Card for comprehensive analysis
+- Tooltip shows both sources with individual timestamps
 
 ### 🏆 Leaderboards
 - **Top Validators** by stake with delegation info
@@ -150,6 +154,12 @@ Track position changes across all Top 10 cards with visual indicators:
 
 ### 🥚 Easter Eggs
 - Hidden Matrix-themed surprises - can you find them?
+
+### 🔌 API Status Card
+- Real-time health monitoring of all 7 data sources
+- Color-coded status chips: OK (green), Partial (yellow), Error (red)
+- Critical vs Non-critical API classification
+- Tooltip with detailed per-source status
 
 ### ♿ Accessibility
 - `prefers-reduced-motion` support
@@ -178,13 +188,20 @@ Pull requests and issues are welcome! Please follow the guidelines in CONTRIBUTI
 
 ## CI & Releases
 
-This repository uses a simple, manual release process:
+This repository uses a release script for consistent releases:
 
-1. Update `VERSION` file
-2. Update `CHANGELOG.md`
-3. Update version in `README.md`
-4. Create git tag and push: `git tag v1.0.0 && git push && git push --tags`
-5. Create GitHub Release: `gh release create v1.0.0 --title "v1.0.0" --latest`
+```bash
+# 1. Update VERSION file with new version
+# 2. Add entry to CHANGELOG.md
+# 3. Run the release script
+./scripts/release.sh
+```
+
+The script automatically:
+- Updates `README.md` with the version from `VERSION`
+- Commits changes and pushes to main
+- Creates a git tag
+- Creates a GitHub Release with commit list
 
 For debugging in the client, set `window._debug = true` in the browser console to get debug logs about halving calculation and fallback behavior.
 
@@ -200,14 +217,30 @@ For questions or feedback, please open an [Issue](https://github.com/maxim91136/
 
 This terminal is an independent, community-run project provided for informational purposes only and is not affiliated with, endorsed by, or certified by the Opentensor Foundation.
 
-- Primary data is acquired on-chain via the repository's network API (`/api/network`).
-- **Price data** is sourced from Binance API (real-time, <1s delay) with Taostats and CoinGecko as fallbacks.
-- **EUR/USD conversion** rates are fetched live from Binance EURUSDT ticker.
-- Price and supplementary supply metrics may be provided by third-party services; these can be subject to rate limits.
-- This project is not financial, legal, or investment advice. Always verify critical information using authoritative sources and consult a professional before acting on any data shown here.
-- All data is provided "as-is" without warranty of any kind; the project maintainer disclaims liability for losses resulting from the use of this site.
-- This site uses Cloudflare for security and performance; personal data is not stored by the project unless explicitly submitted by you.
-- "Bittensor", "TAO" and other asset names are trademarks of their respective owners and are used for identification only.
+### Data Sources (7 APIs)
+
+| Source | Data Provided | Update Frequency |
+|--------|---------------|------------------|
+| **Bittensor SDK** | On-chain data: subnets, validators, neurons, issuance, block height | Every 10 min |
+| **Taostats** | Supply, validators, wallets, subnets, price history | Every 10 min |
+| **Binance** | Real-time TAO price, 24h volume, candlestick data, EUR/USD rate | Real-time (<1s) |
+| **CoinGecko** | Fallback price data | On-demand |
+| **CoinMarketCap** | Fear & Greed Index (current), global metrics, BTC dominance | Hourly |
+| **Alternative.me** | Fear & Greed historical (yesterday, week, month) | Daily |
+| **DexScreener** | wTAO DEX pairs, liquidity, trading volume | Every 15 min |
+
+### Legal
+
+- **Not financial advice**: This project is not financial, legal, or investment advice. Always verify critical information using authoritative sources and consult a professional before acting on any data shown here.
+- **No warranty**: All data is provided "as-is" without warranty of any kind; the project maintainer disclaims liability for losses resulting from the use of this site.
+- **Privacy**: This site uses Cloudflare for security and performance; personal data is not stored by the project unless explicitly submitted by you.
+- **Trademarks**: "Bittensor", "TAO" and other asset names are trademarks of their respective owners and are used for identification only.
+- **Rate limits**: Third-party APIs may be subject to rate limits; data may be temporarily unavailable.
+
+### Community
+
+- **Reddit**: [u/WrongdoerSweet3851](https://reddit.com/u/WrongdoerSweet3851)
+- **Discord**: STRM1109
 
 ## Docs
 
