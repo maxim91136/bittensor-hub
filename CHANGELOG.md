@@ -21,6 +21,31 @@ All notable changes to this project will be documented in this file.
   - Prevents spam/accidental re-triggers
   - Plays beep sound when blocked
 
+## v1.0.0-rc.30.31 (2025-12-13)
+### UI
+- **Matrix Terminal Badge**: Replaced handwritten "only 21 Mio." scribble with Matrix-style terminal badge
+  - Shows `21_000_000 τ` in monospace font
+  - Matches dashboard's Matrix aesthetic
+
+## v1.0.0-rc.30.30 (2025-12-13)
+### Refactor
+- **API Status Classification**: Improved tier system for data sources
+  - Critical APIs: SDK, Taostats, Binance, CMC → red if error
+  - Non-critical APIs: DexScreener, Alternative.me → yellow if error
+  - CoinGecko partial is always OK (fallback only)
+- **Reverted**: Binance/CoinGecko back in API status (internal fallback logic, but user should see status)
+
+## v1.0.0-rc.30.29 (2025-12-13)
+### Fixes
+- **API Status Tooltip**: Removed Binance/CoinGecko from status display (internal fallbacks only)
+  - Note: Reverted in rc.30.30
+
+## v1.0.0-rc.30.28 (2025-12-13)
+### Refactor
+- **API Status Tooltip**: Extracted to shared helper function in priceDisplay.js
+  - `buildApiStatusHtml()` builds consistent tooltip across components
+  - Fixes Fear & Greed data not being fetched for API status on init
+
 ## v1.0.0-rc.30.27 (2025-12-13)
 ### Fixes
 - **API Status Tooltip**: Added CMC/DEX fetch to initDashboard() - was only in refreshDashboard()
