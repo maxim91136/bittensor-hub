@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.34 (2025-12-13)
+### Fixes
+- **Issued Tokens Tooltip**: Fixed missing Last Updated timestamp (use last_issuance_ts)
+
+## v1.0.0-rc.30.33 (2025-12-13)
+### Features
+- **Tooltip Transparency**: All stat cards now show Source + Last Updated
+  - Added card IDs: validatorsCard, circSupplyCard, marketCapCard, fdvCard, emissionCard, neuronsCard
+  - Dynamic tooltips for: Subnets, Validators, Circ Supply, Issued Tokens, Market Cap, FDV, Emission, Neurons
+
+## v1.0.0-rc.30.32 (2025-12-13)
+### Features
+- **System Failure Cooldown**: 30-second click block after triggering easter egg
+  - Prevents spam/accidental re-triggers
+  - Plays beep sound when blocked
+
 ## v1.0.0-rc.30.27 (2025-12-13)
 ### Fixes
 - **API Status Tooltip**: Added CMC/DEX fetch to initDashboard() - was only in refreshDashboard()
