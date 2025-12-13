@@ -638,11 +638,14 @@ body.light-bg #maxSupplyScribble {
   position: relative;
 }
 
-/* Center the price value absolutely - true center regardless of icon/toggle widths */
-.price-pill .pill-value {
+/* Left-align price value and [pill me] so € aligns with [ */
+.price-pill .pill-value,
+.price-pill .pill-tap-hint {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+  width: 75px;
+  text-align: left;
 }
 
 /* Currency toggle button in price pill */
