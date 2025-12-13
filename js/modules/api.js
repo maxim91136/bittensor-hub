@@ -93,39 +93,57 @@ export async function fetchTaostatsAggregates() {
 }
 
 /**
- * Fetch Fear & Greed Index data (CMC primary, Alternative.me fallback)
+ * Fetch Fear & Greed Index data (Hybrid: CMC current + Alternative.me historical)
  */
 export async function fetchFearAndGreed() {
-  // Primary: CMC data via our API (more frequent updates)
+  let cmcData = null;
+  let altData = null;
+
+  // Fetch CMC for current value (more frequent updates)
   try {
     const res = await fetch('/api/cmc?type=fng', { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       if (data && data.value !== undefined) {
-        return {
-          current: {
-            value: data.value,
-            value_classification: data.value_classification
-          },
-          _source: 'coinmarketcap'
+        cmcData = {
+          value: data.value,
+          value_classification: data.value_classification
         };
       }
     }
   } catch (e) {
-    if (window._debug) console.debug('fetchFearAndGreed CMC primary failed', e);
+    if (window._debug) console.debug('fetchFearAndGreed CMC failed', e);
   }
 
-  // Fallback: Alternative.me via our API
+  // Fetch Alternative.me for historical data (yesterday, week, month)
   try {
     const res = await fetch('/api/fear_and_greed_index', { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      if (data && data.current && data.current.value !== undefined) {
-        return data;
+      if (data && data.current) {
+        altData = data;
       }
     }
   } catch (e) {
-    if (window._debug) console.debug('fetchFearAndGreed Alternative.me fallback failed', e);
+    if (window._debug) console.debug('fetchFearAndGreed Alternative.me failed', e);
+  }
+
+  // Build hybrid response
+  if (cmcData) {
+    // Use CMC for current, Alternative.me for historical
+    return {
+      current: cmcData,
+      yesterday: altData?.yesterday || null,
+      last_week: altData?.last_week || null,
+      last_month: altData?.last_month || null,
+      _source: 'coinmarketcap'
+    };
+  } else if (altData) {
+    // Fallback to Alternative.me for everything
+    return {
+      ...altData,
+      _source: 'alternative.me'
+    };
   }
 
   return null;
