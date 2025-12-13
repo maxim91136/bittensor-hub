@@ -17,10 +17,11 @@ def get_headers(api_key):
     }
 
 def fetch_tao_dex_pairs(api_key):
-    """Fetch TAO trading pairs on DEXes"""
+    """Fetch TAO trading pairs on DEXes (Ethereum mainnet)"""
     url = f"{CMC_DEX_URL}/v4/dex/spot-pairs/latest"
-    # Search for TAO pairs - using base_asset_symbol
+    # TAO is on Ethereum mainnet (network_slug: ethereum)
     params = {
+        "network_slug": "ethereum",
         "base_asset_symbol": "TAO",
         "sort": "volume_24h",
         "sort_dir": "desc",
@@ -28,7 +29,17 @@ def fetch_tao_dex_pairs(api_key):
     }
     resp = requests.get(url, headers=get_headers(api_key), params=params, timeout=30)
     if resp.status_code != 200:
-        raise Exception(f"DEX Pairs API error: {resp.status_code} - {resp.text}")
+        # Try without base_asset_symbol filter if it fails
+        params_fallback = {
+            "network_slug": "ethereum",
+            "search": "TAO",
+            "sort": "volume_24h",
+            "sort_dir": "desc",
+            "limit": 50
+        }
+        resp = requests.get(url, headers=get_headers(api_key), params=params_fallback, timeout=30)
+        if resp.status_code != 200:
+            raise Exception(f"DEX Pairs API error: {resp.status_code} - {resp.text}")
     data = resp.json()
     if not data or 'data' not in data:
         raise Exception("No data in DEX Pairs response")

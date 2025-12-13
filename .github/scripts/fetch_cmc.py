@@ -50,17 +50,18 @@ def fetch_global_metrics(api_key):
         raise Exception("No data in CMC Global response")
     return data['data']
 
-def fetch_trending(api_key):
-    """Fetch top gainers and losers (24h)"""
-    url = f"{CMC_BASE_URL}/v1/cryptocurrency/trending/gainers-losers"
-    params = {"time_period": "24h", "limit": 5}
-    resp = requests.get(url, headers=get_headers(api_key), params=params, timeout=15)
-    if resp.status_code != 200:
-        raise Exception(f"CMC Trending API error: {resp.status_code} - {resp.text}")
-    data = resp.json()
-    if not data or 'data' not in data:
-        raise Exception("No data in CMC Trending response")
-    return data['data']
+# NOTE: Trending endpoint requires Startup tier ($79/mo) - disabled for Basic tier
+# def fetch_trending(api_key):
+#     """Fetch top gainers and losers (24h)"""
+#     url = f"{CMC_BASE_URL}/v1/cryptocurrency/trending/gainers-losers"
+#     params = {"time_period": "24h", "limit": 5}
+#     resp = requests.get(url, headers=get_headers(api_key), params=params, timeout=15)
+#     if resp.status_code != 200:
+#         raise Exception(f"CMC Trending API error: {resp.status_code} - {resp.text}")
+#     data = resp.json()
+#     if not data or 'data' not in data:
+#         raise Exception("No data in CMC Trending response")
+#     return data['data']
 
 def calculate_season(btc_dominance):
     """Calculate market season based on BTC dominance"""
@@ -162,32 +163,8 @@ def main():
         }
         print(f"Season: {season['label']} (BTC {btc_dominance:.1f}%)")
 
-    # Fetch trending gainers/losers
-    try:
-        trending = fetch_trending(cmc_key)
-        gainers = trending.get('gainers', [])[:5]
-        losers = trending.get('losers', [])[:5]
-        results['trending'] = {
-            'gainers': [{
-                'symbol': c.get('symbol'),
-                'name': c.get('name'),
-                'percent_change_24h': c.get('quote', {}).get('USD', {}).get('percent_change_24h')
-            } for c in gainers],
-            'losers': [{
-                'symbol': c.get('symbol'),
-                'name': c.get('name'),
-                'percent_change_24h': c.get('quote', {}).get('USD', {}).get('percent_change_24h')
-            } for c in losers],
-            'last_updated': now_iso,
-            '_source': 'coinmarketcap'
-        }
-        top_gainer = gainers[0] if gainers else None
-        if top_gainer:
-            pct = top_gainer.get('quote', {}).get('USD', {}).get('percent_change_24h', 0)
-            print(f"CMC Trending: Top gainer {top_gainer.get('symbol')} +{pct:.1f}%")
-    except Exception as e:
-        print(f"CMC Trending fetch failed: {e}", file=sys.stderr)
-        results['trending'] = None
+    # NOTE: Trending endpoint requires Startup tier ($79/mo) - skipped
+    # results['trending'] = None
 
     # Store in KV
     results['_timestamp'] = now_iso
