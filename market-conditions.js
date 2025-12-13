@@ -64,10 +64,9 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
   // Parse tooltip to extract structured data
   const lines = tooltip.split('\n');
 
-  // Update signal icon and text
+  // Update signal text
   const signalMetric = card.querySelector('#marketSignal');
   if (signalMetric) {
-    const icons = { green: '🟢', red: '🔴', yellow: '🟡', orange: '🟠', neutral: '⚪' };
     const labels = {
       green: 'Bullish',
       red: 'Bearish',
@@ -77,7 +76,6 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
     };
 
     signalMetric.className = 'market-metric signal-' + signal;
-    signalMetric.querySelector('.metric-icon').textContent = icons[signal] || '⚪';
     signalMetric.querySelector('.metric-value').textContent = labels[signal] || 'Neutral';
   }
 
