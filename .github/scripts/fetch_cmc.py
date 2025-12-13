@@ -50,6 +50,29 @@ def fetch_global_metrics(api_key):
         raise Exception("No data in CMC Global response")
     return data['data']
 
+def fetch_trending(api_key):
+    """Fetch top gainers and losers (24h)"""
+    url = f"{CMC_BASE_URL}/v1/cryptocurrency/trending/gainers-losers"
+    params = {"time_period": "24h", "limit": 5}
+    resp = requests.get(url, headers=get_headers(api_key), params=params, timeout=15)
+    if resp.status_code != 200:
+        raise Exception(f"CMC Trending API error: {resp.status_code} - {resp.text}")
+    data = resp.json()
+    if not data or 'data' not in data:
+        raise Exception("No data in CMC Trending response")
+    return data['data']
+
+def calculate_season(btc_dominance):
+    """Calculate market season based on BTC dominance"""
+    if btc_dominance is None:
+        return None
+    if btc_dominance < 50:
+        return {'season': 'altcoin', 'label': 'Altcoin Season', 'btc_dominance': btc_dominance}
+    elif btc_dominance > 60:
+        return {'season': 'bitcoin', 'label': 'Bitcoin Season', 'btc_dominance': btc_dominance}
+    else:
+        return {'season': 'neutral', 'label': 'Neutral', 'btc_dominance': btc_dominance}
+
 def put_kv_json(account_id, api_token, namespace_id, key, obj):
     url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/storage/kv/namespaces/{namespace_id}/values/{key}"
     headers = {
@@ -110,22 +133,61 @@ def main():
         results['tao_quote'] = None
 
     # Fetch global metrics (optional)
+    btc_dominance = None
     try:
         global_data = fetch_global_metrics(cmc_key)
         quote = global_data.get('quote', {}).get('USD', {})
+        btc_dominance = global_data.get('btc_dominance')
         results['global_metrics'] = {
             'total_market_cap': quote.get('total_market_cap'),
             'total_volume_24h': quote.get('total_volume_24h'),
-            'btc_dominance': global_data.get('btc_dominance'),
+            'btc_dominance': btc_dominance,
             'eth_dominance': global_data.get('eth_dominance'),
             'active_cryptocurrencies': global_data.get('active_cryptocurrencies'),
             'last_updated': now_iso,
             '_source': 'coinmarketcap'
         }
-        print(f"CMC Global: BTC dominance {global_data.get('btc_dominance'):.1f}%")
+        print(f"CMC Global: BTC dominance {btc_dominance:.1f}%")
     except Exception as e:
         print(f"CMC Global metrics fetch failed: {e}", file=sys.stderr)
         results['global_metrics'] = None
+
+    # Calculate season indicator from BTC dominance
+    season = calculate_season(btc_dominance)
+    if season:
+        results['season'] = {
+            **season,
+            'last_updated': now_iso,
+            '_source': 'derived'
+        }
+        print(f"Season: {season['label']} (BTC {btc_dominance:.1f}%)")
+
+    # Fetch trending gainers/losers
+    try:
+        trending = fetch_trending(cmc_key)
+        gainers = trending.get('gainers', [])[:5]
+        losers = trending.get('losers', [])[:5]
+        results['trending'] = {
+            'gainers': [{
+                'symbol': c.get('symbol'),
+                'name': c.get('name'),
+                'percent_change_24h': c.get('quote', {}).get('USD', {}).get('percent_change_24h')
+            } for c in gainers],
+            'losers': [{
+                'symbol': c.get('symbol'),
+                'name': c.get('name'),
+                'percent_change_24h': c.get('quote', {}).get('USD', {}).get('percent_change_24h')
+            } for c in losers],
+            'last_updated': now_iso,
+            '_source': 'coinmarketcap'
+        }
+        top_gainer = gainers[0] if gainers else None
+        if top_gainer:
+            pct = top_gainer.get('quote', {}).get('USD', {}).get('percent_change_24h', 0)
+            print(f"CMC Trending: Top gainer {top_gainer.get('symbol')} +{pct:.1f}%")
+    except Exception as e:
+        print(f"CMC Trending fetch failed: {e}", file=sys.stderr)
+        results['trending'] = None
 
     # Store in KV
     results['_timestamp'] = now_iso

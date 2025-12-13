@@ -23,7 +23,7 @@ export async function onRequest(context) {
 
     // Check for specific data type query param
     const url = new URL(request.url);
-    const dataType = url.searchParams.get('type'); // 'fng', 'tao', 'global', or null for all
+    const dataType = url.searchParams.get('type'); // 'fng', 'tao', 'global', 'trending', 'season', or null for all
 
     try {
         const raw = await KV.get('cmc_data');
@@ -52,6 +52,18 @@ export async function onRequest(context) {
         if (dataType === 'global') {
             return new Response(JSON.stringify(data.global_metrics || { error: 'No global data' }), {
                 status: data.global_metrics ? 200 : 404,
+                headers: cors
+            });
+        }
+        if (dataType === 'trending') {
+            return new Response(JSON.stringify(data.trending || { error: 'No trending data' }), {
+                status: data.trending ? 200 : 404,
+                headers: cors
+            });
+        }
+        if (dataType === 'season') {
+            return new Response(JSON.stringify(data.season || { error: 'No season data' }), {
+                status: data.season ? 200 : 404,
                 headers: cors
             });
         }

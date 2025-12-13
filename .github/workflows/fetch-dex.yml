@@ -1,0 +1,29 @@
+name: Fetch DEX Data
+
+on:
+  schedule:
+    # Run every 6 hours (conservative - DEX API has 1M credits/month)
+    - cron: '30 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  fetch-dex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch DEX data
+        env:
+          CMC_API_TOKEN: ${{ secrets.CMC_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_METRICS_NAMESPACE_ID: ${{ secrets.CF_METRICS_NAMESPACE_ID }}
+        run: python .github/scripts/fetch_dex.py
