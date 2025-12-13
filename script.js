@@ -614,6 +614,25 @@ if (document.readyState === 'loading') {
   setupDynamicTooltips({ MatrixSound });
 }
 
+// ===== API Status Tooltip Helper =====
+async function updateApiStatusTooltip(networkData, taostats, taoPrice) {
+  try {
+    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
+    if (!infoBadge) return;
+
+    const fearAndGreed = window._fearAndGreed || null;
+    const [cmcData, dexData] = await Promise.all([
+      fetchCmcData().catch(() => null),
+      fetchDexData().catch(() => null)
+    ]);
+    const html = buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGreed, dexData, cmcData });
+    infoBadge.setAttribute('data-tooltip', html);
+    infoBadge.setAttribute('data-tooltip-html', 'true');
+  } catch (e) {
+    if (window._debug) console.debug('updateApiStatusTooltip failed', e);
+  }
+}
+
 // ===== Data Refresh =====
 async function refreshDashboard() {
   const [networkData, taoPrice, taostats] = await Promise.all([
@@ -728,23 +747,8 @@ async function refreshDashboard() {
   await updateBlockTime();
   await updateStakingApr();
 
-  // Update API status tooltip with per-source live chips
-  try {
-    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
-    if (infoBadge) {
-      const fearAndGreed = window._fearAndGreed || null;
-      // Fetch CMC and DEX data for status display (non-blocking)
-      const [cmcData, dexData] = await Promise.all([
-        fetchCmcData().catch(() => null),
-        fetchDexData().catch(() => null)
-      ]);
-      const html = buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGreed, dexData, cmcData });
-      infoBadge.setAttribute('data-tooltip', html);
-      infoBadge.setAttribute('data-tooltip-html', 'true');
-    }
-  } catch (e) {
-    if (window._debug) console.debug('Failed to update api status tooltip html', e);
-  }
+  // Update API status tooltip with all sources
+  await updateApiStatusTooltip(networkData, taostats, taoPrice);
 }
 
 // Initialize refresh controls with callbacks
@@ -969,22 +973,8 @@ async function initDashboard() {
     if (polyline) polyline.setAttribute('stroke', color);
   }
 
-  // Update API status tooltip with all sources (including CMC/DexScreener)
-  try {
-    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
-    if (infoBadge) {
-      const fearAndGreed = window._fearAndGreed || null;
-      const [cmcData, dexData] = await Promise.all([
-        fetchCmcData().catch(() => null),
-        fetchDexData().catch(() => null)
-      ]);
-      const html = buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGreed, dexData, cmcData });
-      infoBadge.setAttribute('data-tooltip', html);
-      infoBadge.setAttribute('data-tooltip-html', 'true');
-    }
-  } catch (e) {
-    if (window._debug) console.debug('init API status tooltip failed', e);
-  }
+  // Update API status tooltip with all sources
+  await updateApiStatusTooltip(networkData, taostats, taoPrice);
 
   const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
   // Pre-fetch EUR rate if EUR display is enabled
