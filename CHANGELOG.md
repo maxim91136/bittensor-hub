@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.24 (2025-12-13)
+### Features
+- **CMC & DexScreener Backend**: New data sources for Fear & Greed and wTAO DEX data
+  - CMC API: F&G Index (current), global metrics, TAO quote, season indicator
+  - DexScreener API: wTAO pairs, volume, liquidity (free, no key required)
+  - Hybrid F&G: CMC for current value (frequent updates), Alternative.me for historical
+  - New workflows: `fetch-cmc.yml` (hourly), `fetch-dex.yml` (15 min)
+  - New API endpoints: `/api/cmc`, `/api/dex`
+
+### Improvements
+- **API Status Tooltip**: Added CoinMarketCap and DexScreener (wTAO) status chips
+- **F&G Tooltip**: Shows both sources with timestamps in hybrid mode
+- **Disclaimer**: Added Reddit (u/WrongdoerSweet3851) and Discord (STRM1109) links
+
 ## v1.0.0-rc.30.23 (2025-12-13)
 ### Fixes
 - **Stable Countdown Width**: Zero-padded hours/minutes/seconds (e.g., 09h 04m 01s) for consistent pill width
