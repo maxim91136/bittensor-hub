@@ -622,8 +622,8 @@ body.light-bg #maxSupplyScribble {
 .price-pill {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: clamp(8px, 2vw, 12px);
+  justify-content: center;
+  gap: clamp(6px, 1.5vw, 10px);
   /* Independent from stat-card CSS variables */
   padding: clamp(8px, 1.5vw, 12px) clamp(16px, 3vw, 22px);
   background: linear-gradient(135deg, rgba(14,165,255,0.08), rgba(14,165,255,0.02));
@@ -638,14 +638,12 @@ body.light-bg #maxSupplyScribble {
   position: relative;
 }
 
-/* Left-align price value and [pill me] so € aligns with [ */
-.price-pill .pill-value,
+/* [pill me] stays centered below the pill content */
 .price-pill .pill-tap-hint {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 75px;
-  text-align: left;
+  bottom: 3px;
 }
 
 /* Currency toggle button in price pill */
@@ -783,7 +781,7 @@ body.light-bg #maxSupplyScribble {
 
 /* 7d price change in pill */
 .price-change-7d {
-  font-size: 0.75em;
+  font-size: 0.7em;
   font-weight: 600;
   padding: 2px 5px;
   border-radius: 4px;
