@@ -272,10 +272,11 @@ export async function loadDecentralization() {
  */
 export async function loadExperimentalDecentralization() {
   try {
-    // Fetch decentralization data and top wallets in parallel
-    const [decRes, walletsRes] = await Promise.all([
+    // Fetch decentralization data, top wallets, and top validators in parallel
+    const [decRes, walletsRes, validatorsRes] = await Promise.all([
       fetch('/api/decentralization'),
-      fetch('/api/top_wallets')
+      fetch('/api/top_wallets'),
+      fetch('/api/top_validators')
     ]);
 
     if (!decRes.ok) return;
@@ -310,12 +311,19 @@ export async function loadExperimentalDecentralization() {
       }
     }
 
+    // Calculate Top10 validator concentration from top_validators API
+    let valTop10 = null;
+    if (validatorsRes.ok) {
+      const validatorsData = await validatorsRes.json();
+      const topValidators = validatorsData.top_validators || [];
+      // Sum stake_share of top 10 validators (stake_share is 0-1 scale)
+      valTop10 = topValidators.slice(0, 10).reduce((sum, v) => sum + (v.stake_share || 0), 0);
+    }
+
     // Extract metrics from existing data
     const va = decData.validator_analysis || {};
     const wa = decData.wallet_analysis || {};
 
-    // Validator Top10 concentration (0-1 scale)
-    const valTop10 = va.top_10_concentration ?? null;
     const valGini = va.gini ?? null;
 
     // Calculate TDS (Technical Decentralization Score)
