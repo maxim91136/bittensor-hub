@@ -1225,27 +1225,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Info badge tooltip for API status card: preserve any existing (HTML) tooltip
-    // Only set a default if the attribute is missing or suspiciously short (regression guard).
-    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
-    if (infoBadge) {
-        const existing = infoBadge.getAttribute('data-tooltip') || '';
-        if (!existing || existing.trim().length < 20) {
-          // Default detailed tooltip (HTML chips) — per-source chips allow quick status scan
-          const html = [
-            '<div>Status of all data sources powering the dashboard</div>',
-            '<div style="margin-top:8px"><span class="tooltip-chip ok">OK</span> Bittensor SDK</div>',
-            '<div><span class="tooltip-chip ok">OK</span> Taostats</div>',
-            '<div><span class="tooltip-chip ok">OK</span> Binance</div>',
-            '<div><span class="tooltip-chip ok">OK</span> CoinGecko</div>',
-            '<div><span class="tooltip-chip ok">OK</span> CoinMarketCap</div>',
-            '<div><span class="tooltip-chip ok">OK</span> Alternative.me</div>',
-            '<div><span class="tooltip-chip ok">OK</span> DexScreener</div>'
-          ].join('');
-          infoBadge.setAttribute('data-tooltip', html);
-          infoBadge.setAttribute('data-tooltip-html', 'true');
-        }
-    }
+    // Note: API status tooltip is set by refreshDashboard() via buildApiStatusHtml()
+    // No default needed here - would overwrite the real data already fetched by initDashboard()
   })();
 
   // Background toggle button (now handled by themeToggle module)

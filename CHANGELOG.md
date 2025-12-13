@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.26 (2025-12-13)
+### Fixes
+- **API Status Tooltip**: Fixed timing bug - default was overwriting real data after initDashboard()
+
 ## v1.0.0-rc.30.25 (2025-12-13)
 ### Fixes
 - **API Status Tooltip**: Show all 7 data sources on initial page load (was missing CMC/DexScreener)
