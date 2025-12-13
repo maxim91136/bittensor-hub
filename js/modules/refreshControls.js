@@ -77,6 +77,14 @@ export function renderRefreshIndicator() {
  */
 export function handleRefreshClick() {
   const now = Date.now();
+
+  // COOLDOWN CHECK - Block ALL clicks for 30s after system failure
+  const timeSinceLastFailure = now - _lastSystemFailureTime;
+  if (_lastSystemFailureTime > 0 && timeSinceLastFailure < SYSTEM_FAILURE_COOLDOWN_MS) {
+    if (_MatrixSound?.play) _MatrixSound.play('refresh-beep');
+    return; // Block click entirely
+  }
+
   _refreshClickTimestamps.push(now);
 
   // Keep only clicks within last 600ms
@@ -101,19 +109,9 @@ export function handleRefreshClick() {
  * Toggle refresh pause state
  */
 export function toggleRefreshPause() {
-  const now = Date.now();
-
-  // If trying to trigger system failure, check cooldown
+  // Set cooldown timestamp when triggering system failure
   if (!_refreshPaused) {
-    const timeSinceLastFailure = now - _lastSystemFailureTime;
-    if (timeSinceLastFailure < SYSTEM_FAILURE_COOLDOWN_MS) {
-      // Still in cooldown - play a small sound but don't trigger
-      if (_MatrixSound?.play) _MatrixSound.play('refresh-beep');
-      if (window._debug) console.debug(`System failure cooldown: ${Math.ceil((SYSTEM_FAILURE_COOLDOWN_MS - timeSinceLastFailure) / 1000)}s remaining`);
-      return;
-    }
-    // Set the timestamp for this trigger
-    _lastSystemFailureTime = now;
+    _lastSystemFailureTime = Date.now();
   }
 
   _refreshPaused = !_refreshPaused;
