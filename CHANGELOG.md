@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.22 (2025-12-13)
+### Features
+- **Price Pill 7d Change**: Display 7-day price change in Price Pill (e.g., "7d +5.0%")
+- **ISO Date Format**: Halving projections now use international ISO format (YYYY-MM-DD HH:MM UTC)
+
+### Fixes
+- **Price Pill Centering**: Fixed alignment of price value and [pill me] on mobile screens
+- **Price Pill Layout**: Flexbox layout for proper element flow (Icon → Price → 7d → Toggle)
+
+## v1.0.0-rc.30.21 (2025-12-13)
+### Features
+- **UTC Time in Halving Projections**: Tooltip now shows full date + time in UTC
+
+### Fixes
+- **Taostats Rate Limiting**: Added retry logic with exponential backoff for 429 errors
+
+## v1.0.0-rc.30.20 (2025-12-13)
+### Fixes
+- **Mobile Halving Date**: Show halving date on mobile (smaller font) instead of hiding
+- **Price Pill Compact**: Reduced padding, gap, and border-radius for cleaner look
+
+## v1.0.0-rc.30.19 (2025-12-12)
+### Changes
+- **Halving Date Format**: Changed to numeric format (DD.MM.YY HH:MM) for compactness
+- **Removed 24h Change from Price Pill**: Already shown in Market Conditions below
+
 ## v1.0.0-rc.30.18 (2025-12-12)
 ### Features
 - **Halving Date Tracking**: Show last halving date (UTC) in the halving pill

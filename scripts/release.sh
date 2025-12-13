@@ -5,19 +5,42 @@ set -e
 
 VERSION=$(cat VERSION | tr -d '\n')
 TAG="v$VERSION"
+TODAY=$(date +%Y-%m-%d)
 
 echo "📦 Releasing $TAG..."
+
+# Check if CHANGELOG has entry for this version
+if ! grep -q "## $TAG" CHANGELOG.md; then
+  echo "⚠ WARNING: CHANGELOG.md has no entry for $TAG"
+  echo "  Please add changelog entry before releasing!"
+  read -p "  Continue anyway? (y/N) " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+  fi
+fi
 
 # Update README with version from VERSION file
 sed -i '' "s/\*\*Latest release:\*\* \`v[^\`]*\`/**Latest release:** \`$TAG\`/" README.md
 
-# Check if there are changes
-if git diff --quiet README.md; then
-  echo "✓ README already up to date"
-else
-  git add README.md
+# Check if there are changes to commit
+CHANGED_FILES=""
+if ! git diff --quiet README.md 2>/dev/null; then
+  CHANGED_FILES="$CHANGED_FILES README.md"
+fi
+if ! git diff --quiet CHANGELOG.md 2>/dev/null; then
+  CHANGED_FILES="$CHANGED_FILES CHANGELOG.md"
+fi
+if ! git diff --quiet VERSION 2>/dev/null; then
+  CHANGED_FILES="$CHANGED_FILES VERSION"
+fi
+
+if [ -n "$CHANGED_FILES" ]; then
+  git add $CHANGED_FILES
   git commit -m "docs: Update version to $TAG"
-  echo "✓ README updated"
+  echo "✓ Docs updated:$CHANGED_FILES"
+else
+  echo "✓ Docs already up to date"
 fi
 
 # Push changes
