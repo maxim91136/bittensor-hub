@@ -23,6 +23,24 @@ export function buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGre
     taostatsStatus = (hasPrice && hasVol) ? 'ok' : 'partial';
   }
 
+  // Binance (derive from taoPrice._source)
+  let binanceStatus = 'error';
+  if (taoPrice && taoPrice._source === 'binance') {
+    binanceStatus = taoPrice.price ? 'ok' : 'error';
+  } else if (taoPrice && taoPrice.price) {
+    // Binance not used but price available from other source
+    binanceStatus = 'partial';
+  }
+
+  // CoinGecko (derive from taoPrice._source if available)
+  let coingeckoStatus = 'error';
+  if (taoPrice && taoPrice._source === 'coingecko') {
+    coingeckoStatus = taoPrice.price ? 'ok' : 'error';
+  } else if (taoPrice && taoPrice.price) {
+    // CoinGecko not used but price available from other source
+    coingeckoStatus = 'partial';
+  }
+
   // CoinMarketCap (F&G, global metrics, TAO quote)
   let cmcStatus = 'error';
   if (cmcData) {
@@ -51,9 +69,11 @@ export function buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGre
 
   const lines = [];
   lines.push('<div>Status of all data sources powering the dashboard</div>');
-  // Order: Bittensor SDK, Taostats, CMC, Alternative.me, DexScreener
+  // Order: Bittensor SDK, Taostats, Binance, CoinGecko, CMC, Alternative.me, DexScreener
   lines.push('<div style="margin-top:8px">' + chip(networkStatus) + ' Bittensor SDK</div>');
   lines.push('<div>' + chip(taostatsStatus) + ' Taostats</div>');
+  lines.push('<div>' + chip(binanceStatus) + ' Binance</div>');
+  lines.push('<div>' + chip(coingeckoStatus) + ' CoinGecko</div>');
   lines.push('<div>' + chip(cmcStatus) + ' CoinMarketCap</div>');
   lines.push('<div>' + chip(altMeStatus) + ' Alternative.me</div>');
   lines.push('<div>' + chip(dexStatus) + ' DexScreener</div>');
