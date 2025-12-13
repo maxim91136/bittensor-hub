@@ -175,8 +175,8 @@ export function getVolumeSignal(volumeData, priceChange, currentVolume = null, a
   const priceDown = priceChange < -threshold;
   const priceStable = !priceUp && !priceDown;
 
-  const volStr = volumeChange >= 0 ? `+${volumeChange.toFixed(1)}%` : `${volumeChange.toFixed(1)}%`;
-  const priceStr = priceChange >= 0 ? `+${priceChange.toFixed(1)}%` : `${priceChange.toFixed(1)}%`;
+  const volStr = volumeChange >= 0 ? `+${volumeChange.toFixed(2)}%` : `${volumeChange.toFixed(2)}%`;
+  const priceStr = priceChange >= 0 ? `+${priceChange.toFixed(2)}%` : `${priceChange.toFixed(2)}%`;
 
   // Build confidence line
   let confidenceLine = '';
@@ -220,7 +220,7 @@ export function getVolumeSignal(volumeData, priceChange, currentVolume = null, a
       // Base market phase from MA trend
       if (ma7dTrend > 5) {
         marketPhase = 'bullish';
-        let phaseText = `📈 Market: Bullish (+${ma7dTrend.toFixed(1)}% Vol. MA 3d/7d)`;
+        let phaseText = `📈 Market: Bullish (+${ma7dTrend.toFixed(2)}% Vol. MA 3d/7d)`;
 
         // Add Fear & Greed context
         if (fngSentiment === 'extreme_greed') {
@@ -234,7 +234,7 @@ export function getVolumeSignal(volumeData, priceChange, currentVolume = null, a
         marketPhaseNote = `\n${phaseText}`;
       } else if (ma7dTrend < -5) {
         marketPhase = 'bearish';
-        let phaseText = `📉 Market: Bearish (-${Math.abs(ma7dTrend).toFixed(1)}% Vol. MA 3d/7d)`;
+        let phaseText = `📉 Market: Bearish (-${Math.abs(ma7dTrend).toFixed(2)}% Vol. MA 3d/7d)`;
 
         // Add Fear & Greed context
         if (fngSentiment === 'extreme_fear') {
@@ -247,7 +247,7 @@ export function getVolumeSignal(volumeData, priceChange, currentVolume = null, a
 
         marketPhaseNote = `\n${phaseText}`;
       } else {
-        const absValue = Math.abs(ma7dTrend).toFixed(1);
+        const absValue = Math.abs(ma7dTrend).toFixed(2);
         const sign = ma7dTrend >= 0 ? '+' : '-';
         let phaseText = `➡️ Market: Neutral (${sign}${absValue}% Vol. MA 3d/7d)`;
 
@@ -271,8 +271,8 @@ export function getVolumeSignal(volumeData, priceChange, currentVolume = null, a
     const significantDrop = volumeChange < -threshold * 1.5 && priceChange < -threshold * 1.5;
 
     if (STRICT_DOWN_ALWAYS_RED && significantDrop && marketPhase !== 'bullish') {
-      const volStrStrict = volumeChange >= 0 ? `+${volumeChange.toFixed(1)}%` : `${volumeChange.toFixed(1)}%`;
-      const priceStrStrict = priceChange >= 0 ? `+${priceChange.toFixed(1)}%` : `${priceChange.toFixed(1)}%`;
+      const volStrStrict = volumeChange >= 0 ? `+${volumeChange.toFixed(2)}%` : `${volumeChange.toFixed(2)}%`;
+      const priceStrStrict = priceChange >= 0 ? `+${priceChange.toFixed(2)}%` : `${priceChange.toFixed(2)}%`;
       if (window._debug) console.debug('Ampelsystem strict rule: significant drop in non-bullish phase', {priceChange, volumeChange, marketPhase});
       return {
         signal: 'red',
@@ -283,8 +283,8 @@ Both declining — downward momentum${marketPhaseNote}` + (confidenceLine || '')
       };
     }
     if (volumeChange < 0 && priceChange < 0 && (confidence !== 'high' || !masAligned) && marketPhase !== 'bullish') {
-      const volStrStrict = volumeChange >= 0 ? `+${volumeChange.toFixed(1)}%` : `${volumeChange.toFixed(1)}%`;
-      const priceStrStrict = priceChange >= 0 ? `+${priceChange.toFixed(1)}%` : `${priceChange.toFixed(1)}%`;
+      const volStrStrict = volumeChange >= 0 ? `+${volumeChange.toFixed(2)}%` : `${volumeChange.toFixed(2)}%`;
+      const priceStrStrict = priceChange >= 0 ? `+${priceChange.toFixed(2)}%` : `${priceChange.toFixed(2)}%`;
       if (window._debug) console.debug('Ampelsystem soft strict: both down, no MA support', {priceChange, volumeChange, confidence, masAligned, marketPhase});
       return {
         signal: 'red',
@@ -359,7 +359,7 @@ Both declining — downward momentum${marketPhaseNote}` + (confidenceLine || '')
       const ma7dTrend = ((ma3dVal - ma7dVal) / ma7dVal) * 100;
 
       if (ma7dTrend > 5) {
-        let phaseText = `📈 Market: Bullish (+${ma7dTrend.toFixed(1)}% Vol. MA 3d/7d)`;
+        let phaseText = `📈 Market: Bullish (+${ma7dTrend.toFixed(2)}% Vol. MA 3d/7d)`;
         if (fngSentiment === 'extreme_greed') {
           phaseText += `\n⚠️ Sentiment: Extreme Greed (${fngValue})\n🌡️ overheating?\n📊 max optimism`;
         } else if (fngSentiment === 'greed') {
@@ -369,7 +369,7 @@ Both declining — downward momentum${marketPhaseNote}` + (confidenceLine || '')
         }
         marketPhaseNote = `\n${phaseText}`;
       } else if (ma7dTrend < -5) {
-        let phaseText = `📉 Market: Bearish (-${Math.abs(ma7dTrend).toFixed(1)}% Vol. MA 3d/7d)`;
+        let phaseText = `📉 Market: Bearish (-${Math.abs(ma7dTrend).toFixed(2)}% Vol. MA 3d/7d)`;
         if (fngSentiment === 'extreme_fear') {
           phaseText += `\n🔻 Sentiment: Extreme Fear (${fngValue})\n💀 capitulation?\n📊 max selling pressure`;
         } else if (fngSentiment === 'fear') {
@@ -379,7 +379,7 @@ Both declining — downward momentum${marketPhaseNote}` + (confidenceLine || '')
         }
         marketPhaseNote = `\n${phaseText}`;
       } else {
-        const absValue = Math.abs(ma7dTrend).toFixed(1);
+        const absValue = Math.abs(ma7dTrend).toFixed(2);
         const sign = ma7dTrend >= 0 ? '+' : '-';
         let phaseText = `➡️ Market: Neutral (${sign}${absValue}% Vol. MA 3d/7d)`;
         if (fngSentiment === 'extreme_greed') {
@@ -528,7 +528,7 @@ function formatMADollar(num) {
   if (num === null || num === undefined) return '—';
   if (Math.abs(num) >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
   if (Math.abs(num) >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
-  if (Math.abs(num) >= 1e3) return '$' + (num / 1e3).toFixed(1) + 'k';
+  if (Math.abs(num) >= 1e3) return '$' + (num / 1e3).toFixed(2) + 'k';
   return '$' + Number(num).toLocaleString();
 }
 
@@ -537,7 +537,7 @@ function formatMADollar(num) {
  */
 function formatMAPct(num) {
   if (num === null || num === undefined) return '—';
-  const pct = (num * 100).toFixed(1);
+  const pct = (num * 100).toFixed(2);
   return num >= 0 ? `+${pct}%` : `${pct}%`;
 }
 

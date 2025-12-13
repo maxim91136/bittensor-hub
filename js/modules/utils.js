@@ -25,7 +25,7 @@ export function animateValue(element, start, end, duration = 1000) {
 
 export function formatNumber(num) {
   if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
   return Number(num).toLocaleString('en-US');
 }
 

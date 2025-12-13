@@ -157,7 +157,7 @@ export function updateTaoPrice(priceData, options = {}) {
     const change7dEl = document.getElementById('priceChange7d');
     if (change7dEl && p7d !== null) {
       const sign = p7d >= 0 ? '+' : '';
-      change7dEl.textContent = `7d ${sign}${p7d.toFixed(1)}%`;
+      change7dEl.textContent = `7d ${sign}${p7d.toFixed(2)}%`;
       change7dEl.classList.remove('positive', 'negative', 'neutral');
       if (p7d > 0.5) {
         change7dEl.classList.add('positive');

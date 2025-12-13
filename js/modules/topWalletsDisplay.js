@@ -54,7 +54,7 @@ export async function loadTopWalletsDisplay(displayList) {
       const addressShort = w.address_short || 'Unknown';
       const balance = w.balance_total != null ? `${w.balance_total.toLocaleString(undefined, {maximumFractionDigits: 0})} τ` : '—';
       const dominance = w.dominance != null ? `${w.dominance.toFixed(2)}%` : '—';
-      const stakedPercent = w.staked_percent != null ? `${w.staked_percent.toFixed(1)}%` : '—';
+      const stakedPercent = w.staked_percent != null ? `${w.staked_percent.toFixed(2)}%` : '—';
 
       // Calculate rank change
       let changeHtml = '';
@@ -244,7 +244,7 @@ export async function loadDecentralization() {
       sCtxEl.className = 'metric-context ' + sCtx.cls;
     }
     setEl('subnetHHI', sa.emission_hhi != null ? sa.emission_hhi.toFixed(4) : '—');
-    setEl('subnetTop5', sa.top_5_emission_concentration != null ? (sa.top_5_emission_concentration * 100).toFixed(1) + '%' : '—');
+    setEl('subnetTop5', sa.top_5_emission_concentration != null ? (sa.top_5_emission_concentration * 100).toFixed(2) + '%' : '—');
     setEl('totalSubnets', sa.total_subnets ?? '—');
 
     // Wallet metrics

@@ -17,8 +17,8 @@ import {
 function formatCompactVolume(num) {
   if (num === null || num === undefined) return '—';
   if (Math.abs(num) >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
-  if (Math.abs(num) >= 1e6) return '$' + (num / 1e6).toFixed(1) + 'M';
-  if (Math.abs(num) >= 1e3) return '$' + (num / 1e3).toFixed(0) + 'k';
+  if (Math.abs(num) >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
+  if (Math.abs(num) >= 1e3) return '$' + (num / 1e3).toFixed(2) + 'k';
   return '$' + Number(num).toLocaleString();
 }
 
@@ -28,8 +28,8 @@ function formatCompactVolume(num) {
 function formatMADollar(num) {
   if (num === null || num === undefined) return '—';
   if (Math.abs(num) >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
-  if (Math.abs(num) >= 1e6) return '$' + (num / 1e6).toFixed(1) + 'M';
-  if (Math.abs(num) >= 1e3) return '$' + (num / 1e3).toFixed(0) + 'k';
+  if (Math.abs(num) >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
+  if (Math.abs(num) >= 1e3) return '$' + (num / 1e3).toFixed(2) + 'k';
   return '$' + Number(num).toLocaleString();
 }
 
@@ -38,7 +38,7 @@ function formatMADollar(num) {
  */
 function formatMAPct(num) {
   if (num === null || num === undefined) return '';
-  const pct = (num * 100).toFixed(1);
+  const pct = (num * 100).toFixed(2);
   return num > 0 ? `+${pct}%` : `${pct}%`;
 }
 
@@ -95,7 +95,7 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
     const volumeChangeEl = volumeMetric.querySelector('#marketVolumeChange');
     if (volumeChangeEl && volumeData) {
       const volChange = volumeData.change || 0;
-      const volStr = volChange >= 0 ? `+${volChange.toFixed(1)}%` : `${volChange.toFixed(1)}%`;
+      const volStr = volChange >= 0 ? `+${volChange.toFixed(2)}%` : `${volChange.toFixed(2)}%`;
       volumeChangeEl.textContent = volStr;
 
       // Add conditional color class
@@ -111,7 +111,7 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
   // Update price change
   const priceMetric = card.querySelector('#marketPrice');
   if (priceMetric && priceChange24h !== null) {
-    const priceStr = priceChange24h >= 0 ? `+${priceChange24h.toFixed(1)}%` : `${priceChange24h.toFixed(1)}%`;
+    const priceStr = priceChange24h >= 0 ? `+${priceChange24h.toFixed(2)}%` : `${priceChange24h.toFixed(2)}%`;
     const priceValueEl = priceMetric.querySelector('.metric-value');
     priceValueEl.textContent = priceStr;
 
@@ -155,7 +155,7 @@ async function updateMarketConditionsCard(currentVolume, priceChange24h) {
       if (ath && atl && currentPrice) {
         const distFromAtl = ((currentPrice - atl) / atl) * 100;
         const distFromAth = ((ath - currentPrice) / ath) * 100;
-        htmlContent += `<br>📍 ATL: <span class="positive">+${distFromAtl.toFixed(1)}%</span> | ATH: <span class="negative">-${distFromAth.toFixed(1)}%</span>`;
+        htmlContent += `<br>📍 ATL: <span class="positive">+${distFromAtl.toFixed(2)}%</span> | ATH: <span class="negative">-${distFromAth.toFixed(2)}%</span>`;
       }
     }
 

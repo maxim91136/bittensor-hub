@@ -358,7 +358,7 @@ export function createPriceChart(priceHistoryData, range, comparisonData = {}) {
       ticks: {
         color: '#888',
         callback: function(value) {
-          if (showLegend) return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+          if (showLegend) return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
           return `${currencySymbol}${value.toLocaleString()}`;
         }
       }
