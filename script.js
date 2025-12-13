@@ -295,11 +295,25 @@ async function updateNetworkStats(data) {
         elements.subnets.textContent = formatFull(displaySubnets);
         elements.subnets.classList.remove('skeleton-text');
       }
+      // Update Subnets tooltip with source + timestamp
+      const subnetsBadge = document.querySelector('#subnetsCard .info-badge');
+      if (subnetsBadge) {
+        const lines = ['Total active subnets in the Bittensor network', '', 'Source: Bittensor SDK'];
+        if (data.last_issuance_ts) lines.push(`Last updated: ${new Date(data.last_issuance_ts * 1000).toLocaleString()}`);
+        subnetsBadge.setAttribute('data-tooltip', lines.join('\n'));
+      }
     }
     if (data.validators !== undefined) {
       if (elements.validators) {
         elements.validators.textContent = formatFull(data.validators);
         elements.validators.classList.remove('skeleton-text');
+      }
+      // Update Validators tooltip with source + timestamp
+      const validatorsBadge = document.querySelector('#validatorsCard .info-badge');
+      if (validatorsBadge) {
+        const lines = ['Number of active validators securing the network', '', 'Source: Bittensor SDK'];
+        if (data.last_issuance_ts) lines.push(`Last updated: ${new Date(data.last_issuance_ts * 1000).toLocaleString()}`);
+        validatorsBadge.setAttribute('data-tooltip', lines.join('\n'));
       }
     }
     // Show the projection average when available (more accurate for halving)
@@ -323,18 +337,24 @@ async function updateNetworkStats(data) {
 
       // Update the emission card info-badge tooltip with projection metadata (if available)
       try {
-        const emissionCard = elements.emission.closest ? elements.emission.closest('.stat-card') : null;
-        if (emissionCard) {
-          const badge = emissionCard.querySelector('.info-badge');
-            if (badge) {
-            // Short, user-friendly info tooltip explaining what the KPI represents.
-            const tooltipText = data && (data.avg_emission_for_projection !== undefined && data.avg_emission_for_projection !== null)
-              ? 'Avg emission rate used for halving projections (based on our own issuance history). Confidence shown in the Halving pill.'
-              : (data && (data.emission !== undefined && data.emission !== null))
-                ? 'Reported emission rate (static) from the network API.'
-                : 'Emission: unavailable';
-            badge.setAttribute('data-tooltip', tooltipText);
+        const emissionBadge = document.querySelector('#emissionCard .info-badge');
+        if (emissionBadge) {
+          const lines = [];
+          if (data && data.avg_emission_for_projection !== undefined && data.avg_emission_for_projection !== null) {
+            lines.push('Avg emission rate used for halving projections');
+            lines.push('Based on our own issuance history');
+            lines.push('Confidence shown in the Halving pill');
+            lines.push('');
+            lines.push('Source: Bittensor SDK (calculated)');
+          } else if (data && data.emission !== undefined && data.emission !== null) {
+            lines.push('Reported emission rate (static)');
+            lines.push('');
+            lines.push('Source: Bittensor SDK');
+          } else {
+            lines.push('Emission: unavailable');
           }
+          if (data.last_issuance_ts) lines.push(`Last updated: ${new Date(data.last_issuance_ts * 1000).toLocaleString()}`);
+          emissionBadge.setAttribute('data-tooltip', lines.join('\n'));
         }
       } catch (e) {
         if (window._debug) console.debug('Failed to set emission info-badge tooltip', e);
@@ -344,6 +364,13 @@ async function updateNetworkStats(data) {
       if (elements.totalNeurons) {
         elements.totalNeurons.textContent = formatFull(data.totalNeurons);
         elements.totalNeurons.classList.remove('skeleton-text');
+      }
+      // Update Neurons tooltip with source + timestamp
+      const neuronsBadge = document.querySelector('#neuronsCard .info-badge');
+      if (neuronsBadge) {
+        const lines = ['Total number of neurons in the network', '', 'Source: Bittensor SDK'];
+        if (data.last_issuance_ts) lines.push(`Last updated: ${new Date(data.last_issuance_ts * 1000).toLocaleString()}`);
+        neuronsBadge.setAttribute('data-tooltip', lines.join('\n'));
       }
     }
 
@@ -358,14 +385,18 @@ async function updateNetworkStats(data) {
     window._prevSupplyTs = nowTs;
     // debug: mark that we have circ supply from external source
     if (window._circSupplySource && window._debug) console.debug('circ supply source:', window._circSupplySource);
-    try {
-      const supplyCard = supplyEl.closest ? supplyEl.closest('.stat-card') : null;
-      if (supplyCard) {
-        const badge = supplyCard.querySelector('.info-badge');
-        if (badge) badge.setAttribute('data-tooltip', `Current circulating supply of TAO tokens — exact: ${formatExact(circSupply)} TAO`);
-      }
-    } catch (e) {
-      if (window._debug) console.debug('Failed to set circulatingsupply info-badge tooltip', e);
+    // Update Circ Supply tooltip with source + timestamp
+    const circBadge = document.querySelector('#circSupplyCard .info-badge');
+    if (circBadge) {
+      const source = window._circSupplySource || 'Taostats';
+      const lines = [
+        'Current circulating supply of TAO tokens',
+        `Exact: ${formatExact(circSupply)} TAO`,
+        '',
+        `Source: ${source}`
+      ];
+      if (data.last_issuance_ts) lines.push(`Last updated: ${new Date(data.last_issuance_ts * 1000).toLocaleString()}`);
+      circBadge.setAttribute('data-tooltip', lines.join('\n'));
     }
   } else {
     const emissionPerBlock = 1;
@@ -379,14 +410,17 @@ async function updateNetworkStats(data) {
       window.circulatingSupply = fallbackSupply;
       window._prevSupplyTs = nowTs;
       if (window._debug) console.debug('circ supply fallback to block-derived supply');
-      try {
-        const supplyCard = supplyEl.closest ? supplyEl.closest('.stat-card') : null;
-        if (supplyCard) {
-          const badge = supplyCard.querySelector('.info-badge');
-          if (badge) badge.setAttribute('data-tooltip', `Current circulating supply of TAO tokens — exact: ${formatExact(fallbackSupply)} TAO`);
-        }
-      } catch (e) {
-        if (window._debug) console.debug('Failed to set circulatingsupply info-badge tooltip (fallback)', e);
+      // Update Circ Supply tooltip (fallback)
+      const circBadge = document.querySelector('#circSupplyCard .info-badge');
+      if (circBadge) {
+        const lines = [
+          'Current circulating supply of TAO tokens',
+          `Exact: ${formatExact(fallbackSupply)} TAO`,
+          '',
+          'Source: Block-derived (fallback)'
+        ];
+        if (data.last_issuance_ts) lines.push(`Last updated: ${new Date(data.last_issuance_ts * 1000).toLocaleString()}`);
+        circBadge.setAttribute('data-tooltip', lines.join('\n'));
       }
     }
   }

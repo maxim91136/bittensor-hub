@@ -278,6 +278,21 @@ async function updateTokenEconomicsCard() {
       issuedEl.textContent = `${issuedPct.toFixed(2)}%`;
     }
 
+    // Update tooltip with source + timestamp
+    const badge = card.querySelector('.info-badge');
+    if (badge) {
+      const lines = [
+        'Percentage of maximum supply (21M TAO) that has been issued',
+        'Calculation: (circulating supply / 21M) × 100',
+        '',
+        'Source: Bittensor SDK'
+      ];
+      if (data._timestamp) {
+        lines.push(`Last updated: ${new Date(data._timestamp).toLocaleString()}`);
+      }
+      badge.setAttribute('data-tooltip', lines.join('\n'));
+    }
+
     // Apply light mode
     if (document.body.classList.contains('light-bg')) {
       card.classList.add('light-bg');

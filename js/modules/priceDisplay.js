@@ -248,5 +248,34 @@ export function updateMarketCapAndFDV(price, circulatingSupply) {
     const fdv = price * maxSupply;
     marketCapEl.textContent = `$${formatCompact(marketCap)}`;
     fdvEl.textContent = `$${formatCompact(fdv)}`;
+
+    // Update Market Cap tooltip
+    const mcBadge = document.querySelector('#marketCapCard .info-badge');
+    if (mcBadge) {
+      const priceSource = window._priceSource || 'Binance';
+      const supplySource = window._circSupplySource || 'Taostats';
+      const lines = [
+        'Market capitalization = price × circulating supply',
+        `Exact: $${marketCap.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+        '',
+        `Sources: ${priceSource} (price), ${supplySource} (supply)`
+      ];
+      if (window._lastUpdated) lines.push(`Last updated: ${new Date(window._lastUpdated).toLocaleString()}`);
+      mcBadge.setAttribute('data-tooltip', lines.join('\n'));
+    }
+
+    // Update FDV tooltip
+    const fdvBadge = document.querySelector('#fdvCard .info-badge');
+    if (fdvBadge) {
+      const priceSource = window._priceSource || 'Binance';
+      const lines = [
+        'Fully Diluted Valuation = price × max supply (21M TAO)',
+        `Exact: $${fdv.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+        '',
+        `Source: ${priceSource} (price)`
+      ];
+      if (window._lastUpdated) lines.push(`Last updated: ${new Date(window._lastUpdated).toLocaleString()}`);
+      fdvBadge.setAttribute('data-tooltip', lines.join('\n'));
+    }
   }
 }
