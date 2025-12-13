@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.35 (2025-12-13)
+### UI
+- **Precision Formatting**: Unified 2 decimal places across all values
+  - Percentages: Price changes, Volume changes, MA changes, ATL/ATH distance, Staked %, Emission %
+  - Dollar values: Volume ($94.43M), MA values
+  - Applies to: Market Conditions Card, Price Pill, Tooltips, Chart Legend, Top Wallets
+
 ## v1.0.0-rc.30.34 (2025-12-13)
 ### Fixes
 - **Issued Tokens Tooltip**: Fixed missing Last Updated timestamp (use last_issuance_ts)
