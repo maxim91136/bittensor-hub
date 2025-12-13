@@ -17,34 +17,37 @@ def get_headers(api_key):
     }
 
 def fetch_tao_dex_pairs(api_key):
-    """Fetch TAO trading pairs on DEXes"""
-    url = f"{CMC_DEX_URL}/v4/dex/spot-pairs/latest"
-    # TAO CMC ID is 22974 - try to filter by base_asset_ucid
-    params = {
-        "network_slug": "ethereum",
-        "base_asset_ucid": "22974",  # TAO's CMC ID
-        "sort": "volume_24h",
-        "sort_dir": "desc",
-        "limit": 20
-    }
-    resp = requests.get(url, headers=get_headers(api_key), params=params, timeout=30)
+    """Fetch wTAO trading pairs on DEXes (Uniswap)"""
+    # wTAO is the wrapped version of TAO on Ethereum
+    # Contract: 0x77E06c9eCCf2E797fd462A92B6D7642EF85b0A44
+    # Known Uniswap pools:
+    WTAO_POOLS = [
+        "0x433a00819c771b33fa7223a5b3499b24fbcd1bbc",  # wTAO/WETH
+        "0xf763Bb342eB3d23C02ccB86312422fe0c1c17E94",  # wTAO/USDC
+    ]
 
-    # If that doesn't work, try quotes endpoint with contract address
-    if resp.status_code != 200 or not resp.json().get('data'):
-        # TAO ERC-20 contract on Ethereum: 0x77E06c9eCCf2E797fd462A92B6D7642EF85b0A44
-        url_quotes = f"{CMC_DEX_URL}/v4/dex/pairs/quotes/latest"
-        params_quotes = {
+    url = f"{CMC_DEX_URL}/v4/dex/pairs/quotes/latest"
+    all_pairs = []
+
+    for pool_address in WTAO_POOLS:
+        params = {
             "network_slug": "ethereum",
-            "contract_address": "0x77E06c9eCCf2E797fd462A92B6D7642EF85b0A44"
+            "contract_address": pool_address
         }
-        resp = requests.get(url_quotes, headers=get_headers(api_key), params=params_quotes, timeout=30)
-        if resp.status_code != 200:
-            raise Exception(f"DEX Pairs API error: {resp.status_code} - {resp.text}")
+        try:
+            resp = requests.get(url, headers=get_headers(api_key), params=params, timeout=30)
+            if resp.status_code == 200:
+                data = resp.json()
+                if data and 'data' in data:
+                    pairs = data['data']
+                    if isinstance(pairs, list):
+                        all_pairs.extend(pairs)
+                    elif isinstance(pairs, dict):
+                        all_pairs.append(pairs)
+        except Exception as e:
+            print(f"Error fetching pool {pool_address}: {e}", file=sys.stderr)
 
-    data = resp.json()
-    if not data or 'data' not in data:
-        raise Exception("No data in DEX Pairs response")
-    return data['data']
+    return all_pairs
 
 def fetch_tao_trades(api_key, pair_id):
     """Fetch latest trades for a TAO pair"""
@@ -99,28 +102,31 @@ def main():
     now_iso = datetime.now(timezone.utc).isoformat()
     results = {}
 
-    # Fetch TAO DEX pairs
+    # Fetch wTAO DEX pairs (Uniswap pools)
     try:
-        pairs_data = fetch_tao_dex_pairs(cmc_key)
-        pairs = pairs_data if isinstance(pairs_data, list) else pairs_data.get('pairs', [])
+        pairs = fetch_tao_dex_pairs(cmc_key)
 
         # Process pairs - extract key info
         processed_pairs = []
         total_volume_24h = 0
-        for pair in pairs[:10]:  # Top 10 pairs
-            volume = pair.get('volume_24h', 0) or 0
-            total_volume_24h += volume
+        for pair in pairs:
+            # Handle different API response formats
+            volume = pair.get('volume_24h') or pair.get('volume', {}).get('h24', 0) or 0
+            liquidity = pair.get('liquidity_usd') or pair.get('liquidity', {}).get('usd', 0) or 0
+            price_usd = pair.get('price_usd') or pair.get('price', {}).get('usd', 0)
+            total_volume_24h += float(volume) if volume else 0
+
             processed_pairs.append({
-                'id': pair.get('id'),
-                'name': pair.get('name'),
-                'dex': pair.get('dex_name') or pair.get('exchange_name'),
-                'network': pair.get('network_name') or pair.get('chain'),
-                'base_symbol': pair.get('base_asset_symbol'),
+                'id': pair.get('id') or pair.get('pair_id'),
+                'name': pair.get('name') or f"{pair.get('base_asset_symbol', 'wTAO')}/{pair.get('quote_asset_symbol', '?')}",
+                'dex': pair.get('dex_name') or pair.get('exchange', {}).get('name') or 'Uniswap',
+                'network': pair.get('network_name') or 'Ethereum',
+                'base_symbol': pair.get('base_asset_symbol') or 'wTAO',
                 'quote_symbol': pair.get('quote_asset_symbol'),
-                'price_usd': pair.get('price_usd'),
+                'price_usd': price_usd,
                 'volume_24h': volume,
-                'liquidity': pair.get('liquidity_usd') or pair.get('liquidity'),
-                'price_change_24h': pair.get('price_change_24h')
+                'liquidity': liquidity,
+                'price_change_24h': pair.get('price_change_24h') or pair.get('price_change', {}).get('h24')
             })
 
         results['pairs'] = processed_pairs
