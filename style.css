@@ -781,6 +781,27 @@ body.light-bg #maxSupplyScribble {
 
 }
 
+/* 7d price change in pill */
+.price-change-7d {
+  font-size: 0.75em;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.08);
+}
+.price-change-7d.positive {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+}
+.price-change-7d.negative {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+}
+.price-change-7d.neutral {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.15);
+}
+
 /* Generic positive/negative color classes */
 .positive {
   color: #22c55e;

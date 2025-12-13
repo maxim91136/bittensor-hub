@@ -101,8 +101,37 @@ export function updateTaoPrice(priceData, options = {}) {
     priceEl.textContent = `${symbol}${displayPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     priceEl.classList.remove('skeleton-text');
 
-    // Apply subtle pulse animation to price pill based on 24h change
-    if (pricePill && priceData.change24h !== undefined && priceData.change24h !== null) {
+    // Get 7d change from taostats
+    const ts = window._taostats ?? null;
+    const p7d = readPercentValue(ts, ['percent_change_7d','percent_change_7day','pct_change_7d','percent_change_7day']);
+
+    // Display 7d change in pill
+    const change7dEl = document.getElementById('priceChange7d');
+    if (change7dEl && p7d !== null) {
+      const sign = p7d >= 0 ? '+' : '';
+      change7dEl.textContent = `${sign}${p7d.toFixed(1)}%`;
+      change7dEl.classList.remove('positive', 'negative', 'neutral');
+      if (p7d > 0.5) {
+        change7dEl.classList.add('positive');
+      } else if (p7d < -0.5) {
+        change7dEl.classList.add('negative');
+      } else {
+        change7dEl.classList.add('neutral');
+      }
+    }
+
+    // Apply subtle pulse animation to price pill based on 7d change
+    if (pricePill && p7d !== null) {
+      pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
+      if (p7d > 0.5) {
+        pricePill.classList.add('price-up');
+      } else if (p7d < -0.5) {
+        pricePill.classList.add('price-down');
+      } else {
+        pricePill.classList.add('price-neutral');
+      }
+    } else if (pricePill && priceData.change24h !== undefined && priceData.change24h !== null) {
+      // Fallback to 24h if 7d not available
       const change = priceData.change24h;
       pricePill.classList.remove('price-up', 'price-down', 'price-neutral');
       if (change > 0.5) {
