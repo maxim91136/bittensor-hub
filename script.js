@@ -969,6 +969,23 @@ async function initDashboard() {
     if (polyline) polyline.setAttribute('stroke', color);
   }
 
+  // Update API status tooltip with all sources (including CMC/DexScreener)
+  try {
+    const infoBadge = document.querySelector('#apiStatusCard .info-badge');
+    if (infoBadge) {
+      const fearAndGreed = window._fearAndGreed || null;
+      const [cmcData, dexData] = await Promise.all([
+        fetchCmcData().catch(() => null),
+        fetchDexData().catch(() => null)
+      ]);
+      const html = buildApiStatusHtml({ networkData, taostats, taoPrice, fearAndGreed, dexData, cmcData });
+      infoBadge.setAttribute('data-tooltip', html);
+      infoBadge.setAttribute('data-tooltip-html', 'true');
+    }
+  } catch (e) {
+    if (window._debug) console.debug('init API status tooltip failed', e);
+  }
+
   const priceCard = document.querySelector('#priceChart')?.closest('.dashboard-card');
   // Pre-fetch EUR rate if EUR display is enabled
   if (showEurPrices) await fetchEurUsdRate();

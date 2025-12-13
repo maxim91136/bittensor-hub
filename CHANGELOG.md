@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 -
 
+## v1.0.0-rc.30.27 (2025-12-13)
+### Fixes
+- **API Status Tooltip**: Added CMC/DEX fetch to initDashboard() - was only in refreshDashboard()
+
 ## v1.0.0-rc.30.26 (2025-12-13)
 ### Fixes
 - **API Status Tooltip**: Fixed timing bug - default was overwriting real data after initDashboard()
